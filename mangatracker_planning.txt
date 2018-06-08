@@ -60,4 +60,3 @@ NEXT VOLUME:
 COMPLETED:
 	boolean
 	marks if all volumes owned
-	
