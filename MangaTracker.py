@@ -5,9 +5,73 @@ import sqlite3 as lite
 import os.path
 import math
 
+# Global constants
 DATABASE_NAME = "manga.db"
 VOLUME_LIMIT = 128
 CON = None
+
+def series_test():
+    """
+    Test function to check Series class functionality
+    """
+    test_failed = False
+    # TEST 1: generate_volumes_owned produces correct output #
+    print("**TEST 1: generate_volumes_owned()**")
+    try:
+        vol_owned1 = generate_volumes_owned("1, 3-5, 7, 52 ")
+        correct_vol_owned1 = "93,524288,0,0"
+        if vol_owned1 != correct_vol_owned1:
+            print("Failure! Actual: {0} != Expected {1}".format(
+                vol_owned1, correct_vol_owned1))
+            test_failed = True
+    except:
+        print("Error generating volumes for '1, 3-5, 7, 52 '")
+    # should produce error messages
+    try:
+        generate_volumes_owned("-1, 1, 3")
+    except:
+        print("Error generating volumes for '-1, 1, 3'")
+
+    try:
+        generate_volumes_owned("1, 3, %d" % (VOLUME_LIMIT + 1))
+    except:
+        print("Error generating volumes for '1, 3, %d'" % (VOLUME_LIMIT + 1))
+    
+    if(test_failed):
+        print("**TEST 1 FAILED**")
+    
+    test_failed = False
+    print()
+
+    # TEST 2: Creating Series() objects
+    print("**TEST 2: Series()**")
+    try:
+        vol_owned = generate_volumes_owned("1, 3-5, 7, 52 ")
+        series1 = Series("test 1", vol_owned, 'n')
+        print("Series1:")
+        if series1.get_name() != "test 1":
+            print("Name does not match expected value!")
+            test_failed = True
+        if series1.get_volumes_owned() != "1, 3-5, 7, 52":
+            print(series1.get_volumes_owned())
+            print("Volumes owned does not match expected value!")
+            test_failed = True
+        if series1.get_next_volume() != 2:
+            print("Next volume does not match expected value!")
+            test_failed = True
+        print(series1.get_is_completed())
+    except:
+        print("Error creating series or checking variables within series")
+    
+    if test_failed:
+        print("**TEST 2 FAILED**")
+    # series2 = input_series()
+    # print("Series2:")
+    # print(series2.get_name())
+    # print(series2.get_volumes_owned())
+    # print(series2.get_next_volume())
+    # print(series2.get_is_completed())
+    
 
 class Series(object):
     """
@@ -20,30 +84,58 @@ class Series(object):
         self.volumes_owned = volumes_owned
         self.is_completed = is_completed
         self.next_volume = next_volume
+        
         self.vol_arr = [int(x) for x in volumes_owned.split(',')]
+        self.volumes_owned_readable = ""
 
-    def get_volumes_owned():
+    def get_volumes_owned(self):
         """
         get_volumes_owned()
         Inverse of generate function; convert integers into human-readable
-        format (same as original input format
+        format (same as original input format)
         """
-        return
+        if self.volumes_owned_readable == "":
+            index = 0
+            first = -1
+            last = -1
+            for num in self.vol_arr:
+                if num == 0: # no need to check empty set
+                    if first != -1:
+                        last = index * 32
+                        self.volumes_owned_readable += (
+                            "{0}, ".format(first) if first == last
+                            else "{0}-{1}, ".format(first, last))
+                        first = -1
+                    index += 1
+                    continue
+                for i in range(0, 32):
+                    #print("i: {0}, first: {1}".format(i, first))
+                    if first == -1 and num & (1 << i) != 0: # assuming sequential 
+                        first = index * 32 + i + 1
+                    if first != -1 and num & (1 << i) == 0:
+                        last = index * 32 + i
+                        self.volumes_owned_readable += (
+                            "{0}, ".format(first) if first == last
+                            else "{0}-{1}, ".format(first, last))
+                        first = -1
+                index += 1
+            self.volumes_owned_readable = self.volumes_owned_readable[:-2]
+        return self.volumes_owned_readable
 
-    def get_name():
+    def get_name(self):
         return self.name
 
-    def get_completed_status():
+    def get_is_completed(self):
         return self.is_completed
 
-    def get_next_volume():
+    def get_next_volume(self):
         # check if calculated, otherwise return current value
         if self.next_volume < 0:
-            self.next_volume = calculate_next_volume()
+            self.next_volume = self.calculate_next_volume()
         return self.next_volume
 
 
-    def calculate_next_volume():
+    def calculate_next_volume(self):
         index = 0
         for num in self.vol_arr:
             for i in range(0, 32):
@@ -53,7 +145,7 @@ class Series(object):
         print("Next volume for %s would exceed volume limit" % self.name)
         return index * 32 + 1
 
-    def update_database_entry():
+    def update_database_entry(self):
         """
         update_database_entry()
         sync series with database; open connection to database within function
@@ -125,8 +217,7 @@ def generate_volumes_owned(str):
                 continue
             print("ANDing volume %s" % (num))
             vol_arr[num // 32] |= 1 << (num % 32)
-    print vol_arr
-    # TODO: concat into string
+    print(vol_arr)
     result = ""
     for num in vol_arr:
         result += format(num) + ','
