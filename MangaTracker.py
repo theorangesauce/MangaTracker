@@ -39,7 +39,9 @@ def series_test():
     
     if(test_failed):
         print("**TEST 1 FAILED**")
-    
+    else:
+        print("**TEST 1 PASSED**")
+
     test_failed = False
     print()
 
@@ -60,11 +62,17 @@ def series_test():
             print("Next volume does not match expected value!")
             test_failed = True
         print(series1.get_is_completed())
+        print(series1)
     except:
         print("Error creating series or checking variables within series")
     
     if test_failed:
         print("**TEST 2 FAILED**")
+    else:
+        print("**TEST 2 PASSED**")
+
+    test_failed = False
+    print()
     # series2 = input_series()
     # print("Series2:")
     # print(series2.get_name())
@@ -126,7 +134,7 @@ class Series(object):
         return self.name
 
     def get_is_completed(self):
-        return self.is_completed
+        return "Yes" if self.is_completed == 'y' else "No"
 
     def get_next_volume(self):
         # check if calculated, otherwise return current value
@@ -152,6 +160,12 @@ class Series(object):
         (should pass db connection as function argument?)
         """
         return
+    
+    def __str__(self):
+        result = (self.get_name() + ": " + self.get_volumes_owned() +
+              " (Completed: " + self.get_is_completed() + ")\n" + 
+              "Next Volume: %d" % self.get_next_volume())
+        return result
 
 def retrieve_series_from_database():
     return
@@ -205,7 +219,6 @@ def generate_volumes_owned(str):
                 print("End volume too high; consider raising volume limit (currently %d)" % VOLUME_LIMIT)
                 nums[1] = 128
             for i in range(nums[0]-1, nums[1]):
-                print("ANDing volume %d" % i)
                 vol_arr[i // 32] |= 1 << (i % 32)
         else:
             num = int(num) - 1
@@ -215,9 +228,7 @@ def generate_volumes_owned(str):
             if num >= VOLUME_LIMIT:
                 print("Token %s ignored; volume number must be lower than volume limit (currently %d)" % VOLUME_LIMIT)
                 continue
-            print("ANDing volume %s" % (num))
             vol_arr[num // 32] |= 1 << (num % 32)
-    print(vol_arr)
     result = ""
     for num in vol_arr:
         result += format(num) + ','
