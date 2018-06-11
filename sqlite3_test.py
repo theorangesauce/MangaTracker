@@ -13,7 +13,7 @@ try:
     cur.execute('SELECT SQLITE_VERSION()')
     data = cur.fetchone()
     print("SQLite version: %s" % data)
-except lite.Error, e:
+except lite.Error as e:
     print("Error %s:" % e.args[0])
     sys.exit(1)
 finally:
