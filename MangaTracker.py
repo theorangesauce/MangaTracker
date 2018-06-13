@@ -137,7 +137,7 @@ def main():
     
     return
 
-def input_series(con):
+def input_series(data_mgr):
     """
     input_series():
     Gets values for the name of a manga series, volumes currently owned,
@@ -146,8 +146,11 @@ def input_series(con):
     series_name = input("Enter manga name or leave blank to cancel: ")
     if series_name == "":
         return
-    if series_name == "": # TODO: check database for name
+    cur = data_mgr.query("Select name FROM Series WHERE name = %s" % series_name)
+    row = cur.fetchall()
+    if len(row) > 0: # TODO: check database for name
         print("Name already in database!")
+        return
 
     volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
     volumes_owned = generate_volumes_owned(volumes_raw)
