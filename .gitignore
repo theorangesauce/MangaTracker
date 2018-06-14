@@ -49,3 +49,6 @@ Temporary Items
 # Emacs backups, unsaved files
 *.*~
 #*.*#
+
+# Databases (may contain sensitive information)
+*.db

@@ -9,7 +9,6 @@ import math
 DATABASE_NAME = "manga.db"
 VOLUME_LIMIT = 128
 PAGINATED = False
-DATA_MGR = DatabaseManager()
     
 class DatabaseManager(object):
     """
@@ -17,12 +16,23 @@ class DatabaseManager(object):
     Main interface between program and SQLite3 database
     """
     def __init__(self, new_db_needed=False):
-        self.con = sqlite3.connect(DATABASE_NAME)
+        self.con = lite.connect(DATABASE_NAME)
         self.cur = self.con.cursor()
-        if new_db_needed: 
+        self.query("SELECT name FROM sqlite_master WHERE type='table' AND name='Series'")
+        
+        if self.cur.fetchone() == None: 
             # TODO: Prompt user for series to enter until done
-            cur.execute("CREATE TABLE Series(name TEXT, volumes_owned TEXT, \
-                         next_volume TEXT, is_completed INT")
+            self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, \
+                        next_volume INT, is_completed INT)")
+            next_series = input_series(self)
+            while next_series != None:
+                self.query("INSERT INTO Series VALUES('{0}','{1}',{2},{3})".format(
+                    next_series.name,
+                    next_series.volumes_owned,
+                    next_series.get_next_volume(),
+                    next_series.is_completed))
+                print(next_series)
+                next_series = input_series(self)
     
     def query(self, arg):
         self.cur.execute(arg)
@@ -57,7 +67,11 @@ class Series(object):
             index = 0
             first = -1
             last = -1
+            none_owned = 1
+
             for num in self.vol_arr:
+                if num != 0:
+                    none_owned = 0
                 if num == 0: # no need to check empty set
                     if first != -1:
                         last = index * 32
@@ -78,7 +92,10 @@ class Series(object):
                             else "{0}-{1}, ".format(first, last))
                         first = -1
                 index += 1
-            self.volumes_owned_readable = self.volumes_owned_readable[:-2]
+            if none_owned:
+                self.volumes_owned_readable = "None"
+            else:
+                self.volumes_owned_readable = self.volumes_owned_readable[:-2]
         return self.volumes_owned_readable
 
     def get_name(self):
@@ -129,14 +146,6 @@ def print_database(data_mgr):
         # TODO: convert entries to Series() objects
         print(entry)
 
-def main():
-    """
-    main()
-    Main driver function for mangatracker program
-    """
-    
-    return
-
 def input_series(data_mgr):
     """
     input_series():
@@ -145,13 +154,15 @@ def input_series(data_mgr):
     """
     series_name = input("Enter manga name or leave blank to cancel: ")
     if series_name == "":
-        return
-    cur = data_mgr.query("Select name FROM Series WHERE name = %s" % series_name)
-    row = cur.fetchall()
-    if len(row) > 0: # TODO: check database for name
-        print("Name already in database!")
-        return
-
+        return None
+    try:
+        cur = data_mgr.query("Select name FROM Series WHERE name = %s" % series_name)
+        row = cur.fetchall()
+        if len(row) > 0: # TODO: check database for name
+            print("Name already in database!")
+            return None
+    except:
+        print("Database query failed, continuing...")
     volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
     volumes_owned = generate_volumes_owned(volumes_raw)
 
@@ -172,6 +183,8 @@ def generate_volumes_owned(str):
     vol_arr = [0 for x in range(0, arr_length)]
     entered_values = [x.strip() for x in str.split(',')]
     for num in entered_values:
+        if num == '': # empty string, no volumes
+            continue
         if '-' in num:
             nums = [int(k) for k in num.split('-')] # should always have 2 integers
             if nums[0] < 1:
@@ -183,18 +196,31 @@ def generate_volumes_owned(str):
             for i in range(nums[0]-1, nums[1]):
                 vol_arr[i // 32] |= 1 << (i % 32)
         else:
-            num = int(num) - 1
+            try:
+                num = int(num) - 1
+            except:
+                print("Invalid token: {0}".format(num))
+                continue
             if num < 0:
                 print("Token %s ignored; volume number must be greater than zero" % num)
                 continue
             if num >= VOLUME_LIMIT:
-                print("Token %s ignored; volume number must be lower than volume limit (currently %d)" % VOLUME_LIMIT)
+                print("Token {0} ignored; volume number must be lower than volume limit \
+                       (currently {1})".format(num, VOLUME_LIMIT))
                 continue
             vol_arr[num // 32] |= 1 << (num % 32)
     result = ""
     for num in vol_arr:
         result += format(num) + ','
     return result[:-1]
+
+def main():
+    """
+    main()
+    Main driver function for mangatracker program
+    """
+    DATA_MGR = DatabaseManager()
+    print_database(DATA_MGR)
 
 # TESTING CODE
 def series_test():
