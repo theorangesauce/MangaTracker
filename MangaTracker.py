@@ -18,19 +18,19 @@ class DatabaseManager(object):
     def __init__(self, new_db_needed=False):
         self.con = lite.connect(DATABASE_NAME)
         self.cur = self.con.cursor()
-        self.query("SELECT name FROM sqlite_master WHERE type='table' AND name='Series'")
-        
+        self.query("SELECT name FROM sqlite_master \
+                    WHERE type='table' AND name='Series'")
         if self.cur.fetchone() == None: 
-            # TODO: Prompt user for series to enter until done
             self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, \
-                        next_volume INT, is_completed INT)")
+                        is_completed INT, next_volume INT)")
             next_series = input_series(self)
             while next_series != None:
-                self.query("INSERT INTO Series VALUES('{0}','{1}',{2},{3})".format(
+                self.query("INSERT INTO Series VALUES('{0}','{1}',{2},{3})"
+                           .format(
                     next_series.name,
                     next_series.volumes_owned,
-                    next_series.get_next_volume(),
-                    next_series.is_completed))
+                    next_series.is_completed,
+                    next_series.get_next_volume()))
                 print(next_series)
                 next_series = input_series(self)
     
@@ -51,7 +51,7 @@ class Series(object):
     def __init__(self, name, volumes_owned, is_completed, next_volume=-1):
         self.name = name
         self.volumes_owned = volumes_owned
-        self.is_completed = 1 if is_completed == 'y' else 0
+        self.is_completed = is_completed
         self.next_volume = next_volume
         
         self.vol_arr = [int(x) for x in volumes_owned.split(',')]
@@ -106,7 +106,7 @@ class Series(object):
 
     def get_next_volume(self):
         # check if calculated, otherwise return current value
-        if self.next_volume < 0:
+        if self.next_volume <= 0:
             self.next_volume = self.calculate_next_volume()
         return self.next_volume
 
@@ -130,7 +130,7 @@ class Series(object):
         return
     
     def __str__(self):
-        result = (self.get_name() + ": " + self.get_volumes_owned() +
+        result = (self.name + ": " + self.get_volumes_owned() +
               " (Completed: " + self.get_is_completed() + ")\n" + 
               "Next Volume: %d" % self.get_next_volume())
         return result
@@ -145,6 +145,8 @@ def print_database(data_mgr):
     for entry in entries:
         # TODO: convert entries to Series() objects
         print(entry)
+        series = Series(entry[0], entry[1], entry[2], entry[3])
+        print(series)
 
 def input_series(data_mgr):
     """
@@ -155,20 +157,23 @@ def input_series(data_mgr):
     series_name = input("Enter manga name or leave blank to cancel: ")
     if series_name == "":
         return None
-    try:
-        cur = data_mgr.query("Select name FROM Series WHERE name = %s" % series_name)
-        row = cur.fetchall()
-        if len(row) > 0: # TODO: check database for name
-            print("Name already in database!")
-            return None
-    except:
-        print("Database query failed, continuing...")
+    # try:
+    cur = data_mgr.query("Select name FROM Series WHERE name = '{0}'"
+                         .format(series_name))
+    row = cur.fetchall()
+    if len(row) > 0: # TODO: check database for name
+        print("Name already in database!")
+        return None
+    # except:
+    #     print("Database query failed, continuing...")
     volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
     volumes_owned = generate_volumes_owned(volumes_raw)
 
     is_completed = input("Is this series completed? (y/N): ")
-    if is_completed != 'y':
-        is_completed = 'n'
+    if is_completed != 'y' and is_completed != 'Y':
+        is_completed = 0
+    else:
+        is_completed = 1
 
     return Series(series_name, volumes_owned, is_completed)
 
@@ -188,10 +193,12 @@ def generate_volumes_owned(str):
         if '-' in num:
             nums = [int(k) for k in num.split('-')] # should always have 2 integers
             if nums[0] < 1:
-                print("Start volume must be greater than zero; token %s ignored" % num)
+                print("Start volume must be greater than zero; \
+                       token %s ignored" % num)
                 continue
             if nums[1] > VOLUME_LIMIT:
-                print("End volume too high; consider raising volume limit (currently %d)" % VOLUME_LIMIT)
+                print("End volume too high; consider raising volume limit \
+                       (currently {0})".format(VOLUME_LIMIT))
                 nums[1] = 128
             for i in range(nums[0]-1, nums[1]):
                 vol_arr[i // 32] |= 1 << (i % 32)
@@ -202,11 +209,13 @@ def generate_volumes_owned(str):
                 print("Invalid token: {0}".format(num))
                 continue
             if num < 0:
-                print("Token %s ignored; volume number must be greater than zero" % num)
+                print("Token {0} ignored; volume number must be \
+                       greater than zero".format(num))
                 continue
             if num >= VOLUME_LIMIT:
-                print("Token {0} ignored; volume number must be lower than volume limit \
-                       (currently {1})".format(num, VOLUME_LIMIT))
+                print("Token {0} ignored; volume number must be lower \
+                       than volume limit (currently {1})"
+                      .format(num, VOLUME_LIMIT))
                 continue
             vol_arr[num // 32] |= 1 << (num % 32)
     result = ""
@@ -221,6 +230,29 @@ def main():
     """
     DATA_MGR = DatabaseManager()
     print_database(DATA_MGR)
+    while True:
+        user_input = input("[S]earch, [L]ist, [A]dd, [O]ptions, E[x]it: ")
+        if user_input == 'x' or user_input == 'X':
+            break
+        if user_input == 's' or user_input == 'S':
+            print("Search goes here!")
+            # TODO: allow user to search for a specific series, modify/delete
+            #   entries, etc.
+        if user_input == 'l' or user_input == 'L':
+            print_database(DATA_MGR)
+        if user_input == 'a' or user_input == 'A':
+            new_series = input_series(DATA_MGR)
+            if(new_series != None):
+                DATA_MGR.query(
+                    "INSERT INTO Series VALUES('{0}','{1}',{2},{3})".format(
+                        new_series.name,
+                        new_series.volumes_owned,
+                        new_series.is_completed,
+                        new_series.get_next_volume()))
+        if user_input == 'o' or user_input == 'O':
+            print("Options go here!")
+            # TODO: allow user to control settings (modify vol limit, delete
+            #   database, etc.
 
 # TESTING CODE
 def series_test():
@@ -264,7 +296,7 @@ def series_test():
         vol_owned = generate_volumes_owned("1, 3-5, 7, 52 ")
         series1 = Series("test 1", vol_owned, 'n')
         print("Series1:")
-        if series1.get_name() != "test 1":
+        if series1.name != "test 1":
             print("Name does not match expected value!")
             test_failed = True
         if series1.get_volumes_owned() != "1, 3-5, 7, 52":
