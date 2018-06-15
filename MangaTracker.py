@@ -2,7 +2,7 @@
 # Program to track owned and desired manga series
 
 import sqlite3 as lite
-import os.path
+import os
 import math
 
 # Global constants
@@ -22,18 +22,22 @@ class DatabaseManager(object):
                     WHERE type='table' AND name='Series'")
         if self.cur.fetchone() == None: 
             self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, \
-                        is_completed INT, next_volume INT)")
+                        is_completed INT, next_volume INT, publisher TEXT)")
             next_series = input_series(self)
             while next_series != None:
-                self.query("INSERT INTO Series VALUES('{0}','{1}',{2},{3})"
-                           .format(
-                    next_series.name,
-                    next_series.volumes_owned,
-                    next_series.is_completed,
-                    next_series.get_next_volume()))
+                self.add_series_to_database(next_series)
                 print(next_series)
                 next_series = input_series(self)
     
+    def add_series_to_database(self, series):
+        self.query("INSERT INTO Series VALUES('{0}','{1}',{2},{3},'{4}')"
+                   .format(
+                       series.name,
+                       series.volumes_owned,
+                       series.is_completed,
+                       series.get_next_volume(),
+                       series.publisher))
+
     def query(self, arg):
         self.cur.execute(arg)
         self.con.commit()
@@ -48,12 +52,15 @@ class Series(object):
     A single manga series. Contains the name of the series, the number of
     volumes currently owned, whether the series is completed
     """
-    def __init__(self, name, volumes_owned, is_completed, next_volume=-1):
+    def __init__(self, name, volumes_owned, is_completed, 
+                 next_volume=-1, publisher='Unknown', rowid=None):
         self.name = name
         self.volumes_owned = volumes_owned
         self.is_completed = is_completed
         self.next_volume = next_volume
+        self.publisher = publisher
         
+        self.rowid = rowid
         self.vol_arr = [int(x) for x in volumes_owned.split(',')]
         self.volumes_owned_readable = ""
 
@@ -91,7 +98,7 @@ class Series(object):
                             "{0}, ".format(first) if first == last
                             else "{0}-{1}, ".format(first, last))
                         first = -1
-                index += 1
+                index += 1  
             if none_owned:
                 self.volumes_owned_readable = "None"
             else:
@@ -124,15 +131,33 @@ class Series(object):
     def update_database_entry(self, data_mgr):
         """
         update_database_entry()
-        sync series with database; open connection to database within function
-        (should pass db connection as function argument?)
+        Updates all fields in database for series based on unique identifier;
+        adds series to database if not currently in database
         """
+        if rowid == None:
+            data_mgr.add_series_to_database(self)
+            return
+        data_mgr.query("UPDATE Series SET \
+                        series_name = '{0}' AND \
+                        volumes_owned = '{1}' AND \
+                        is_completed = {2} AND \
+                        next_volume = {3} AND \
+                        publisher = '{4} WHERE ROWID = {5}".format(
+                            self.name,
+                            self.volumes_owned,
+                            self.is_completed,
+                            self.get_next_volume(),
+                            self.publisher,
+                            self.rowid))
+        print("Series updated!")
         return
     
     def __str__(self):
         result = (self.name + ": " + self.get_volumes_owned() +
-              " (Completed: " + self.get_is_completed() + ")\n" + 
-              "Next Volume: %d" % self.get_next_volume())
+                  " (Completed: " + self.get_is_completed() + ")\n" +
+                  "Published by: " + self.publisher + "\n" +
+                  "Next Volume: %d" % self.get_next_volume() +
+                  "RowID: %d" % self.rowid)
         return result
 
 def print_database(data_mgr):
@@ -140,12 +165,16 @@ def print_database(data_mgr):
     print_database(data_mgr)
     Print status of all series in 
     """
-    cur = data_mgr.query("SELECT * FROM Series")
+    cur = data_mgr.query("SELECT rowid, * FROM Series")
     entries = cur.fetchall()
     for entry in entries:
-        # TODO: convert entries to Series() objects
         print(entry)
-        series = Series(entry[0], entry[1], entry[2], entry[3])
+        series = Series(entry[1], # Series Name 
+                        entry[2], # Volumes Owned
+                        entry[3], # Is Completed
+                        entry[4], # Next Volume
+                        entry[5], # Publisher
+                        entry[0]) # Row ID (for updates)
         print(series)
 
 def input_series(data_mgr):
@@ -169,13 +198,17 @@ def input_series(data_mgr):
     volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
     volumes_owned = generate_volumes_owned(volumes_raw)
 
+    publisher = input("Enter publisher (leave blank if unknown): ")
+    if publisher == "":
+        publisher = "Unknown"
+
     is_completed = input("Is this series completed? (y/N): ")
     if is_completed != 'y' and is_completed != 'Y':
         is_completed = 0
     else:
         is_completed = 1
 
-    return Series(series_name, volumes_owned, is_completed)
+    return Series(series_name, volumes_owned, is_completed, publisher=publisher)
 
 def generate_volumes_owned(str):
     """
@@ -243,16 +276,15 @@ def main():
         if user_input == 'a' or user_input == 'A':
             new_series = input_series(DATA_MGR)
             if(new_series != None):
-                DATA_MGR.query(
-                    "INSERT INTO Series VALUES('{0}','{1}',{2},{3})".format(
-                        new_series.name,
-                        new_series.volumes_owned,
-                        new_series.is_completed,
-                        new_series.get_next_volume()))
+                DATA_MGR.add_series_to_database(new_series)
         if user_input == 'o' or user_input == 'O':
             print("Options go here!")
             # TODO: allow user to control settings (modify vol limit, delete
             #   database, etc.
+            delete_database = input("Remove Database? (will copy to Manga.db.bak) y/N: ")
+            if delete_database == 'y' or delete_database == 'Y':
+                os.rename("manga.db", "manga.db.bak")
+                return
 
 # TESTING CODE
 def series_test():
@@ -324,3 +356,9 @@ def series_test():
     # print(series2.get_volumes_owned())
     # print(series2.get_next_volume())
     # print(series2.get_is_completed())
+    
+    # TEST 3: DatabaseManager and related functions
+    data_mgr = DatabaseManager("test.db")
+    data_mgr.add_series_to_database(series1)
+    print_database(data_mgr)
+    os.delete("test.db")

@@ -52,3 +52,6 @@ Temporary Items
 
 # Databases (may contain sensitive information)
 *.db
+
+# Backups (most likely irrelevant)
+*.bak
