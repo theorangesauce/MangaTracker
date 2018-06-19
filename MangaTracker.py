@@ -12,11 +12,6 @@ DATABASE_NAME = "manga.db"
 VOLUME_LIMIT = 128
 PAGINATED = False
 SERIES_PER_PAGE = 5
-
-DEFAULT_CFG = {'config': { 'database_name' : 'manga.db',
-                           'volume_limit' : 128,
-                           'paginated' : 0,
-                           'series_per_page' : 5 } }
     
 class DatabaseManager(object):
     """
@@ -278,25 +273,40 @@ def generate_volumes_owned(str):
         result += format(num) + ','
     return result[:-1]
 
+def set_default_config(filename):
+    """
+    set_default_config()
+    Saves default config to desired filename
+    """
+    if os.path.isfile("config.ini"):
+        os.remove("config.ini")
+
+    config = configparser.ConfigParser()
+    default_cfg = {'config': { 'database_name' : 'manga.db',
+                               'volume_limit' : 128,
+                               'paginated' : 0,
+                               'series_per_page' : 5 } }
+
+    config.read_dict(default_cfg)
+    with open('config.ini', 'w') as config_ini:
+        config.write(config_ini)
+
 def main():
     """
     main()
     Main driver function for mangatracker program
     """
     if not os.path.isfile("config.ini"):
-        config = configparser.ConfigParser()
-        config.read_dict(DEFAULT_CFG)
-        with open('config.ini', 'w') as config_ini:
-            config.write(config_ini)
-    else:
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-
-        DATABASE_NAME = config.get('config', 'database_name')
-        VOLUME_LIMIT = config.getint('config', 'volume_limit')
-        PAGINATED = config.getboolean('config', 'paginated')
-        SERIES_PER_PAGE = config.getint('config', 'series_per_page')
+        set_default_cfg("config.ini")
     
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    
+    DATABASE_NAME = config.get('config', 'database_name')
+    VOLUME_LIMIT = config.getint('config', 'volume_limit')
+    PAGINATED = config.getboolean('config', 'paginated')
+    SERIES_PER_PAGE = config.getint('config', 'series_per_page')
+        
     DATA_MGR = DatabaseManager()
     print_database(DATA_MGR)
     while True:
@@ -317,14 +327,76 @@ def main():
             print("Options go here!")
             # TODO: allow user to control settings (modify vol limit, delete
             #   database, etc.
-            # 1. Change database name
-            # 2. Change volume limit
-            # 3. Change series per page ( 0 for no limit)
-            # 4. Reset to default
-            # 5. Clear database
-            delete_database = input("Remove Database? (will copy to Manga.db.bak) y/N: ")
-            if delete_database == 'y' or delete_database == 'Y':
-                os.rename("manga.db", "manga.db.bak")
+            print("-- OPTIONS --")
+            print("1. Change Database Name")
+            print("2. Change Volume Limit")
+            print("3. Change Series Displayed Per Page")
+            print("4. Reset to Default Settings")
+            print("5. Clear Database")
+            option = input("Enter a number to modify option: ")
+            try:
+                option = int(option)
+                config = configparser.ConfigParser()
+                config.read("config.ini")
+                
+                # 1. Change database name
+                if option == 1:
+                    new_db_name = input("Enter new database name, or leave \
+                                         blank to leave unchanged: ")
+                    if new_db_name != "" and not os.exists(new_db_name):
+                        os.rename(DATABASE_NAME, new_db_name)
+                        config["config"]["database_name"] = new_db_name
+                        DATABASE_NAME = new_db_name
+                        with open("config.ini", "w") as config_ini:
+                            config.write(config_ini)
+                    else:
+                        print("Database name not changed.")
+
+                # 2. Change volume limit
+                elif option == 2:
+                    # TODO: allow changing volume limit
+                    #      (needs some way to change existing database entries
+                    pass
+
+                # 3. Change series per page ( 0 for no limit)                
+                elif option == 3:
+                    new_series_per_page = input("Enter maximum number of series \
+                        to display per page, or 0 to not use pages: ")
+                    if new_series_per_page == '0':
+                        config["config"]["paginated"] = 0
+                        PAGINATED = False
+                        with open("config.ini", "w") as config_ini:
+                            config.write(config_ini)
+                    try:
+                        new_series_per_page = int(new_series_per_page)
+                        if new_series_per_page < 1:
+                            print("Series per page must be greater than 1!")
+                        else:
+                            config["config"]["series_per_page"] = (
+                                new_series_per_page)
+                            config["config"]["paginated"] = 1
+                            SERIES_PER_PAGE = new_series_per_page
+                            PAGINATED = True
+                            with open("config.ini", "w") as config_ini:
+                                config.write(config_ini)
+                    except Exception:
+                        pass
+                
+                # 4. Reset to default
+                elif option == 4:
+                    default = input("Reset all settings to default? (y/N): ")
+                    if default == 'y' or default == 'Y':
+                        set_default_cfg("config.ini")
+                
+                # 5. Clear database
+                elif option == 5:
+                    delete_database = input("Remove Database? \
+                        (will copy to {0}.bak) y/N: ".format(DATABASE_NAME))
+                    if delete_database == 'y' or delete_database == 'Y':
+                        os.rename(DATABASE_NAME, DATABASE_NAME+".bak")
+                        
+            except Exception:
+                print("Returning to main screen")
                 return
 
 # TESTING CODE
