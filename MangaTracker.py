@@ -4,12 +4,19 @@
 import sqlite3 as lite
 import os
 import math
+import configparser
 
-# Global constants
+# Global constants - fallback in case config.ini cannot be read
+
 DATABASE_NAME = "manga.db"
 VOLUME_LIMIT = 128
-PAGINATED = True
+PAGINATED = False
 SERIES_PER_PAGE = 5
+
+DEFAULT_CFG = {'config': { 'database_name' : 'manga.db',
+                           'volume_limit' : 128,
+                           'paginated' : 0,
+                           'series_per_page' : 5 } }
     
 class DatabaseManager(object):
     """
@@ -276,6 +283,20 @@ def main():
     main()
     Main driver function for mangatracker program
     """
+    if not os.path.isfile("config.ini"):
+        config = configparser.ConfigParser()
+        config.read_dict(DEFAULT_CFG)
+        with open('config.ini', 'w') as config_ini:
+            config.write(config_ini)
+    else:
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+
+        DATABASE_NAME = config.get('config', 'database_name')
+        VOLUME_LIMIT = config.getint('config', 'volume_limit')
+        PAGINATED = config.getboolean('config', 'paginated')
+        SERIES_PER_PAGE = config.getint('config', 'series_per_page')
+    
     DATA_MGR = DatabaseManager()
     print_database(DATA_MGR)
     while True:
@@ -296,6 +317,11 @@ def main():
             print("Options go here!")
             # TODO: allow user to control settings (modify vol limit, delete
             #   database, etc.
+            # 1. Change database name
+            # 2. Change volume limit
+            # 3. Change series per page ( 0 for no limit)
+            # 4. Reset to default
+            # 5. Clear database
             delete_database = input("Remove Database? (will copy to Manga.db.bak) y/N: ")
             if delete_database == 'y' or delete_database == 'Y':
                 os.rename("manga.db", "manga.db.bak")
@@ -378,3 +404,5 @@ def series_test():
     print_database(data_mgr)
     os.delete("test.db")
 
+if __name__ == "__main__":
+    main()
