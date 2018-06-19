@@ -8,7 +8,8 @@ import math
 # Global constants
 DATABASE_NAME = "manga.db"
 VOLUME_LIMIT = 128
-PAGINATED = False
+PAGINATED = True
+SERIES_PER_PAGE = 5
     
 class DatabaseManager(object):
     """
@@ -77,9 +78,7 @@ class Series(object):
             none_owned = 1
 
             for num in self.vol_arr:
-                if num != 0:
-                    none_owned = 0
-                if num == 0: # no need to check empty set
+                if num == 0: # no volumes in set of 32, no need to check bits
                     if first != -1:
                         last = index * 32
                         self.volumes_owned_readable += (
@@ -88,10 +87,12 @@ class Series(object):
                         first = -1
                     index += 1
                     continue
+
+                none_owned = 0
                 for i in range(0, 32):
-                    #print("i: {0}, first: {1}".format(i, first))
                     if first == -1 and num & (1 << i) != 0: # assuming sequential 
                         first = index * 32 + i + 1
+                    
                     if first != -1 and num & (1 << i) == 0:
                         last = index * 32 + i
                         self.volumes_owned_readable += (
@@ -99,14 +100,18 @@ class Series(object):
                             else "{0}-{1}, ".format(first, last))
                         first = -1
                 index += 1  
+
+            if first != -1: # last set of volumes reaches volume limit
+                last = VOLUME_LIMIT
+                self.volumes_owned_readable += (
+                    "{0}, ".format(first) if first == last
+                    else "{0}-{1}, ".format(first, last))
+                first = -1
             if none_owned:
                 self.volumes_owned_readable = "None"
             else:
                 self.volumes_owned_readable = self.volumes_owned_readable[:-2]
         return self.volumes_owned_readable
-
-    def get_name(self):
-        return self.name
 
     def get_is_completed(self):
         return "Yes" if self.is_completed == 1 else "No"
@@ -156,8 +161,7 @@ class Series(object):
         result = (self.name + ": " + self.get_volumes_owned() +
                   " (Completed: " + self.get_is_completed() + ")\n" +
                   "Published by: " + self.publisher + "\n" +
-                  "Next Volume: %d" % self.get_next_volume() +
-                  "RowID: %d" % self.rowid)
+                  "Next Volume: %d" % self.get_next_volume())
         return result
 
 def print_database(data_mgr):
@@ -167,8 +171,15 @@ def print_database(data_mgr):
     """
     cur = data_mgr.query("SELECT rowid, * FROM Series")
     entries = cur.fetchall()
+    count = 0
     for entry in entries:
-        print(entry)
+        if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
+            print("----------------------------------------")
+            continue_print = input("Press Enter to continue or type 'q' to stop: ")
+            if continue_print == 'q' or continue_print == 'Q':
+                return
+
+        print("----------------------------------------")
         series = Series(entry[1], # Series Name 
                         entry[2], # Volumes Owned
                         entry[3], # Is Completed
@@ -176,12 +187,16 @@ def print_database(data_mgr):
                         entry[5], # Publisher
                         entry[0]) # Row ID (for updates)
         print(series)
+        count += 1
+
+    if len(entries) > 0:
+        print("----------------------------------------")
 
 def input_series(data_mgr):
     """
     input_series():
     Gets values for the name of a manga series, volumes currently owned,
-    and whether the series is completed
+    and whether the series is completed, and returns a Series() object
     """
     series_name = input("Enter manga name or leave blank to cancel: ")
     if series_name == "":
@@ -362,3 +377,4 @@ def series_test():
     data_mgr.add_series_to_database(series1)
     print_database(data_mgr)
     os.delete("test.db")
+
