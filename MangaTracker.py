@@ -21,11 +21,11 @@ class DatabaseManager(object):
     def __init__(self, new_db_needed=False):
         self.con = lite.connect(DATABASE_NAME)
         self.cur = self.con.cursor()
-        self.query("SELECT name FROM sqlite_master \
-                    WHERE type='table' AND name='Series'")
+        self.query("SELECT name FROM sqlite_master "\
+                   "WHERE type='table' AND name='Series'")
         if self.cur.fetchone() == None: 
-            self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, \
-                        is_completed INT, next_volume INT, publisher TEXT)")
+            self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "\
+                       "is_completed INT, next_volume INT, publisher TEXT)")
             next_series = input_series(self)
             while next_series != None:
                 self.add_series_to_database(next_series)
@@ -35,11 +35,11 @@ class DatabaseManager(object):
     def add_series_to_database(self, series):
         self.query("INSERT INTO Series VALUES('{0}','{1}',{2},{3},'{4}')"
                    .format(
-                       series.name,
+                       series.name.replace("'", "''"),
                        series.volumes_owned,
                        series.is_completed,
                        series.get_next_volume(),
-                       series.publisher))
+                       series.publisher.replace("'", "''")))
 
     def query(self, arg):
         self.cur.execute(arg)
@@ -144,18 +144,18 @@ class Series(object):
         if rowid == None:
             data_mgr.add_series_to_database(self)
             return
-        data_mgr.query("UPDATE Series SET \
-                        series_name = '{0}' AND \
-                        volumes_owned = '{1}' AND \
-                        is_completed = {2} AND \
-                        next_volume = {3} AND \
-                        publisher = '{4} WHERE ROWID = {5}".format(
-                            self.name,
-                            self.volumes_owned,
-                            self.is_completed,
-                            self.get_next_volume(),
-                            self.publisher,
-                            self.rowid))
+        data_mgr.query("UPDATE Series SET "\
+                       "series_name = '{0}' AND "\
+                       "volumes_owned = '{1}' AND "\
+                       "is_completed = {2} AND "\
+                       "next_volume = {3} AND "\
+                       "publisher = '{4} WHERE ROWID = {5}".format(
+                           self.name.replace("'", "''"),
+                           self.volumes_owned,
+                           self.is_completed,
+                           self.get_next_volume(),
+                           self.publisher.replace("'", "''"),
+                           self.rowid))
         print("Series updated!")
         return
     
@@ -169,7 +169,7 @@ class Series(object):
 def print_database(data_mgr):
     """
     print_database(data_mgr)
-    Print status of all series in 
+    Print status of all series in database
     """
     cur = data_mgr.query("SELECT rowid, * FROM Series")
     entries = cur.fetchall()
@@ -205,9 +205,9 @@ def input_series(data_mgr):
         return None
     # try:
     cur = data_mgr.query("Select name FROM Series WHERE name = '{0}'"
-                         .format(series_name))
+                         .format(series_name.replace("'", "''")))
     row = cur.fetchall()
-    if len(row) > 0: # TODO: check database for name
+    if len(row) > 0:
         print("Name already in database!")
         return None
     # except:
@@ -243,12 +243,12 @@ def generate_volumes_owned(str):
         if '-' in num:
             nums = [int(k) for k in num.split('-')] # should always have 2 integers
             if nums[0] < 1:
-                print("Start volume must be greater than zero; \
-                       token %s ignored" % num)
+                print("Start volume must be greater than zero; "\
+                      "token %s ignored" % num)
                 continue
             if nums[1] > VOLUME_LIMIT:
-                print("End volume too high; consider raising volume limit \
-                       (currently {0})".format(VOLUME_LIMIT))
+                print("End volume too high; consider raising volume limit "\
+                      "(currently {0})".format(VOLUME_LIMIT))
                 nums[1] = 128
             for i in range(nums[0]-1, nums[1]):
                 vol_arr[i // 32] |= 1 << (i % 32)
@@ -259,12 +259,12 @@ def generate_volumes_owned(str):
                 print("Invalid token: {0}".format(num))
                 continue
             if num < 0:
-                print("Token {0} ignored; volume number must be \
-                       greater than zero".format(num))
+                print("Token {0} ignored; volume number must be "\
+                      "greater than zero".format(num))
                 continue
             if num >= VOLUME_LIMIT:
-                print("Token {0} ignored; volume number must be lower \
-                       than volume limit (currently {1})"
+                print("Token {0} ignored; volume number must be lower "\
+                      "than volume limit (currently {1})"
                       .format(num, VOLUME_LIMIT))
                 continue
             vol_arr[num // 32] |= 1 << (num % 32)
@@ -311,22 +311,63 @@ def main():
     print_database(DATA_MGR)
     while True:
         user_input = input("[S]earch, [L]ist, [A]dd, [O]ptions, E[x]it: ")
+
         if user_input == 'x' or user_input == 'X':
             break
+
         if user_input == 's' or user_input == 'S':
-            print("Search goes here!")
             # TODO: allow user to search for a specific series, modify/delete
             #   entries, etc.
+            # TODO: color matching text
+            search_term = input("Search for series by name or publisher: ")
+            cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "\
+                                 "name LIKE '%{0}%' OR "\
+                                 "publisher LIKE '%{0}%'"
+                                 .format(search_term))
+            entries = cur.fetchall()
+            count = 0
+            if len(entries) == 0:
+                print("No series found for '{0}'."
+                      .format(search_term))
+                continue
+            print("Found {0} entries for '{0}':".format(len(entries)))
+            for entry in entries:
+                if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
+                    print("----------------------------------------")
+                    continue_print = input("Press Enter to continue or type 'q' to stop: ")
+                    if continue_print == 'q' or continue_print == 'Q':
+                        return
+
+                print("----------------------------------------")
+                series = Series(entry[1], # Series Name 
+                                entry[2], # Volumes Owned
+                                entry[3], # Is Completed
+                                entry[4], # Next Volume
+                                entry[5], # Publisher
+                                entry[0]) # Row ID (for updates)
+                print(series)
+                count += 1
+
+            if len(entries) > 0:
+                print("----------------------------------------")
+            continue
+
         if user_input == 'l' or user_input == 'L':
+            # TODO: Add option to print all complete, incomplete volumes,
+            #   series with gaps, etc.
             print_database(DATA_MGR)
+            continue
+
         if user_input == 'a' or user_input == 'A':
             new_series = input_series(DATA_MGR)
             if(new_series != None):
                 DATA_MGR.add_series_to_database(new_series)
+            print("----------------------------------------")
+            print(new_series)
+            print("----------------------------------------")
+            continue
+
         if user_input == 'o' or user_input == 'O':
-            print("Options go here!")
-            # TODO: allow user to control settings (modify vol limit, delete
-            #   database, etc.
             print("-- OPTIONS --")
             print("1. Change Database Name")
             print("2. Change Volume Limit")
@@ -341,8 +382,8 @@ def main():
                 
                 # 1. Change database name
                 if option == 1:
-                    new_db_name = input("Enter new database name, or leave \
-                                         blank to leave unchanged: ")
+                    new_db_name = input("Enter new database name, or leave "\
+                                        "blank to leave unchanged: ")
                     if new_db_name != "" and not os.exists(new_db_name):
                         os.rename(DATABASE_NAME, new_db_name)
                         config["config"]["database_name"] = new_db_name
@@ -356,12 +397,15 @@ def main():
                 elif option == 2:
                     # TODO: allow changing volume limit
                     #      (needs some way to change existing database entries
+                    print("Currently, volume limit is hard-coded; changing it"\
+                          "may cause issues.")
                     pass
 
                 # 3. Change series per page ( 0 for no limit)                
                 elif option == 3:
-                    new_series_per_page = input("Enter maximum number of series \
-                        to display per page, or 0 to not use pages: ")
+                    new_series_per_page = input("Enter maximum number of series "\
+                                                "to display per page, "\
+                                                "or 0 to not use pages: ")
                     if new_series_per_page == '0':
                         config["config"]["paginated"] = 0
                         PAGINATED = False
@@ -390,8 +434,9 @@ def main():
                 
                 # 5. Clear database
                 elif option == 5:
-                    delete_database = input("Remove Database? \
-                        (will copy to {0}.bak) y/N: ".format(DATABASE_NAME))
+                    delete_database = input("Remove Database? "\
+                                            "(will copy to {0}.bak) y/N: "
+                                            .format(DATABASE_NAME))
                     if delete_database == 'y' or delete_database == 'Y':
                         os.rename(DATABASE_NAME, DATABASE_NAME+".bak")
                         
