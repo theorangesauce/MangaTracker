@@ -134,6 +134,48 @@ class Series(object):
             index += 1
         print("Next volume for %s would exceed volume limit" % self.name)
         return index * 32 + 1
+        
+    def edit_series(self, data_mgr):
+        """
+        edit_series()
+        Allow user to change all fields in series. Follows similar
+        structure to input_series()
+        """
+        series_name = input("Enter series name or leave blank if unchanged: ")
+        if series_name == "":
+            print("Name not changed.")
+            pass
+        else:
+            cur = data_mgr.query("Select name FROM Series WHERE name = '{0}'"
+                                 .format(series_name.replace("'", "''")))
+            row = cur.fetchall()
+            if len(row) > 0:
+                print("Name already present in database, not changed")
+            else:
+                self.name = series_name
+                print("Name changed to \"{0}\".".format(series_name))
+        
+        change_volumes = input("[A]dd volumes / [R]emove volumes / "
+                               "[C]ontinue: ")
+        # add volumes, remove volumes, continue without modifying
+        # volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
+        # volumes_owned = generate_volumes_owned(volumes_raw)
+
+        publisher = input("Enter publisher or leave blank if unchanged: ")
+        if publisher == "":
+            print("Publisher not changed.")
+            pass
+        else:
+            self.publisher = publisher
+            print("Publisher changed to \"{0}\".".format(publisher))
+
+        is_completed = input("Is this series completed? (y/N): ")
+        if is_completed == "":
+            pass
+        elif is_completed != 'y' and is_completed != 'Y':
+            is_completed = 0
+        else:
+            is_completed = 1
 
     def update_database_entry(self, data_mgr):
         """
@@ -310,7 +352,7 @@ def main():
     DATA_MGR = DatabaseManager()
     print_database(DATA_MGR)
     while True:
-        user_input = input("[S]earch, [L]ist, [A]dd, [O]ptions, E[x]it: ")
+        user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, [O]ptions, E[x]it: ")
 
         if user_input == 'x' or user_input == 'X':
             break
@@ -325,6 +367,7 @@ def main():
                                  "publisher LIKE '%{0}%'"
                                  .format(search_term))
             entries = cur.fetchall()
+            entries_converted = []
             count = 0
             if len(entries) == 0:
                 print("No series found for '{0}'."
@@ -366,6 +409,48 @@ def main():
             print(new_series)
             print("----------------------------------------")
             continue
+
+        if user_input == 'e' or user_input == 'E':
+            search_term = input("Search for series to edit by name or publisher: ")
+            cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "\
+                                 "name LIKE '%{0}%' OR "\
+                                 "publisher LIKE '%{0}%'"
+                                 .format(search_term))
+            entries = cur.fetchall()
+            count = 0
+            if len(entries) == 0:
+                print("No series found for '{0}'."
+                      .format(search_term))
+                continue
+            print("Found {0} entries for '{0}':".format(len(entries)))
+            for entry in entries:
+                print("----------------------------------------")
+                series = Series(entry[1], # Series Name 
+                                entry[2], # Volumes Owned
+                                entry[3], # Is Completed
+                                entry[4], # Next Volume
+                                entry[5], # Publisher
+                                entry[0]) # Row ID (for updates)
+                print(series)
+                print("----------------------------------------")
+                found_series = input("Edit this series? (y/N/q): ")
+
+                if found_series == 'q' or found_series == 'Q':
+                    break
+                if found_series == 'y' or found_series == 'Y':
+                    series.edit_series(DATA_MGR)
+                    
+                    print("----------------------------------------")
+                    print(series)
+                    print("----------------------------------------")
+                    
+                    save_series = input("Save changes? (y/N): ")
+                    if save_series == 'y' or save_series == 'Y':
+                        series.update_database_entry(DATA_MGR)
+                    break
+                count += 1
+                if count != len(entries):
+                    print("Next Series:") # TODO: check for more series
 
         if user_input == 'o' or user_input == 'O':
             print("-- OPTIONS --")
