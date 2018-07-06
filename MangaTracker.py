@@ -401,6 +401,28 @@ def main():
             # TODO: Add option to print all complete, incomplete volumes,
             #   series with gaps, etc.
             print_database(DATA_MGR)
+            selection = input("List [A]ll / [C]omplete / "
+                              "[I]ncomplete / Series with [G]aps: ")
+            if selection == 'c' or selection == 'C':
+                cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
+                                     "is_completed = 1")
+                entries = cur.fetchall()
+                count = 0
+                if len(entries) == 0:
+                    print("No completed series found.")
+                    continue
+                print("Found {0} completed series:".format(len(entries)))
+                for entry in entries:
+                    print("----------------------------------------")
+                    series = Series(entry[1], # Series Name 
+                                entry[2], # Volumes Owned
+                                entry[3], # Is Completed
+                                entry[4], # Next Volume
+                                entry[5], # Publisher
+                                entry[0]) # Row ID (for updates)
+                    print(series)
+                    print("----------------------------------------")
+                
             continue
 
         if user_input == 'a' or user_input == 'A':
@@ -414,8 +436,8 @@ def main():
 
         if user_input == 'e' or user_input == 'E':
             search_term = input("Search for series to edit by name or publisher: ")
-            cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "\
-                                 "name LIKE '%{0}%' OR "\
+            cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
+                                 "name LIKE '%{0}%' OR "
                                  "publisher LIKE '%{0}%'"
                                  .format(search_term))
             entries = cur.fetchall()
