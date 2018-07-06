@@ -360,7 +360,7 @@ def main():
         if user_input == 's' or user_input == 'S':
             # TODO: allow user to search for a specific series, modify/delete
             #   entries, etc.
-            # TODO: color matching text
+            # TODO: color matching text (maybe not?)
             search_term = input("Search for series by name or publisher: ")
             cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "\
                                  "name LIKE '%{0}%' OR "\
@@ -369,6 +369,8 @@ def main():
             entries = cur.fetchall()
             entries_converted = []
             count = 0
+            
+            print()
             if len(entries) == 0:
                 print("No series found for '{0}'."
                       .format(search_term))
@@ -418,6 +420,8 @@ def main():
                                  .format(search_term))
             entries = cur.fetchall()
             count = 0
+            
+            print()
             if len(entries) == 0:
                 print("No series found for '{0}'."
                       .format(search_term))
