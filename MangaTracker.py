@@ -2,6 +2,7 @@
 # Program to track owned and desired manga series
 
 import sqlite3 as lite
+import re
 import os
 import math
 import configparser
@@ -20,13 +21,17 @@ class DatabaseManager(object):
     """
     def __init__(self, new_db_needed=False):
         self.con = lite.connect(DATABASE_NAME)
+        self.con.create_function("REGEXP", 2, regexp)
         self.cur = self.con.cursor()
+
         self.query("SELECT name FROM sqlite_master "\
                    "WHERE type='table' AND name='Series'")
+
         if self.cur.fetchone() == None: 
             self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "\
                        "is_completed INT, next_volume INT, publisher TEXT)")
             next_series = input_series(self)
+            
             while next_series != None:
                 self.add_series_to_database(next_series)
                 print(next_series)
@@ -48,7 +53,15 @@ class DatabaseManager(object):
 
     def __del__(self):
         self.con.close()
-        
+
+def regexp(pattern, value):
+    """
+    regexp()
+    Simple regex function to add to SQLite instance
+    """
+    reg = re.compile(pattern)
+    return reg.search(value) is not None
+    
 class Series(object):
     """
     Series(object)
@@ -333,6 +346,34 @@ def set_default_config(filename):
     with open('config.ini', 'w') as config_ini:
         config.write(config_ini)
 
+def print_entries_list(entries):
+    """
+    print_entries_list()
+    Function to print all items matching database query
+    """
+    count = 0
+
+    for entry in entries:
+        print("here!")
+        if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
+            print("----------------------------------------")
+            continue_print = input("Press Enter to continue or type 'q' to stop: ")
+            if continue_print == 'q' or continue_print == 'Q':
+                return
+
+        print("----------------------------------------")
+        series = Series(entry[1], # Series Name 
+                        entry[2], # Volumes Owned
+                        entry[3], # Is Completed
+                        entry[4], # Next Volume
+                        entry[5], # Publisher
+                        entry[0]) # Row ID (for updates)
+        print(series)
+        count += 1
+
+    if len(entries) > 0:
+        print("----------------------------------------")
+
 def main():
     """
     main()
@@ -351,6 +392,7 @@ def main():
         
     DATA_MGR = DatabaseManager()
     print_database(DATA_MGR)
+
     while True:
         user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, [O]ptions, E[x]it: ")
 
@@ -367,62 +409,69 @@ def main():
                                  "publisher LIKE '%{0}%'"
                                  .format(search_term))
             entries = cur.fetchall()
-            entries_converted = []
-            count = 0
             
             print()
             if len(entries) == 0:
                 print("No series found for '{0}'."
                       .format(search_term))
                 continue
-            print("Found {0} entries for '{0}':".format(len(entries)))
-            for entry in entries:
-                if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
-                    print("----------------------------------------")
-                    continue_print = input("Press Enter to continue or type 'q' to stop: ")
-                    if continue_print == 'q' or continue_print == 'Q':
-                        return
 
-                print("----------------------------------------")
-                series = Series(entry[1], # Series Name 
-                                entry[2], # Volumes Owned
-                                entry[3], # Is Completed
-                                entry[4], # Next Volume
-                                entry[5], # Publisher
-                                entry[0]) # Row ID (for updates)
-                print(series)
-                count += 1
+            print("Found {0} entries for '{1}':"
+                  .format(len(entries), search_term))
 
-            if len(entries) > 0:
-                print("----------------------------------------")
+            print_entries_list(entries)
             continue
 
         if user_input == 'l' or user_input == 'L':
             # TODO: Add option to print all complete, incomplete volumes,
             #   series with gaps, etc.
-            print_database(DATA_MGR)
             selection = input("List [A]ll / [C]omplete / "
                               "[I]ncomplete / Series with [G]aps: ")
             if selection == 'c' or selection == 'C':
                 cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
                                      "is_completed = 1")
                 entries = cur.fetchall()
-                count = 0
+
                 if len(entries) == 0:
                     print("No completed series found.")
                     continue
+
                 print("Found {0} completed series:".format(len(entries)))
-                for entry in entries:
-                    print("----------------------------------------")
-                    series = Series(entry[1], # Series Name 
-                                entry[2], # Volumes Owned
-                                entry[3], # Is Completed
-                                entry[4], # Next Volume
-                                entry[5], # Publisher
-                                entry[0]) # Row ID (for updates)
-                    print(series)
-                    print("----------------------------------------")
+                print_entries_list(entries)
+                continue
+
+            if selection == 'i' or selection == 'I':
+                cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
+                                     "is_completed = 0")
+                entries = cur.fetchall()
+
+                if len(entries) == 0:
+                    print("No incomplete series found.")
+                    continue
+
+                print("Found {0} incomplete series:".format(len(entries)))
+                print_entries_list(entries)
+                continue
+            
+            if selection == 'g' or selection == 'G':
+                # TODO: Currently gap detection does not work;
+                #   method below expects volume numbers stored in
+                #   binary, not base 10.
+                #   Possibly store all series, run regex on each
+                cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
+                                     "volumes_owned REGEXP '1,*0+1'")
+                entries = cur.fetchall()
                 
+                if len(entries) == 0:
+                    print("No series with gaps found.")
+                    continue
+                
+                print("Found {0} series with gaps:".format(len(entries)))
+                print_entries_list(entries)
+                continue
+            
+            #default
+            print_database(DATA_MGR)
             continue
 
         if user_input == 'a' or user_input == 'A':
