@@ -137,6 +137,11 @@ class Series(object):
             self.next_volume = self.calculate_next_volume()
         return self.next_volume
 
+    def get_volumes_owned_binary(self):
+        str = ""
+        for val in self.vol_arr:
+            str += "{0:032b}".format(val)[::-1]
+        return str
 
     def calculate_next_volume(self):
         index = 0
@@ -400,8 +405,6 @@ def main():
             break
 
         if user_input == 's' or user_input == 'S':
-            # TODO: allow user to search for a specific series, modify/delete
-            #   entries, etc.
             # TODO: color matching text (maybe not?)
             search_term = input("Search for series by name or publisher: ")
             cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "\
@@ -423,10 +426,9 @@ def main():
             continue
 
         if user_input == 'l' or user_input == 'L':
-            # TODO: Add option to print all complete, incomplete volumes,
-            #   series with gaps, etc.
             selection = input("List [A]ll / [C]omplete / "
                               "[I]ncomplete / Series with [G]aps: ")
+            # Completed Series
             if selection == 'c' or selection == 'C':
                 cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
                                      "is_completed = 1")
@@ -440,6 +442,7 @@ def main():
                 print_entries_list(entries)
                 continue
 
+            # Incomplete Series
             if selection == 'i' or selection == 'I':
                 cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
                                      "is_completed = 0")
@@ -453,27 +456,40 @@ def main():
                 print_entries_list(entries)
                 continue
             
+            # Series with Gaps
             if selection == 'g' or selection == 'G':
-                # TODO: Currently gap detection does not work;
-                #   method below expects volume numbers stored in
-                #   binary, not base 10.
-                #   Possibly store all series, run regex on each
-                cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
-                                     "volumes_owned REGEXP '1,*0+1'")
+                cur = DATA_MGR.query("SELECT rowid, * FROM Series")
                 entries = cur.fetchall()
+                series_list = [Series(entry[1], # Series Name 
+                                      entry[2], # Volumes Owned
+                                      entry[3], # Is Completed
+                                      entry[4], # Next Volume
+                                      entry[5], # Publisher
+                                      entry[0]) # Row ID (for updates)
+                               for entry in entries]
+                series_with_gaps = []
                 
-                if len(entries) == 0:
+                for series in series_list:
+                    binary_str = series.get_volumes_owned_binary()
+                    if regexp("1*0+1", binary_str):
+                        series_with_gaps.append(series)
+
+                if len(series_with_gaps) == 0:
                     print("No series with gaps found.")
                     continue
+                print("Found {0} series with gaps:".format(len(series_with_gaps)))
                 
-                print("Found {0} series with gaps:".format(len(entries)))
-                print_entries_list(entries)
+                for series in series_with_gaps:
+                    print("----------------------------------------")
+                    print(series)
+                    print("----------------------------------------")
                 continue
             
-            #default
+            # Default (print all)
             print_database(DATA_MGR)
             continue
-
+        
+        # Add Series
         if user_input == 'a' or user_input == 'A':
             new_series = input_series(DATA_MGR)
             if(new_series != None):
@@ -483,6 +499,7 @@ def main():
             print("----------------------------------------")
             continue
 
+        # Edit Series
         if user_input == 'e' or user_input == 'E':
             search_term = input("Search for series to edit by name or publisher: ")
             cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
@@ -525,8 +542,9 @@ def main():
                     break
                 count += 1
                 if count != len(entries):
-                    print("Next Series:") # TODO: check for more series
+                    print("Next Series:")
 
+        # Options
         if user_input == 'o' or user_input == 'O':
             print("-- OPTIONS --")
             print("1. Change Database Name")
