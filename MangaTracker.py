@@ -19,7 +19,7 @@ class DatabaseManager(object):
     DatabaseManager(object)
     Main interface between program and SQLite3 database
     """
-    def __init__(self, new_db_needed=False):
+    def __init__(self, new_db_needed=True):
         self.con = lite.connect(DATABASE_NAME)
         self.con.create_function("REGEXP", 2, regexp)
         self.cur = self.con.cursor()
@@ -27,15 +27,16 @@ class DatabaseManager(object):
         self.query("SELECT name FROM sqlite_master "\
                    "WHERE type='table' AND name='Series'")
 
+        # TODO: Add columns (author, alt_title)
         if self.cur.fetchone() == None: 
             self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "\
                        "is_completed INT, next_volume INT, publisher TEXT)")
-            next_series = input_series(self)
-            
-            while next_series != None:
-                self.add_series_to_database(next_series)
-                print(next_series)
+            if(new_db_needed):
                 next_series = input_series(self)
+                while next_series != None:
+                    self.add_series_to_database(next_series)
+                    print(next_series)
+                    next_series = input_series(self)
     
     def add_series_to_database(self, series):
         self.query("INSERT INTO Series VALUES('{0}','{1}',{2},{3},'{4}')"
@@ -173,21 +174,24 @@ class Series(object):
                 self.name = series_name
                 print("Name changed to \"{0}\".".format(series_name))
         
-        change_volumes = input("[A]dd volumes / [R]emove volumes / "
-                               "[C]ontinue: ")
+        #change_volumes = input("[A]dd volumes / [R]emove volumes / "
+        #                       "[C]ontinue: ")
         # add volumes, remove volumes, continue without modifying
         # volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
         # volumes_owned = generate_volumes_owned(volumes_raw)
+        change_volumes = input("[A]dd or [R]emove volumes, or leave "
+                               "blank if unchanged: ")
+        # TODO: volume change code
 
         publisher = input("Enter publisher or leave blank if unchanged: ")
         if publisher == "":
-            print("Publisher not changed.")
             pass
         else:
             self.publisher = publisher
             print("Publisher changed to \"{0}\".".format(publisher))
 
-        is_completed = input("Is this series completed? (y/N): ")
+        is_completed = input("Is this series completed? (y/N) (Leave "
+                             "blank if unchanged): ")
         if is_completed == "":
             pass
         elif is_completed != 'y' and is_completed != 'Y':
@@ -201,15 +205,15 @@ class Series(object):
         Updates all fields in database for series based on unique identifier;
         adds series to database if not currently in database
         """
-        if rowid == None:
+        if self.rowid == None:
             data_mgr.add_series_to_database(self)
             return
-        data_mgr.query("UPDATE Series SET "\
-                       "series_name = '{0}' AND "\
-                       "volumes_owned = '{1}' AND "\
-                       "is_completed = {2} AND "\
-                       "next_volume = {3} AND "\
-                       "publisher = '{4} WHERE ROWID = {5}".format(
+        data_mgr.query("UPDATE Series SET "
+                       "name = '{0}', "
+                       "volumes_owned = '{1}', "
+                       "is_completed = {2}, "
+                       "next_volume = {3}, "
+                       "publisher = '{4}' WHERE ROWID = {5}".format(
                            self.name.replace("'", "''"),
                            self.volumes_owned,
                            self.is_completed,
@@ -359,7 +363,6 @@ def print_entries_list(entries):
     count = 0
 
     for entry in entries:
-        print("here!")
         if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
             print("----------------------------------------")
             continue_print = input("Press Enter to continue or type 'q' to stop: ")
@@ -514,7 +517,8 @@ def main():
                 print("No series found for '{0}'."
                       .format(search_term))
                 continue
-            print("Found {0} entries for '{0}':".format(len(entries)))
+            print("Found {0} entries for '{1}':"
+                  .format(len(entries), search_term))
             for entry in entries:
                 print("----------------------------------------")
                 series = Series(entry[1], # Series Name 
@@ -610,14 +614,15 @@ def main():
                     if default == 'y' or default == 'Y':
                         set_default_cfg("config.ini")
                 
-                # 5. Clear database
+                # 5. Clear database (Does not prompt user for series)
                 elif option == 5:
                     delete_database = input("Remove Database? "\
                                             "(will copy to {0}.bak) y/N: "
                                             .format(DATABASE_NAME))
                     if delete_database == 'y' or delete_database == 'Y':
                         os.rename(DATABASE_NAME, DATABASE_NAME+".bak")
-                        
+                        DATA_MGR = DatabaseManager(False) 
+                    
             except Exception:
                 print("Returning to main screen")
                 return
