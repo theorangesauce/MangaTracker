@@ -27,10 +27,10 @@ class DatabaseManager(object):
         self.query("SELECT name FROM sqlite_master "\
                    "WHERE type='table' AND name='Series'")
 
-        # TODO: Add columns (author, alt_title)
         if self.cur.fetchone() == None: 
-            self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "\
-                       "is_completed INT, next_volume INT, publisher TEXT)")
+            self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "
+                       "is_completed INT, next_volume INT, publisher TEXT, "
+                       "author TEXT, alt_names TEXT)")
             if(new_db_needed):
                 next_series = input_series(self)
                 while next_series != None:
@@ -39,13 +39,16 @@ class DatabaseManager(object):
                     next_series = input_series(self)
     
     def add_series_to_database(self, series):
-        self.query("INSERT INTO Series VALUES('{0}','{1}',{2},{3},'{4}')"
+        self.query("INSERT INTO Series VALUES("
+                   "'{0}','{1}',{2},{3},'{4}','{5}','{6}')"
                    .format(
                        series.name.replace("'", "''"),
                        series.volumes_owned,
                        series.is_completed,
                        series.get_next_volume(),
-                       series.publisher.replace("'", "''")))
+                       series.publisher.replace("'", "''"),
+                       series.author.replace("'", "''"),
+                       series.alt_names.replace("'","''")))
 
     def query(self, arg):
         self.cur.execute(arg)
@@ -70,13 +73,16 @@ class Series(object):
     volumes currently owned, whether the series is completed
     """
     def __init__(self, name, volumes_owned, is_completed, 
-                 next_volume=-1, publisher='Unknown', rowid=None):
+                 next_volume=-1, publisher='Unknown', author='Unknown',
+                 alt_names='', rowid=None):
         self.name = name
         self.volumes_owned = volumes_owned
         self.is_completed = is_completed
         self.next_volume = next_volume
         self.publisher = publisher
-        
+        self.author = author
+        self.alt_names = alt_names
+
         self.rowid = rowid
         self.vol_arr = [int(x) for x in volumes_owned.split(',')]
         self.volumes_owned_readable = ""
@@ -182,6 +188,13 @@ class Series(object):
         change_volumes = input("[A]dd or [R]emove volumes, or leave "
                                "blank if unchanged: ")
         # TODO: volume change code
+        
+        author = input("Enter author or leave blank if unchanged: ")
+        if author == "":
+            pass
+        else:
+            self.author = author
+            print("Author changed to \"{0}\".".format(author))
 
         publisher = input("Enter publisher or leave blank if unchanged: ")
         if publisher == "":
@@ -189,6 +202,9 @@ class Series(object):
         else:
             self.publisher = publisher
             print("Publisher changed to \"{0}\".".format(publisher))
+
+        alt_names = input("Enter any alternate names for this series: ")
+        self.alt_names = alt_names
 
         is_completed = input("Is this series completed? (y/N) (Leave "
                              "blank if unchanged): ")
@@ -213,12 +229,16 @@ class Series(object):
                        "volumes_owned = '{1}', "
                        "is_completed = {2}, "
                        "next_volume = {3}, "
-                       "publisher = '{4}' WHERE ROWID = {5}".format(
+                       "publisher = '{4}', "
+                       "author = '{5}', "
+                       "alt_names = '{6}' WHERE ROWID = {7}".format(
                            self.name.replace("'", "''"),
                            self.volumes_owned,
                            self.is_completed,
                            self.get_next_volume(),
                            self.publisher.replace("'", "''"),
+                           self.author.replace("'", "''"),
+                           self.alt_names.replace("'","''"),
                            self.rowid))
         print("Series updated!")
         return
@@ -226,6 +246,8 @@ class Series(object):
     def __str__(self):
         result = (self.name + ": " + self.get_volumes_owned() +
                   " (Completed: " + self.get_is_completed() + ")\n" +
+                  "Alternate names: " + self.alt_names + "\n"
+                  "Author: " + self.author + "\n"
                   "Published by: " + self.publisher + "\n" +
                   "Next Volume: %d" % self.get_next_volume())
         return result
@@ -251,6 +273,8 @@ def print_database(data_mgr):
                         entry[3], # Is Completed
                         entry[4], # Next Volume
                         entry[5], # Publisher
+                        entry[6], # Author
+                        entry[7], # Alternate Names
                         entry[0]) # Row ID (for updates)
         print(series)
         count += 1
@@ -278,18 +302,25 @@ def input_series(data_mgr):
     #     print("Database query failed, continuing...")
     volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
     volumes_owned = generate_volumes_owned(volumes_raw)
+    
+    author = input("Enter author or leave blank if unknown: ")
+    if author == "":
+        author = "Unknown"
 
     publisher = input("Enter publisher (leave blank if unknown): ")
     if publisher == "":
         publisher = "Unknown"
 
+    alt_names = input("Enter any alternate names for this series, if any: ")
+    
     is_completed = input("Is this series completed? (y/N): ")
     if is_completed != 'y' and is_completed != 'Y':
         is_completed = 0
     else:
         is_completed = 1
 
-    return Series(series_name, volumes_owned, is_completed, publisher=publisher)
+    return Series(series_name, volumes_owned, is_completed, publisher=publisher,
+                  author=author, alt_names=alt_names)
 
 def generate_volumes_owned(str):
     """
@@ -412,7 +443,9 @@ def main():
             search_term = input("Search for series by name or publisher: ")
             cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "\
                                  "name LIKE '%{0}%' OR "\
-                                 "publisher LIKE '%{0}%'"
+                                 "publisher LIKE '%{0}%' OR "
+                                 "author LIKE '%{0}%' OR "
+                                 "alt_names LIKE '%{0}%'"
                                  .format(search_term))
             entries = cur.fetchall()
             
@@ -468,6 +501,8 @@ def main():
                                       entry[3], # Is Completed
                                       entry[4], # Next Volume
                                       entry[5], # Publisher
+                                      entry[6], # Author
+                                      entry[7], # Alternate Names
                                       entry[0]) # Row ID (for updates)
                                for entry in entries]
                 series_with_gaps = []
@@ -508,6 +543,8 @@ def main():
             cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
                                  "name LIKE '%{0}%' OR "
                                  "publisher LIKE '%{0}%'"
+                                 "author LIKE '%{0}%' OR "
+                                 "alt_names LIKE '%{0}%'"
                                  .format(search_term))
             entries = cur.fetchall()
             count = 0
@@ -526,6 +563,8 @@ def main():
                                 entry[3], # Is Completed
                                 entry[4], # Next Volume
                                 entry[5], # Publisher
+                                entry[6], # Author
+                                entry[7], # Alternate Names
                                 entry[0]) # Row ID (for updates)
                 print(series)
                 print("----------------------------------------")
