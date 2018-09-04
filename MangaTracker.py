@@ -542,7 +542,7 @@ def main():
             search_term = input("Search for series to edit by name or publisher: ")
             cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
                                  "name LIKE '%{0}%' OR "
-                                 "publisher LIKE '%{0}%'"
+                                 "publisher LIKE '%{0}%' OR "
                                  "author LIKE '%{0}%' OR "
                                  "alt_names LIKE '%{0}%'"
                                  .format(search_term))
@@ -624,8 +624,8 @@ def main():
 
                 # 3. Change series per page ( 0 for no limit)                
                 elif option == 3:
-                    new_series_per_page = input("Enter maximum number of series "\
-                                                "to display per page, "\
+                    new_series_per_page = input("Enter maximum number of series "
+                                                "to display per page, "
                                                 "or 0 to not use pages: ")
                     if new_series_per_page == '0':
                         config["config"]["paginated"] = 0
@@ -664,7 +664,6 @@ def main():
                     
             except Exception:
                 print("Returning to main screen")
-                return
 
 # TESTING CODE
 def series_test():
