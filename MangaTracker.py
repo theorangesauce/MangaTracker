@@ -188,7 +188,19 @@ class Series(object):
         change_volumes = input("[A]dd or [R]emove volumes, or leave "
                                "blank if unchanged: ")
         # TODO: volume change code
-        
+        if change_volumes == "a" or change_volumes == "A":
+            volumes_to_add = input("Enter volumes to add (ex. 1, 3-5): ")
+            volumes_to_add = generate_volumes_owned(volumes_to_add)
+            vol_arr_to_add = [int(x) for x in volumes_to_add.split(",")]
+            print(self.vol_arr)
+            self.vol_arr = [x | y for x, y in 
+                            zip(vol_arr_to_add, self.vol_arr)]
+            print(self.vol_arr)
+            # NEXT STEPS:
+            # update next volume, volumes_owned_readable, volumes_owned
+            self.next_volume = self.calculate_next_volume()
+            self.volumes_owned_readable = "" 
+            
         author = input("Enter author or leave blank if unchanged: ")
         if author == "":
             pass
@@ -203,8 +215,10 @@ class Series(object):
             self.publisher = publisher
             print("Publisher changed to \"{0}\".".format(publisher))
 
+        # only change if no entry exists
         alt_names = input("Enter any alternate names for this series: ")
-        self.alt_names = alt_names
+        if self.alt_names == "" and alt_names != "":
+            self.alt_names = alt_names 
 
         is_completed = input("Is this series completed? (y/N) (Leave "
                              "blank if unchanged): ")
