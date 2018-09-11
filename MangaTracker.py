@@ -199,7 +199,8 @@ class Series(object):
             # NEXT STEPS:
             # update next volume, volumes_owned_readable, volumes_owned
             self.next_volume = self.calculate_next_volume()
-            self.volumes_owned_readable = "" 
+            self.volumes_owned_readable = ""
+            self.volumes_owned = generate_volumes_owned(self.get_volumes_owned())
             
         author = input("Enter author or leave blank if unchanged: ")
         if author == "":
