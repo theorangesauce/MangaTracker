@@ -213,7 +213,6 @@ class Series(object):
             # update related fields 
             self.next_volume = self.calculate_next_volume()
             self.volumes_owned_readable = ""
-            # TODO: removing all volumes triggers invalid token error, continues
             self.volumes_owned = generate_volumes_owned(self.get_volumes_owned())
 
         author = input("Enter author or leave blank if unchanged: ")
@@ -362,10 +361,11 @@ def generate_volumes_owned(str):
     vol_arr = [0 for x in range(0, arr_length)]
     entered_values = [x.strip() for x in str.split(',')]
     for num in entered_values:
-        if num == '' or num is None: # empty string, no volumes
+        if num == '' or num == "None": # empty string, no volumes
             continue
         if '-' in num: # two integers separated by dash
-            nums = [int(k) for k in num.split('-')] # should always have 2 integers
+            # should always have 2 integers
+            nums = [int(k) for k in num.split('-')] 
             if nums[0] < 1:
                 print("Start volume must be greater than zero; "\
                       "token %s ignored" % num)
