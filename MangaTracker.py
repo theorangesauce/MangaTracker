@@ -202,6 +202,20 @@ class Series(object):
             self.volumes_owned_readable = ""
             self.volumes_owned = generate_volumes_owned(self.get_volumes_owned())
             
+        if change_volumes == "r" or change_volumes == "R":
+            volumes_to_remove = input("Enter volumes to remove (ex. 1, 3-5): ")
+            volumes_to_remove = generate_volumes_owned(volumes_to_remove)
+            vol_arr_to_remove = [int(x) for x in volumes_to_remove.split(",")]
+            print(self.vol_arr)
+            self.vol_arr = [~x & y for x, y in
+                            zip(vol_arr_to_remove, self.vol_arr)]
+            print(self.vol_arr)
+            # update related fields 
+            self.next_volume = self.calculate_next_volume()
+            self.volumes_owned_readable = ""
+            # TODO: removing all volumes triggers invalid token error, continues
+            self.volumes_owned = generate_volumes_owned(self.get_volumes_owned())
+
         author = input("Enter author or leave blank if unchanged: ")
         if author == "":
             pass
@@ -348,9 +362,9 @@ def generate_volumes_owned(str):
     vol_arr = [0 for x in range(0, arr_length)]
     entered_values = [x.strip() for x in str.split(',')]
     for num in entered_values:
-        if num == '': # empty string, no volumes
+        if num == '' or num is None: # empty string, no volumes
             continue
-        if '-' in num:
+        if '-' in num: # two integers separated by dash
             nums = [int(k) for k in num.split('-')] # should always have 2 integers
             if nums[0] < 1:
                 print("Start volume must be greater than zero; "\
@@ -362,7 +376,7 @@ def generate_volumes_owned(str):
                 nums[1] = 128
             for i in range(nums[0]-1, nums[1]):
                 vol_arr[i // 32] |= 1 << (i % 32)
-        else:
+        else: # single integer
             try:
                 num = int(num) - 1
             except:
