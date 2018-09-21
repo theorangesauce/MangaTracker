@@ -159,7 +159,10 @@ class Series(object):
             index += 1
         print("Next volume for %s would exceed volume limit" % self.name)
         return index * 32 + 1
-        
+    
+    # TODO: Create edit function more similar to main UI: after selecting series,
+    #   choose specific portion to change instead of asking for each one in order.
+    #   Would be able to edit multiple fields (one at a time), then save & exit 
     def edit_series(self, data_mgr):
         """
         edit_series()
@@ -187,7 +190,7 @@ class Series(object):
         # volumes_owned = generate_volumes_owned(volumes_raw)
         change_volumes = input("[A]dd or [R]emove volumes, or leave "
                                "blank if unchanged: ")
-        # TODO: volume change code
+
         if change_volumes == "a" or change_volumes == "A":
             volumes_to_add = input("Enter volumes to add (ex. 1, 3-5): ")
             volumes_to_add = generate_volumes_owned(volumes_to_add)
@@ -647,8 +650,9 @@ def main():
                 elif option == 2:
                     # TODO: allow changing volume limit
                     #      (needs some way to change existing database entries
-                    print("Currently, volume limit is hard-coded; changing it"\
-                          "may cause issues.")
+                    print("Currently, volume limit is hard-coded; changing it"
+                          "may cause issues. Functionality will be added at"
+                          "a later date.")
                     pass
 
                 # 3. Change series per page ( 0 for no limit)                
