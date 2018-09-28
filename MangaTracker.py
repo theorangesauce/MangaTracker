@@ -14,6 +14,7 @@ VOLUME_LIMIT = 128
 PAGINATED = False
 SERIES_PER_PAGE = 5
     
+# TODO: Create an author table and a publisher table
 class DatabaseManager(object):
     """
     DatabaseManager(object)
@@ -28,6 +29,7 @@ class DatabaseManager(object):
                    "WHERE type='table' AND name='Series'")
 
         if self.cur.fetchone() == None: 
+            # TODO: Convert name into primary key
             self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "
                        "is_completed INT, next_volume INT, publisher TEXT, "
                        "author TEXT, alt_names TEXT)")
@@ -160,10 +162,109 @@ class Series(object):
         print("Next volume for %s would exceed volume limit" % self.name)
         return index * 32 + 1
     
-    # TODO: Create edit function more similar to main UI: after selecting series,
-    #   choose specific portion to change instead of asking for each one in order.
-    #   Would be able to edit multiple fields (one at a time), then save & exit 
     def edit_series(self, data_mgr):
+        """
+        edit_series()
+        Allows user to modify all fields of a series. User selects field
+        to modify from menu, continuing until user decides to save.
+        Automatically updates dependent fields (ex. next volume)
+        """
+        selection = ''
+        while selection != 'e' and selection != 'E':
+            selection = input("Edit: \n[N]ame / [V]olumes / [A]uthor / "
+                              "[P]ublisher \n[Alt]ernate Names /"
+                              "[C]ompletion Status / [E]nd: ")
+            if selection == 'n' or selection == 'N':
+                series_name = input("Enter series name or leave "
+                                    "blank if unchanged: ")
+                if series_name == "":
+                    print("Name not changed.")
+                    pass
+                else:
+                    cur = data_mgr.query("Select name FROM Series WHERE "
+                                         "name = '{0}'"
+                                         .format(series_name.replace("'", "''")))
+                    row = cur.fetchall()
+                    if len(row) > 0:
+                        print("Name already present in database, not changed")
+                    else:
+                        self.name = series_name
+                        print("Name changed to \"{0}\".".format(series_name))
+            elif selection == 'v' or selection == 'V':
+                change_volumes = input("[A]dd or [R]emove volumes, or leave "
+                                       "blank if unchanged: ")
+                
+                if change_volumes == "a" or change_volumes == "A":
+                    volumes_to_add = input("Enter volumes to add (ex. 1, 3-5): ")
+                    volumes_to_add = generate_volumes_owned(volumes_to_add)
+                    vol_arr_to_add = [int(x) for x in volumes_to_add.split(",")]
+                    print(self.vol_arr)
+                    self.vol_arr = [x | y for x, y in 
+                                    zip(vol_arr_to_add, self.vol_arr)]
+                    print(self.vol_arr)
+                    # NEXT STEPS:
+                    # update next volume, volumes_owned_readable, volumes_owned
+                    self.next_volume = self.calculate_next_volume()
+                    self.volumes_owned_readable = ""
+                    self.volumes_owned = generate_volumes_owned(
+                        self.get_volumes_owned())
+                
+                if change_volumes == "r" or change_volumes == "R":
+                    volumes_to_remove = input(
+                        "Enter volumes to remove (ex. 1, 3-5): ")
+                    volumes_to_remove = generate_volumes_owned(volumes_to_remove)
+                    vol_arr_to_remove = [int(x) for x in 
+                                         volumes_to_remove.split(",")]
+                    self.vol_arr = [~x & y for x, y in
+                                    zip(vol_arr_to_remove, self.vol_arr)]
+                    # update related fields 
+                    self.next_volume = self.calculate_next_volume()
+                    self.volumes_owned_readable = ""
+                    self.volumes_owned = generate_volumes_owned(
+                        self.get_volumes_owned())
+
+            elif selection == 'a' or selection == 'A':
+                author = input("Enter author or leave blank if unchanged: ")
+                if author == "":
+                    pass
+                else:
+                    self.author = author
+                    print("Author changed to \"{0}\".".format(author))
+        
+            elif selection == 'p' or selection == 'P':
+                publisher = input("Enter publisher or leave blank "
+                                  "if unchanged: ")
+                if publisher == "":
+                    pass
+                else:
+                    self.publisher = publisher
+                    print("Publisher changed to \"{0}\".".format(publisher))
+
+            elif selection.lower() == "alt": 
+                # only change if no entry exists
+                alt_names = input("Enter any alternate names for this series: ")
+                if self.alt_names == "" and alt_names != "":
+                    self.alt_names = alt_names 
+        
+            elif selection == 'c' or selection == 'C':
+                is_completed = input("Is this series completed? (y/N) (Leave "
+                                     "blank if unchanged): ")
+                if is_completed == "":
+                    pass
+                elif is_completed != 'y' and is_completed != 'Y':
+                    is_completed = 0
+                else:
+                    is_completed = 1
+            
+            print("----------------------------------------")
+            print(self)
+            print("----------------------------------------")
+
+        save_series = input("Save changes? (y/N): ")
+        if save_series == 'y' or save_series == 'Y':
+            series.update_database_entry(DATA_MGR)        
+
+    def edit_series_old(self, data_mgr):
         """
         edit_series()
         Allow user to change all fields in series. Follows similar
@@ -606,15 +707,8 @@ def main():
                     break
                 if found_series == 'y' or found_series == 'Y':
                     series.edit_series(DATA_MGR)
-                    
-                    print("----------------------------------------")
-                    print(series)
-                    print("----------------------------------------")
-                    
-                    save_series = input("Save changes? (y/N): ")
-                    if save_series == 'y' or save_series == 'Y':
-                        series.update_database_entry(DATA_MGR)
                     break
+                
                 count += 1
                 if count != len(entries):
                     print("Next Series:")
