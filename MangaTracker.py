@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # MangaTracker
 # Program to track owned and desired manga series
 
@@ -32,7 +33,7 @@ class DatabaseManager(object):
             # TODO: Convert name into primary key
             self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "
                        "is_completed INT, next_volume INT, publisher TEXT, "
-                       "author TEXT, alt_names TEXT)")
+                       "author TEXT, alt_names TEXT, PRIMARY KEY(name))")
             if(new_db_needed):
                 next_series = input_series(self)
                 while next_series != None:
@@ -194,35 +195,41 @@ class Series(object):
                 change_volumes = input("[A]dd or [R]emove volumes, or leave "
                                        "blank if unchanged: ")
                 
+                # Add Volumes
                 if change_volumes == "a" or change_volumes == "A":
-                    volumes_to_add = input("Enter volumes to add (ex. 1, 3-5): ")
+                    volumes_to_add = input(
+                        "Enter volumes to add (ex. 1, 3-5): ")
+                    
                     volumes_to_add = generate_volumes_owned(volumes_to_add)
-                    vol_arr_to_add = [int(x) for x in volumes_to_add.split(",")]
-                    print(self.vol_arr)
+                    vol_arr_to_add = [int(x) for x in 
+                                      volumes_to_add.split(",")]
                     self.vol_arr = [x | y for x, y in 
                                     zip(vol_arr_to_add, self.vol_arr)]
-                    print(self.vol_arr)
-                    # NEXT STEPS:
-                    # update next volume, volumes_owned_readable, volumes_owned
+                    
+                    # update related fields
                     self.next_volume = self.calculate_next_volume()
                     self.volumes_owned_readable = ""
                     self.volumes_owned = generate_volumes_owned(
                         self.get_volumes_owned())
                 
+                # Remove Volumes
                 if change_volumes == "r" or change_volumes == "R":
                     volumes_to_remove = input(
                         "Enter volumes to remove (ex. 1, 3-5): ")
+                    
                     volumes_to_remove = generate_volumes_owned(volumes_to_remove)
                     vol_arr_to_remove = [int(x) for x in 
                                          volumes_to_remove.split(",")]
                     self.vol_arr = [~x & y for x, y in
                                     zip(vol_arr_to_remove, self.vol_arr)]
+
                     # update related fields 
                     self.next_volume = self.calculate_next_volume()
                     self.volumes_owned_readable = ""
                     self.volumes_owned = generate_volumes_owned(
                         self.get_volumes_owned())
 
+            # Change Author
             elif selection == 'a' or selection == 'A':
                 author = input("Enter author or leave blank if unchanged: ")
                 if author == "":
@@ -230,7 +237,8 @@ class Series(object):
                 else:
                     self.author = author
                     print("Author changed to \"{0}\".".format(author))
-        
+            
+            # Change Publisher 
             elif selection == 'p' or selection == 'P':
                 publisher = input("Enter publisher or leave blank "
                                   "if unchanged: ")
@@ -240,12 +248,13 @@ class Series(object):
                     self.publisher = publisher
                     print("Publisher changed to \"{0}\".".format(publisher))
 
+            # Change Alternate Names
             elif selection.lower() == "alt": 
-                # only change if no entry exists
                 alt_names = input("Enter any alternate names for this series: ")
-                if self.alt_names == "" and alt_names != "":
+                if alt_names != "":
                     self.alt_names = alt_names 
         
+            # Change Completion Status
             elif selection == 'c' or selection == 'C':
                 is_completed = input("Is this series completed? (y/N) (Leave "
                                      "blank if unchanged): ")
@@ -262,7 +271,7 @@ class Series(object):
 
         save_series = input("Save changes? (y/N): ")
         if save_series == 'y' or save_series == 'Y':
-            series.update_database_entry(DATA_MGR)        
+            self.update_database_entry(DATA_MGR)        
 
     def edit_series_old(self, data_mgr):
         """
@@ -376,12 +385,14 @@ class Series(object):
         return
     
     def __str__(self):
+        print(self.is_completed)
         result = (self.name + ": " + self.get_volumes_owned() +
                   " (Completed: " + self.get_is_completed() + ")\n" +
                   "Alternate names: " + self.alt_names + "\n"
                   "Author: " + self.author + "\n"
-                  "Published by: " + self.publisher + "\n" +
-                  "Next Volume: %d" % self.get_next_volume())
+                  "Published by: " + self.publisher + 
+                  ("\nNext Volume: %d" % self.get_next_volume() 
+                   if not self.is_completed else ""))
         return result
 
 def print_database(data_mgr):
