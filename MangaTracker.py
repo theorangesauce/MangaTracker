@@ -37,23 +37,41 @@ class DatabaseManager(object):
             if(new_db_needed):
                 next_series = input_series(self)
                 while next_series != None:
-                    self.add_series_to_database(next_series)
-                    print(next_series)
+                    if self.add_series_to_database(next_series):
+                       print(next_series)
+                    else:
+                        print("Failed to add series! (name conflict)")
                     next_series = input_series(self)
     
     def add_series_to_database(self, series):
-        self.query("INSERT INTO Series VALUES("
-                   "'{0}','{1}',{2},{3},'{4}','{5}','{6}')"
-                   .format(
-                       series.name.replace("'", "''"),
-                       series.volumes_owned,
-                       series.is_completed,
-                       series.get_next_volume(),
-                       series.publisher.replace("'", "''"),
-                       series.author.replace("'", "''"),
-                       series.alt_names.replace("'","''")))
+        """
+        add_series_to_database()
+        Takes a series and adds it to the database if the database
+        contains no entries with the same name as series.
+
+        Returns True on success, False on failure.
+        """
+        cur = self.query("SELECT name FROM Series WHERE name={0}"
+                   .format(series.name.replace("'", "''")))
+        entries = cur.fetchall()
+
+        if len(entries) == 0:
+            self.query("INSERT INTO Series VALUES("
+                       "'{0}','{1}',{2},{3},'{4}','{5}','{6}')"
+                       .format(
+                           series.name.replace("'", "''"),
+                           series.volumes_owned,
+                           series.is_completed,
+                           series.get_next_volume(),
+                           series.publisher.replace("'", "''"),
+                           series.author.replace("'", "''"),
+                           series.alt_names.replace("'","''")))
+            return True
+
+        return False
 
     def query(self, arg):
+        """Runs a query on the database and returns the result"""
         self.cur.execute(arg)
         self.con.commit()
         return self.cur
@@ -65,6 +83,10 @@ def regexp(pattern, value):
     """
     regexp()
     Simple regex function to add to SQLite instance
+    
+    Arguments:
+    pattern - regex to filter with
+    value   - string to search with regex
     """
     reg = re.compile(pattern)
     return reg.search(value) is not None
