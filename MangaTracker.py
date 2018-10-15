@@ -51,7 +51,7 @@ class DatabaseManager(object):
 
         Returns True on success, False on failure.
         """
-        cur = self.query("SELECT name FROM Series WHERE name={0}"
+        cur = self.query("SELECT name FROM Series WHERE name='{0}'"
                    .format(series.name.replace("'", "''")))
         entries = cur.fetchall()
 
