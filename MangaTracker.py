@@ -14,7 +14,7 @@ DATABASE_NAME = "manga.db"
 VOLUME_LIMIT = 128
 PAGINATED = False
 SERIES_PER_PAGE = 5
-    
+
 # TODO: Create an author table and a publisher table
 class DatabaseManager(object):
     """
@@ -29,20 +29,20 @@ class DatabaseManager(object):
         self.query("SELECT name FROM sqlite_master "\
                    "WHERE type='table' AND name='Series'")
 
-        if self.cur.fetchone() == None: 
-            # TODO: Convert name into primary key
+        if self.cur.fetchone() == None:
             self.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "
                        "is_completed INT, next_volume INT, publisher TEXT, "
                        "author TEXT, alt_names TEXT, PRIMARY KEY(name))")
-            if(new_db_needed):
+            if new_db_needed:
                 next_series = input_series(self)
                 while next_series != None:
-                    if self.add_series_to_database(next_series):
-                       print(next_series)
+                    if next_series.add_series_to_database(self):
+                        print(next_series)
                     else:
                         print("Failed to add series! (name conflict)")
                     next_series = input_series(self)
-    
+
+    # TODO: test copy of function in Series class
     def add_series_to_database(self, series):
         """
         add_series_to_database()
@@ -65,7 +65,7 @@ class DatabaseManager(object):
                            series.get_next_volume(),
                            series.publisher.replace("'", "''"),
                            series.author.replace("'", "''"),
-                           series.alt_names.replace("'","''")))
+                           series.alt_names.replace("'", "''")))
             return True
 
         return False
@@ -83,30 +83,30 @@ def regexp(pattern, value):
     """
     regexp()
     Simple regex function to add to SQLite instance
-    
+
     Arguments:
     pattern - regex to filter with
     value   - string to search with regex
     """
     reg = re.compile(pattern)
     return reg.search(value) is not None
-    
+
 class Series(object):
     """
     Series(object)
     A single manga series. Contains the name of the series, the number of
     volumes currently owned, whether the series is completed
     """
-    def __init__(self, name, volumes_owned, is_completed, 
+    def __init__(self, name, volumes_owned, is_completed,
                  next_volume=-1, publisher='Unknown', author='Unknown',
                  alt_names='', rowid=None):
-        self.name = name
-        self.volumes_owned = volumes_owned
+        self.name = str(name)
+        self.volumes_owned = str(volumes_owned)
         self.is_completed = is_completed
         self.next_volume = next_volume
-        self.publisher = publisher
-        self.author = author
-        self.alt_names = alt_names
+        self.publisher = str(publisher)
+        self.author = str(author)
+        self.alt_names = str(alt_names)
 
         self.rowid = rowid
         self.vol_arr = [int(x) for x in volumes_owned.split(',')]
@@ -137,16 +137,17 @@ class Series(object):
 
                 none_owned = 0
                 for i in range(0, 32):
-                    if first == -1 and num & (1 << i) != 0: # assuming sequential 
+                    # assuming sequential
+                    if first == -1 and num & (1 << i) != 0:
                         first = index * 32 + i + 1
-                    
+
                     if first != -1 and num & (1 << i) == 0:
                         last = index * 32 + i
                         self.volumes_owned_readable += (
                             "{0}, ".format(first) if first == last
                             else "{0}-{1}, ".format(first, last))
                         first = -1
-                index += 1  
+                index += 1
 
             if first != -1: # last set of volumes reaches volume limit
                 last = VOLUME_LIMIT
@@ -170,10 +171,10 @@ class Series(object):
         return self.next_volume
 
     def get_volumes_owned_binary(self):
-        str = ""
+        vol_str = ""
         for val in self.vol_arr:
-            str += "{0:032b}".format(val)[::-1]
-        return str
+            vol_str += "{0:032b}".format(val)[::-1]
+        return vol_str
 
     def calculate_next_volume(self):
         index = 0
@@ -184,7 +185,34 @@ class Series(object):
             index += 1
         print("Next volume for %s would exceed volume limit" % self.name)
         return index * 32 + 1
-    
+
+    def add_series_to_database(self, data_mgr):
+        """
+        add_series_to_database()
+        Takes a series and adds it to the database if the database
+        contains no entries with the same name as series.
+
+        Returns True on success, False on failure.
+        """
+        cur = data_mgr.query("SELECT name FROM Series WHERE name='{0}'"
+                   .format(self.name.replace("'", "''")))
+        entries = cur.fetchall()
+
+        if len(entries) == 0:
+            data_mgr.query("INSERT INTO Series VALUES("
+                           "'{0}','{1}',{2},{3},'{4}','{5}','{6}')"
+                           .format(
+                               self.name.replace("'", "''"),
+                               self.volumes_owned,
+                               self.is_completed,
+                               self.get_next_volume(),
+                               self.publisher.replace("'", "''"),
+                               self.author.replace("'", "''"),
+                               self.alt_names.replace("'", "''")))
+            return True
+
+        return False
+
     def edit_series(self, data_mgr):
         """
         edit_series()
@@ -206,7 +234,8 @@ class Series(object):
                 else:
                     cur = data_mgr.query("Select name FROM Series WHERE "
                                          "name = '{0}'"
-                                         .format(series_name.replace("'", "''")))
+                                         .format(series_name
+                                                 .replace("'", "''")))
                     row = cur.fetchall()
                     if len(row) > 0:
                         print("Name already present in database, not changed")
@@ -216,36 +245,36 @@ class Series(object):
             elif selection == 'v' or selection == 'V':
                 change_volumes = input("[A]dd or [R]emove volumes, or leave "
                                        "blank if unchanged: ")
-                
+
                 # Add Volumes
                 if change_volumes == "a" or change_volumes == "A":
                     volumes_to_add = input(
                         "Enter volumes to add (ex. 1, 3-5): ")
-                    
+
                     volumes_to_add = generate_volumes_owned(volumes_to_add)
-                    vol_arr_to_add = [int(x) for x in 
+                    vol_arr_to_add = [int(x) for x in
                                       volumes_to_add.split(",")]
-                    self.vol_arr = [x | y for x, y in 
+                    self.vol_arr = [x | y for x, y in
                                     zip(vol_arr_to_add, self.vol_arr)]
-                    
+
                     # update related fields
                     self.next_volume = self.calculate_next_volume()
                     self.volumes_owned_readable = ""
                     self.volumes_owned = generate_volumes_owned(
                         self.get_volumes_owned())
-                
+
                 # Remove Volumes
                 if change_volumes == "r" or change_volumes == "R":
-                    volumes_to_remove = input(
+                    volumes_to_rmv = input(
                         "Enter volumes to remove (ex. 1, 3-5): ")
-                    
-                    volumes_to_remove = generate_volumes_owned(volumes_to_remove)
-                    vol_arr_to_remove = [int(x) for x in 
-                                         volumes_to_remove.split(",")]
+
+                    volumes_to_rmv = generate_volumes_owned(volumes_to_rmv)
+                    vol_arr_to_remove = [int(x) for x in
+                                         volumes_to_rmv.split(",")]
                     self.vol_arr = [~x & y for x, y in
                                     zip(vol_arr_to_remove, self.vol_arr)]
 
-                    # update related fields 
+                    # update related fields
                     self.next_volume = self.calculate_next_volume()
                     self.volumes_owned_readable = ""
                     self.volumes_owned = generate_volumes_owned(
@@ -259,8 +288,8 @@ class Series(object):
                 else:
                     self.author = author
                     print("Author changed to \"{0}\".".format(author))
-            
-            # Change Publisher 
+
+            # Change Publisher
             elif selection == 'p' or selection == 'P':
                 publisher = input("Enter publisher or leave blank "
                                   "if unchanged: ")
@@ -271,11 +300,11 @@ class Series(object):
                     print("Publisher changed to \"{0}\".".format(publisher))
 
             # Change Alternate Names
-            elif selection.lower() == "alt": 
+            elif selection.lower() == "alt":
                 alt_names = input("Enter any alternate names for this series: ")
                 if alt_names != "":
-                    self.alt_names = alt_names 
-        
+                    self.alt_names = alt_names
+
             # Change Completion Status
             elif selection == 'c' or selection == 'C':
                 is_completed = input("Is this series completed? (y/N) (Leave "
@@ -286,14 +315,14 @@ class Series(object):
                     is_completed = 0
                 else:
                     is_completed = 1
-            
+
             print("----------------------------------------")
             print(self)
             print("----------------------------------------")
 
         save_series = input("Save changes? (y/N): ")
         if save_series == 'y' or save_series == 'Y':
-            self.update_database_entry(DATA_MGR)        
+            self.update_database_entry(DATA_MGR)
 
     def edit_series_old(self, data_mgr):
         """
@@ -314,7 +343,7 @@ class Series(object):
             else:
                 self.name = series_name
                 print("Name changed to \"{0}\".".format(series_name))
-        
+
         #change_volumes = input("[A]dd volumes / [R]emove volumes / "
         #                       "[C]ontinue: ")
         # add volumes, remove volumes, continue without modifying
@@ -328,15 +357,16 @@ class Series(object):
             volumes_to_add = generate_volumes_owned(volumes_to_add)
             vol_arr_to_add = [int(x) for x in volumes_to_add.split(",")]
             print(self.vol_arr)
-            self.vol_arr = [x | y for x, y in 
+            self.vol_arr = [x | y for x, y in
                             zip(vol_arr_to_add, self.vol_arr)]
             print(self.vol_arr)
             # NEXT STEPS:
             # update next volume, volumes_owned_readable, volumes_owned
             self.next_volume = self.calculate_next_volume()
             self.volumes_owned_readable = ""
-            self.volumes_owned = generate_volumes_owned(self.get_volumes_owned())
-            
+            self.volumes_owned = generate_volumes_owned(
+                self.get_volumes_owned())
+
         if change_volumes == "r" or change_volumes == "R":
             volumes_to_remove = input("Enter volumes to remove (ex. 1, 3-5): ")
             volumes_to_remove = generate_volumes_owned(volumes_to_remove)
@@ -345,10 +375,11 @@ class Series(object):
             self.vol_arr = [~x & y for x, y in
                             zip(vol_arr_to_remove, self.vol_arr)]
             print(self.vol_arr)
-            # update related fields 
+            # update related fields
             self.next_volume = self.calculate_next_volume()
             self.volumes_owned_readable = ""
-            self.volumes_owned = generate_volumes_owned(self.get_volumes_owned())
+            self.volumes_owned = generate_volumes_owned(
+                self.get_volumes_owned())
 
         author = input("Enter author or leave blank if unchanged: ")
         if author == "":
@@ -367,7 +398,7 @@ class Series(object):
         # only change if no entry exists
         alt_names = input("Enter any alternate names for this series: ")
         if self.alt_names == "" and alt_names != "":
-            self.alt_names = alt_names 
+            self.alt_names = alt_names
 
         is_completed = input("Is this series completed? (y/N) (Leave "
                              "blank if unchanged): ")
@@ -401,19 +432,18 @@ class Series(object):
                            self.get_next_volume(),
                            self.publisher.replace("'", "''"),
                            self.author.replace("'", "''"),
-                           self.alt_names.replace("'","''"),
+                           self.alt_names.replace("'", "''"),
                            self.rowid))
         print("Series updated!")
         return
-    
+
     def __str__(self):
-        print(self.is_completed)
         result = (self.name + ": " + self.get_volumes_owned() +
                   " (Completed: " + self.get_is_completed() + ")\n" +
                   "Alternate names: " + self.alt_names + "\n"
                   "Author: " + self.author + "\n"
-                  "Published by: " + self.publisher + 
-                  ("\nNext Volume: %d" % self.get_next_volume() 
+                  "Published by: " + self.publisher +
+                  ("\nNext Volume: %d" % self.get_next_volume()
                    if not self.is_completed else ""))
         return result
 
@@ -428,12 +458,13 @@ def print_database(data_mgr):
     for entry in entries:
         if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
             print("----------------------------------------")
-            continue_print = input("Press Enter to continue or type 'q' to stop: ")
+            continue_print = input("Press Enter to continue "
+                                   "or type 'q' to stop: ")
             if continue_print == 'q' or continue_print == 'Q':
                 return
 
         print("----------------------------------------")
-        series = Series(entry[1], # Series Name 
+        series = Series(entry[1], # Series Name
                         entry[2], # Volumes Owned
                         entry[3], # Is Completed
                         entry[4], # Next Volume
@@ -467,7 +498,7 @@ def input_series(data_mgr):
     #     print("Database query failed, continuing...")
     volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
     volumes_owned = generate_volumes_owned(volumes_raw)
-    
+
     author = input("Enter author or leave blank if unknown: ")
     if author == "":
         author = "Unknown"
@@ -477,7 +508,7 @@ def input_series(data_mgr):
         publisher = "Unknown"
 
     alt_names = input("Enter any alternate names for this series, if any: ")
-    
+
     is_completed = input("Is this series completed? (y/N): ")
     if is_completed != 'y' and is_completed != 'Y':
         is_completed = 0
@@ -491,7 +522,7 @@ def generate_volumes_owned(str):
     """
     generate_volumes_owned(str):
     Takes a string of numbers in a comma-separated list (ex. "1, 3-5, 7"),
-    stores them bitwise in 32-bit integers, then concatenates bitwise 
+    stores them bitwise in 32-bit integers, then concatenates bitwise
     representations of them in a string and returns the result
     """
     arr_length = int(math.ceil(VOLUME_LIMIT / 32))
@@ -502,7 +533,7 @@ def generate_volumes_owned(str):
             continue
         if '-' in num: # two integers separated by dash
             # should always have 2 integers
-            nums = [int(k) for k in num.split('-')] 
+            nums = [int(k) for k in num.split('-')]
             if nums[0] < 1:
                 print("Start volume must be greater than zero; "\
                       "token %s ignored" % num)
@@ -543,10 +574,10 @@ def set_default_config(filename):
         os.remove("config.ini")
 
     config = configparser.ConfigParser()
-    default_cfg = {'config': { 'database_name' : 'manga.db',
-                               'volume_limit' : 128,
-                               'paginated' : 0,
-                               'series_per_page' : 5 } }
+    default_cfg = {'config': {'database_name' : 'manga.db',
+                              'volume_limit' : 128,
+                              'paginated' : 0,
+                               'series_per_page' : 5}}
 
     config.read_dict(default_cfg)
     with open('config.ini', 'w') as config_ini:
@@ -562,16 +593,18 @@ def print_entries_list(entries):
     for entry in entries:
         if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
             print("----------------------------------------")
-            continue_print = input("Press Enter to continue or type 'q' to stop: ")
+            continue_print = input("Press Enter to continue "
+                                   "or type 'q' to stop: ")
             if continue_print == 'q' or continue_print == 'Q':
                 return
 
         print("----------------------------------------")
-        series = Series(entry[1], # Series Name 
+        series = Series(entry[1], # Series Name
                         entry[2], # Volumes Owned
                         entry[3], # Is Completed
                         entry[4], # Next Volume
                         entry[5], # Publisher
+                        entry[6], # Author
                         entry[0]) # Row ID (for updates)
         print(series)
         count += 1
@@ -586,20 +619,21 @@ def main():
     """
     if not os.path.isfile("config.ini"):
         set_default_cfg("config.ini")
-    
+
     config = configparser.ConfigParser()
     config.read('config.ini')
-    
+
     DATABASE_NAME = config.get('config', 'database_name')
     VOLUME_LIMIT = config.getint('config', 'volume_limit')
     PAGINATED = config.getboolean('config', 'paginated')
     SERIES_PER_PAGE = config.getint('config', 'series_per_page')
-        
+
     DATA_MGR = DatabaseManager()
     print_database(DATA_MGR)
 
     while True:
-        user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, [O]ptions, E[x]it: ")
+        user_input = input("[S]earch, [L]ist, [A]dd, "
+                           "[E]dit, [O]ptions, E[x]it: ")
 
         if user_input == 'x' or user_input == 'X':
             break
@@ -614,7 +648,7 @@ def main():
                                  "alt_names LIKE '%{0}%'"
                                  .format(search_term))
             entries = cur.fetchall()
-            
+
             print()
             if len(entries) == 0:
                 print("No series found for '{0}'."
@@ -657,12 +691,12 @@ def main():
                 print("Found {0} incomplete series:".format(len(entries)))
                 print_entries_list(entries)
                 continue
-            
+
             # Series with Gaps
             if selection == 'g' or selection == 'G':
                 cur = DATA_MGR.query("SELECT rowid, * FROM Series")
                 entries = cur.fetchall()
-                series_list = [Series(entry[1], # Series Name 
+                series_list = [Series(entry[1], # Series Name
                                       entry[2], # Volumes Owned
                                       entry[3], # Is Completed
                                       entry[4], # Next Volume
@@ -672,7 +706,7 @@ def main():
                                       entry[0]) # Row ID (for updates)
                                for entry in entries]
                 series_with_gaps = []
-                
+
                 for series in series_list:
                     binary_str = series.get_volumes_owned_binary()
                     if regexp("1*0+1", binary_str):
@@ -681,18 +715,19 @@ def main():
                 if len(series_with_gaps) == 0:
                     print("No series with gaps found.")
                     continue
-                print("Found {0} series with gaps:".format(len(series_with_gaps)))
-                
+                print("Found {0} series with gaps:".format(
+                    len(series_with_gaps)))
+
                 for series in series_with_gaps:
                     print("----------------------------------------")
                     print(series)
                     print("----------------------------------------")
                 continue
-            
+
             # Default (print all)
             print_database(DATA_MGR)
             continue
-        
+
         # Add Series
         if user_input == 'a' or user_input == 'A':
             new_series = input_series(DATA_MGR)
@@ -705,7 +740,8 @@ def main():
 
         # Edit Series
         if user_input == 'e' or user_input == 'E':
-            search_term = input("Search for series to edit by name or publisher: ")
+            search_term = input("Search for series to edit "
+                                "by name or publisher: ")
             cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
                                  "name LIKE '%{0}%' OR "
                                  "publisher LIKE '%{0}%' OR "
@@ -714,7 +750,7 @@ def main():
                                  .format(search_term))
             entries = cur.fetchall()
             count = 0
-            
+
             print()
             if len(entries) == 0:
                 print("No series found for '{0}'."
@@ -724,7 +760,7 @@ def main():
                   .format(len(entries), search_term))
             for entry in entries:
                 print("----------------------------------------")
-                series = Series(entry[1], # Series Name 
+                series = Series(entry[1], # Series Name
                                 entry[2], # Volumes Owned
                                 entry[3], # Is Completed
                                 entry[4], # Next Volume
@@ -741,7 +777,7 @@ def main():
                 if found_series == 'y' or found_series == 'Y':
                     series.edit_series(DATA_MGR)
                     break
-                
+
                 count += 1
                 if count != len(entries):
                     print("Next Series:")
@@ -759,7 +795,7 @@ def main():
                 option = int(option)
                 config = configparser.ConfigParser()
                 config.read("config.ini")
-                
+
                 # 1. Change database name
                 if option == 1:
                     new_db_name = input("Enter new database name, or leave "\
@@ -782,10 +818,10 @@ def main():
                           "a later date.")
                     pass
 
-                # 3. Change series per page ( 0 for no limit)                
+                # 3. Change series per page ( 0 for no limit)
                 elif option == 3:
-                    new_series_per_page = input("Enter maximum number of series "
-                                                "to display per page, "
+                    new_series_per_page = input("Enter maximum number of "
+                                                "series to display per page, "
                                                 "or 0 to not use pages: ")
                     if new_series_per_page == '0':
                         config["config"]["paginated"] = 0
@@ -806,13 +842,13 @@ def main():
                                 config.write(config_ini)
                     except Exception:
                         pass
-                
+
                 # 4. Reset to default
                 elif option == 4:
                     default = input("Reset all settings to default? (y/N): ")
                     if default == 'y' or default == 'Y':
                         set_default_cfg("config.ini")
-                
+
                 # 5. Clear database (Does not prompt user for series)
                 elif option == 5:
                     delete_database = input("Remove Database? "\
@@ -820,8 +856,8 @@ def main():
                                             .format(DATABASE_NAME))
                     if delete_database == 'y' or delete_database == 'Y':
                         os.rename(DATABASE_NAME, DATABASE_NAME+".bak")
-                        DATA_MGR = DatabaseManager(False) 
-                    
+                        DATA_MGR = DatabaseManager(False)
+
             except Exception:
                 print("Returning to main screen")
 
@@ -852,8 +888,8 @@ def series_test():
         generate_volumes_owned("1, 3, %d" % (VOLUME_LIMIT + 1))
     except:
         print("Error generating volumes for '1, 3, %d'" % (VOLUME_LIMIT + 1))
-    
-    if(test_failed):
+
+    if test_failed:
         print("**TEST 1 FAILED**")
     else:
         print("**TEST 1 PASSED**")
@@ -881,7 +917,7 @@ def series_test():
         print(series1)
     except:
         print("Error creating series or checking variables within series")
-    
+
     if test_failed:
         print("**TEST 2 FAILED**")
     else:
@@ -895,7 +931,7 @@ def series_test():
     # print(series2.get_volumes_owned())
     # print(series2.get_next_volume())
     # print(series2.get_is_completed())
-    
+
     # TEST 3: DatabaseManager and related functions
     data_mgr = DatabaseManager("test.db")
     data_mgr.add_series_to_database(series1)
