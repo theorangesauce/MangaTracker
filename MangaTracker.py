@@ -22,6 +22,11 @@ class DatabaseManager(object):
     Main interface between program and SQLite3 database
     """
     def __init__(self, new_db_needed=True):
+        """
+        __init__(self, boolean)
+        Set up a manager for the database, loading from a file or
+        creating a new database if one does not exist
+        """
         self.con = lite.connect(DATABASE_NAME)
         self.con.create_function("REGEXP", 2, regexp)
         self.cur = self.con.cursor()
@@ -77,6 +82,7 @@ class DatabaseManager(object):
         return self.cur
 
     def __del__(self):
+        """Close connection to database when object goes out of scope"""
         self.con.close()
 
 def regexp(pattern, value):
@@ -100,6 +106,23 @@ class Series(object):
     def __init__(self, name, volumes_owned, is_completed,
                  next_volume=-1, publisher='Unknown', author='Unknown',
                  alt_names='', rowid=None):
+        """
+        __init__(self, args)
+        Create a series object
+
+        Arguments:
+        name (String) -- Name of series
+        volumes_owned (String) -- Comma-separated values representing
+            volumes in collection
+        is_completed (Int) -- whether all volumes owned or not
+        next_volume -- Lowest-numbered volume not currently owned; set by
+            get_next_volume() (default -1)
+        publisher -- Publisher for series (default 'Unknown')
+        author -- Author for series
+        alt_names -- Alternate names for series (ex. in other languages)
+            (default to empty string)
+        rowid -- Row ID in database to use for updates (default None)
+        """
         self.name = str(name)
         self.volumes_owned = str(volumes_owned)
         self.is_completed = is_completed
@@ -162,21 +185,25 @@ class Series(object):
         return self.volumes_owned_readable
 
     def get_is_completed(self):
+        """Returns whether all volumes for series are in collection"""
         return "Yes" if self.is_completed == 1 else "No"
 
     def get_next_volume(self):
+        """Returns the lowest-numbered volume not in collection"""
         # check if calculated, otherwise return current value
         if self.next_volume <= 0:
             self.next_volume = self.calculate_next_volume()
         return self.next_volume
 
     def get_volumes_owned_binary(self):
+        """Converts vol_arr to a single binary string listing all volumes"""
         vol_str = ""
         for val in self.vol_arr:
             vol_str += "{0:032b}".format(val)[::-1]
         return vol_str
 
     def calculate_next_volume(self):
+        """Calculate lowest volume not in collection"""
         index = 0
         for num in self.vol_arr:
             for i in range(0, 32):
@@ -213,6 +240,7 @@ class Series(object):
 
         return False
 
+    # TODO: Show current value when editing
     def edit_series(self, data_mgr):
         """
         edit_series()
@@ -322,7 +350,7 @@ class Series(object):
 
         save_series = input("Save changes? (y/N): ")
         if save_series == 'y' or save_series == 'Y':
-            self.update_database_entry(DATA_MGR)
+            self.update_database_entry(data_mgr)
 
     def edit_series_old(self, data_mgr):
         """
@@ -570,8 +598,8 @@ def set_default_config(filename):
     set_default_config()
     Saves default config to desired filename
     """
-    if os.path.isfile("config.ini"):
-        os.remove("config.ini")
+    if os.path.isfile(filename):
+        os.remove(filename)
 
     config = configparser.ConfigParser()
     default_cfg = {'config': {'database_name' : 'manga.db',
@@ -605,6 +633,7 @@ def print_entries_list(entries):
                         entry[4], # Next Volume
                         entry[5], # Publisher
                         entry[6], # Author
+                        entry[7], # Alternate Name(s)
                         entry[0]) # Row ID (for updates)
         print(series)
         count += 1
@@ -618,11 +647,16 @@ def main():
     Main driver function for mangatracker program
     """
     if not os.path.isfile("config.ini"):
-        set_default_cfg("config.ini")
+        set_default_config("config.ini")
 
     config = configparser.ConfigParser()
     config.read('config.ini')
-
+    
+    global DATABASE_NAME
+    global VOLUME_LIMIT
+    global PAGINATED    
+    global SERIES_PER_PAGE
+    
     DATABASE_NAME = config.get('config', 'database_name')
     VOLUME_LIMIT = config.getint('config', 'volume_limit')
     PAGINATED = config.getboolean('config', 'paginated')
@@ -718,9 +752,19 @@ def main():
                 print("Found {0} series with gaps:".format(
                     len(series_with_gaps)))
 
+                count = 0
                 for series in series_with_gaps:
+                    if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
+                        print("----------------------------------------")
+                        continue_print = input("Press Enter to continue "
+                                               "or type 'q' to stop: ")
+                        if continue_print == 'q' or continue_print == 'Q':
+                            return
                     print("----------------------------------------")
                     print(series)
+                    #print("----------------------------------------")
+                    count += 1
+                if len(series_with_gaps) > 0:
                     print("----------------------------------------")
                 continue
 
@@ -731,7 +775,7 @@ def main():
         # Add Series
         if user_input == 'a' or user_input == 'A':
             new_series = input_series(DATA_MGR)
-            if(new_series != None):
+            if new_series != None:
                 DATA_MGR.add_series_to_database(new_series)
             print("----------------------------------------")
             print(new_series)
@@ -936,7 +980,7 @@ def series_test():
     data_mgr = DatabaseManager("test.db")
     data_mgr.add_series_to_database(series1)
     print_database(data_mgr)
-    os.delete("test.db")
+    os.remove("test.db")
 
 if __name__ == "__main__":
     main()
