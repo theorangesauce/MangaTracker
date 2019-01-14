@@ -480,7 +480,7 @@ def print_database(data_mgr):
     print_database(data_mgr)
     Print status of all series in database
     """
-    cur = data_mgr.query("SELECT rowid, * FROM Series")
+    cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY name")
     entries = cur.fetchall()
     count = 0
     for entry in entries:
@@ -647,13 +647,13 @@ def list_series(DATA_MGR):
     # Completed Series
     if selection == 'c' or selection == 'C':
         cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
-                             "is_completed = 1")
+                             "is_completed = 1 ORDER BY name")
         entries = cur.fetchall()
-        
+
         if len(entries) == 0:
             print("No completed series found.")
             return
-        
+
         print("Found {0} completed series:".format(len(entries)))
         print_entries_list(entries)
         return
@@ -661,9 +661,9 @@ def list_series(DATA_MGR):
     # Incomplete Series
     if selection == 'i' or selection == 'I':
         cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
-                             "is_completed = 0")
+                             "is_completed = 0 ORDER BY name")
         entries = cur.fetchall()
-        
+
         if len(entries) == 0:
             print("No incomplete series found.")
             return
@@ -674,7 +674,7 @@ def list_series(DATA_MGR):
 
     # Series with Gaps
     if selection == 'g' or selection == 'G':
-        cur = DATA_MGR.query("SELECT rowid, * FROM Series")
+        cur = DATA_MGR.query("SELECT rowid, * FROM Series ORDER BY name")
         entries = cur.fetchall()
         series_list = [Series(entry[1], # Series Name
                               entry[2], # Volumes Owned
@@ -686,7 +686,7 @@ def list_series(DATA_MGR):
                               entry[0]) # Row ID (for updates)
                        for entry in entries]
         series_with_gaps = []
-        
+
         for series in series_list:
             binary_str = series.get_volumes_owned_binary()
             if regexp("1*0+1", binary_str):
@@ -695,7 +695,7 @@ def list_series(DATA_MGR):
         if len(series_with_gaps) == 0:
             print("No series with gaps found.")
             return
-            
+
         print("Found {0} series with gaps:".format(
             len(series_with_gaps)))
 
@@ -707,19 +707,19 @@ def list_series(DATA_MGR):
                                        "or type 'q' to stop: ")
                 if continue_print == 'q' or continue_print == 'Q':
                     return
-           
+
             print("----------------------------------------")
             print(series)
             #print("----------------------------------------")
             count += 1
-            
+
         if len(series_with_gaps) > 0:
             print("----------------------------------------")
-            return    
+            return
 
     # Default (print all)
     print_database(DATA_MGR)
-            
+
 def search_for_series(data_mgr):
     """
     search_for_series()
@@ -733,10 +733,10 @@ def search_for_series(data_mgr):
                          "publisher LIKE '%{0}%' OR "
                          "author LIKE '%{0}%' OR "
                          "alt_names LIKE '%{0}%'"
+                         "ORDER BY name"
                          .format(search_term))
     entries = cur.fetchall()
     return (entries, search_term)
-    
 
 def main():
     """
@@ -748,12 +748,12 @@ def main():
 
     config = configparser.ConfigParser()
     config.read('config.ini')
-    
+
     global DATABASE_NAME
     global VOLUME_LIMIT
     global PAGINATED    
     global SERIES_PER_PAGE
-    
+
     DATABASE_NAME = config.get('config', 'database_name')
     VOLUME_LIMIT = config.getint('config', 'volume_limit')
     PAGINATED = config.getboolean('config', 'paginated')
@@ -771,9 +771,7 @@ def main():
 
         if user_input == 's' or user_input == 'S':
             # TODO: color matching text (maybe not?)
-            results = search_for_series(DATA_MGR)
-            entries = results[0]
-            search_term = results[1]
+            entries, search_term = search_for_series(DATA_MGR)
 
             print()
             if len(entries) == 0:
@@ -807,9 +805,7 @@ def main():
 
         # Edit Series
         if user_input == 'e' or user_input == 'E':
-            results = search_for_series(DATA_MGR)
-            entries = results[0]
-            search_term = results[1]
+            entries, search_term = search_for_series(DATA_MGR)
             count = 0
 
             print()
@@ -817,10 +813,10 @@ def main():
                 print("No series found for '{0}'."
                       .format(search_term))
                 continue
-            
+
             print("Found {0} entries for '{1}':"
                   .format(len(entries), search_term))
-            
+
             for entry in entries:
                 print("----------------------------------------")
                 series = Series(entry[1], # Series Name
