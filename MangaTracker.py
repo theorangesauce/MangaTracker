@@ -241,9 +241,9 @@ class Series(object):
         return False
 
     # TODO: Show current value when editing
-    def edit_series(self, data_mgr):
+    def edit(self, data_mgr):
         """
-        edit_series()
+        edit()
         Allows user to modify all fields of a series. User selects field
         to modify from menu, continuing until user decides to save.
         Automatically updates dependent fields (ex. next volume)
@@ -444,7 +444,7 @@ class Series(object):
         adds series to database if not currently in database
         """
         if self.rowid == None:
-            data_mgr.add_series_to_database(self)
+            self.add_series_to_database(data_mgr)
             return
         data_mgr.query("UPDATE Series SET "
                        "name = '{0}', "
@@ -641,6 +641,103 @@ def print_entries_list(entries):
     if len(entries) > 0:
         print("----------------------------------------")
 
+def list_series(DATA_MGR):
+    selection = input("List [A]ll / [C]omplete / "
+                      "[I]ncomplete / Series with [G]aps: ")
+    # Completed Series
+    if selection == 'c' or selection == 'C':
+        cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
+                             "is_completed = 1")
+        entries = cur.fetchall()
+        
+        if len(entries) == 0:
+            print("No completed series found.")
+            return
+        
+        print("Found {0} completed series:".format(len(entries)))
+        print_entries_list(entries)
+        return
+
+    # Incomplete Series
+    if selection == 'i' or selection == 'I':
+        cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
+                             "is_completed = 0")
+        entries = cur.fetchall()
+        
+        if len(entries) == 0:
+            print("No incomplete series found.")
+            return
+
+        print("Found {0} incomplete series:".format(len(entries)))
+        print_entries_list(entries)
+        return
+
+    # Series with Gaps
+    if selection == 'g' or selection == 'G':
+        cur = DATA_MGR.query("SELECT rowid, * FROM Series")
+        entries = cur.fetchall()
+        series_list = [Series(entry[1], # Series Name
+                              entry[2], # Volumes Owned
+                              entry[3], # Is Completed
+                              entry[4], # Next Volume
+                              entry[5], # Publisher
+                              entry[6], # Author
+                              entry[7], # Alternate Names
+                              entry[0]) # Row ID (for updates)
+                       for entry in entries]
+        series_with_gaps = []
+        
+        for series in series_list:
+            binary_str = series.get_volumes_owned_binary()
+            if regexp("1*0+1", binary_str):
+                series_with_gaps.append(series)
+
+        if len(series_with_gaps) == 0:
+            print("No series with gaps found.")
+            return
+            
+        print("Found {0} series with gaps:".format(
+            len(series_with_gaps)))
+
+        count = 0
+        for series in series_with_gaps:
+            if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
+                print("----------------------------------------")
+                continue_print = input("Press Enter to continue "
+                                       "or type 'q' to stop: ")
+                if continue_print == 'q' or continue_print == 'Q':
+                    return
+           
+            print("----------------------------------------")
+            print(series)
+            #print("----------------------------------------")
+            count += 1
+            
+        if len(series_with_gaps) > 0:
+            print("----------------------------------------")
+            return    
+
+    # Default (print all)
+    print_database(DATA_MGR)
+            
+def search_for_series(data_mgr):
+    """
+    search_for_series()
+    Takes a DatabaseManager object, queries the database for a
+    search term given by user, returns the search term and
+    any matching entries
+    """
+    search_term = input("Search for series by name or publisher: ")
+    cur = data_mgr.query("SELECT rowid, * FROM Series WHERE "
+                         "name LIKE '%{0}%' OR "
+                         "publisher LIKE '%{0}%' OR "
+                         "author LIKE '%{0}%' OR "
+                         "alt_names LIKE '%{0}%'"
+                         .format(search_term))
+    entries = cur.fetchall()
+    return (entries, search_term)
+    
+
 def main():
     """
     main()
@@ -674,14 +771,9 @@ def main():
 
         if user_input == 's' or user_input == 'S':
             # TODO: color matching text (maybe not?)
-            search_term = input("Search for series by name or publisher: ")
-            cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "\
-                                 "name LIKE '%{0}%' OR "\
-                                 "publisher LIKE '%{0}%' OR "
-                                 "author LIKE '%{0}%' OR "
-                                 "alt_names LIKE '%{0}%'"
-                                 .format(search_term))
-            entries = cur.fetchall()
+            results = search_for_series(DATA_MGR)
+            entries = results[0]
+            search_term = results[1]
 
             print()
             if len(entries) == 0:
@@ -691,108 +783,33 @@ def main():
 
             print("Found {0} entries for '{1}':"
                   .format(len(entries), search_term))
-
             print_entries_list(entries)
             continue
 
         if user_input == 'l' or user_input == 'L':
-            selection = input("List [A]ll / [C]omplete / "
-                              "[I]ncomplete / Series with [G]aps: ")
-            # Completed Series
-            if selection == 'c' or selection == 'C':
-                cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
-                                     "is_completed = 1")
-                entries = cur.fetchall()
-
-                if len(entries) == 0:
-                    print("No completed series found.")
-                    continue
-
-                print("Found {0} completed series:".format(len(entries)))
-                print_entries_list(entries)
-                continue
-
-            # Incomplete Series
-            if selection == 'i' or selection == 'I':
-                cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
-                                     "is_completed = 0")
-                entries = cur.fetchall()
-
-                if len(entries) == 0:
-                    print("No incomplete series found.")
-                    continue
-
-                print("Found {0} incomplete series:".format(len(entries)))
-                print_entries_list(entries)
-                continue
-
-            # Series with Gaps
-            if selection == 'g' or selection == 'G':
-                cur = DATA_MGR.query("SELECT rowid, * FROM Series")
-                entries = cur.fetchall()
-                series_list = [Series(entry[1], # Series Name
-                                      entry[2], # Volumes Owned
-                                      entry[3], # Is Completed
-                                      entry[4], # Next Volume
-                                      entry[5], # Publisher
-                                      entry[6], # Author
-                                      entry[7], # Alternate Names
-                                      entry[0]) # Row ID (for updates)
-                               for entry in entries]
-                series_with_gaps = []
-
-                for series in series_list:
-                    binary_str = series.get_volumes_owned_binary()
-                    if regexp("1*0+1", binary_str):
-                        series_with_gaps.append(series)
-
-                if len(series_with_gaps) == 0:
-                    print("No series with gaps found.")
-                    continue
-                print("Found {0} series with gaps:".format(
-                    len(series_with_gaps)))
-
-                count = 0
-                for series in series_with_gaps:
-                    if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
-                        print("----------------------------------------")
-                        continue_print = input("Press Enter to continue "
-                                               "or type 'q' to stop: ")
-                        if continue_print == 'q' or continue_print == 'Q':
-                            return
-                    print("----------------------------------------")
-                    print(series)
-                    #print("----------------------------------------")
-                    count += 1
-                if len(series_with_gaps) > 0:
-                    print("----------------------------------------")
-                continue
-
-            # Default (print all)
-            print_database(DATA_MGR)
-            continue
+            list_series(DATA_MGR)
 
         # Add Series
         if user_input == 'a' or user_input == 'A':
-            new_series = input_series(DATA_MGR)
+            try:
+                new_series = input_series(DATA_MGR)
+            except KeyboardInterrupt:
+                print("\nAdd series operation cancelled")
+                new_series = None
+
             if new_series != None:
-                DATA_MGR.add_series_to_database(new_series)
-            print("----------------------------------------")
-            print(new_series)
-            print("----------------------------------------")
+                new_series.add_series_to_database(DATA_MGR)
+                print("----------------------------------------")
+                print(new_series)
+                print("----------------------------------------")
+
             continue
 
         # Edit Series
         if user_input == 'e' or user_input == 'E':
-            search_term = input("Search for series to edit "
-                                "by name or publisher: ")
-            cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
-                                 "name LIKE '%{0}%' OR "
-                                 "publisher LIKE '%{0}%' OR "
-                                 "author LIKE '%{0}%' OR "
-                                 "alt_names LIKE '%{0}%'"
-                                 .format(search_term))
-            entries = cur.fetchall()
+            results = search_for_series(DATA_MGR)
+            entries = results[0]
+            search_term = results[1]
             count = 0
 
             print()
@@ -800,8 +817,10 @@ def main():
                 print("No series found for '{0}'."
                       .format(search_term))
                 continue
+            
             print("Found {0} entries for '{1}':"
                   .format(len(entries), search_term))
+            
             for entry in entries:
                 print("----------------------------------------")
                 series = Series(entry[1], # Series Name
@@ -814,12 +833,12 @@ def main():
                                 entry[0]) # Row ID (for updates)
                 print(series)
                 print("----------------------------------------")
+                
                 found_series = input("Edit this series? (y/N/q): ")
-
                 if found_series == 'q' or found_series == 'Q':
                     break
                 if found_series == 'y' or found_series == 'Y':
-                    series.edit_series(DATA_MGR)
+                    series.edit(DATA_MGR)
                     break
 
                 count += 1
