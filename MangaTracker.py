@@ -103,14 +103,16 @@ class Series(object):
     A single manga series. Contains the name of the series, the number of
     volumes currently owned, whether the series is completed
     """
-    def __init__(self, name, volumes_owned, is_completed,
-                 next_volume=-1, publisher='Unknown', author='Unknown',
-                 alt_names='', rowid=None):
+    # TODO: modify to use kwargs instead of arguments
+    # def __init__(self, name, volumes_owned, is_completed,
+    #              next_volume=-1, publisher='Unknown', author='Unknown',
+    #              alt_names='', rowid=None):
+    def __init__(self, **kwargs):
         """
         __init__(self, args)
         Create a series object
 
-        Arguments:
+        Keyword Arguments:
         name (String) -- Name of series
         volumes_owned (String) -- Comma-separated values representing
             volumes in collection
@@ -123,16 +125,22 @@ class Series(object):
             (default to empty string)
         rowid -- Row ID in database to use for updates (default None)
         """
-        self.name = str(name)
-        self.volumes_owned = str(volumes_owned)
-        self.is_completed = is_completed
-        self.next_volume = next_volume
-        self.publisher = str(publisher)
-        self.author = str(author)
-        self.alt_names = str(alt_names)
+        valid_keys = ["name", "volumes_owned", "is_completed",
+                      "next_volume", "publisher", "author",
+                      "alt_names", "rowid"]
+        for key in valid_keys:
+            self.__dict__[key] = kwargs.get(key)
+            
+        # self.name = str(name)
+        # self.volumes_owned = str(volumes_owned)
+        # self.is_completed = is_completed
+        # self.next_volume = next_volume
+        # self.publisher = str(publisher)
+        # self.author = str(author)
+        # self.alt_names = str(alt_names)
 
-        self.rowid = rowid
-        self.vol_arr = [int(x) for x in volumes_owned.split(',')]
+        # self.rowid = rowid
+        self.vol_arr = [int(x) for x in self.volumes_owned.split(',')]
         self.volumes_owned_readable = ""
 
     def get_volumes_owned(self):
@@ -492,14 +500,14 @@ def print_database(data_mgr):
                 return
 
         print("----------------------------------------")
-        series = Series(entry[1], # Series Name
-                        entry[2], # Volumes Owned
-                        entry[3], # Is Completed
-                        entry[4], # Next Volume
-                        entry[5], # Publisher
-                        entry[6], # Author
-                        entry[7], # Alternate Names
-                        entry[0]) # Row ID (for updates)
+        series = Series(name=str(entry[1]),          # Series Name
+                        volumes_owned=str(entry[2]), # Volumes Owned
+                        is_completed=entry[3],       # Is Completed
+                        next_volume=entry[4],        # Next Volume
+                        publisher=str(entry[5]),     # Publisher
+                        author=str(entry[6]),        # Author
+                        alt_names=str(entry[7]),     # Alternate Names
+                        rowid=entry[0])              # Row ID (for updates)
         print(series)
         count += 1
 
@@ -543,7 +551,10 @@ def input_series(data_mgr):
     else:
         is_completed = 1
 
-    return Series(series_name, volumes_owned, is_completed, publisher=publisher,
+    return Series(name=series_name,
+                  volumes_owned=volumes_owned,
+                  is_completed=is_completed,
+                  publisher=publisher,
                   author=author, alt_names=alt_names)
 
 def generate_volumes_owned(str):
@@ -627,14 +638,15 @@ def print_entries_list(entries):
                 return
 
         print("----------------------------------------")
-        series = Series(entry[1], # Series Name
-                        entry[2], # Volumes Owned
-                        entry[3], # Is Completed
-                        entry[4], # Next Volume
-                        entry[5], # Publisher
-                        entry[6], # Author
-                        entry[7], # Alternate Name(s)
-                        entry[0]) # Row ID (for updates)
+        series = Series(name=str(entry[1]),          # Series Name
+                        volumes_owned=str(entry[2]), # Volumes Owned
+                        is_completed=entry[3],       # Is Completed
+                        next_volume=entry[4],        # Next Volume
+                        publisher=str(entry[5]),     # Publisher
+                        author=str(entry[6]),        # Author
+                        alt_names=str(entry[7]),     # Alternate Names
+                        rowid=entry[0])              # Row ID (for updates)
+        
         print(series)
         count += 1
 
@@ -676,14 +688,14 @@ def list_series(DATA_MGR):
     if selection == 'g' or selection == 'G':
         cur = DATA_MGR.query("SELECT rowid, * FROM Series ORDER BY name")
         entries = cur.fetchall()
-        series_list = [Series(entry[1], # Series Name
-                              entry[2], # Volumes Owned
-                              entry[3], # Is Completed
-                              entry[4], # Next Volume
-                              entry[5], # Publisher
-                              entry[6], # Author
-                              entry[7], # Alternate Names
-                              entry[0]) # Row ID (for updates)
+        series_list = [Series(name=str(entry[1]),          # Series Name
+                              volumes_owned=str(entry[2]), # Volumes Owned
+                              is_completed=entry[3],       # Is Completed
+                              next_volume=entry[4],        # Next Volume
+                              publisher=str(entry[5]),     # Publisher
+                              author=str(entry[6]),        # Author
+                              alt_names=str(entry[7]),     # Alternate Names
+                              rowid=entry[0])              # Row ID (for updates)
                        for entry in entries]
         series_with_gaps = []
 
@@ -819,14 +831,14 @@ def main():
 
             for entry in entries:
                 print("----------------------------------------")
-                series = Series(entry[1], # Series Name
-                                entry[2], # Volumes Owned
-                                entry[3], # Is Completed
-                                entry[4], # Next Volume
-                                entry[5], # Publisher
-                                entry[6], # Author
-                                entry[7], # Alternate Names
-                                entry[0]) # Row ID (for updates)
+                series = Series(name=str(entry[1]),          # Series Name
+                                volumes_owned=str(entry[2]), # Volumes Owned
+                                is_completed=entry[3],       # Is Completed
+                                next_volume=entry[4],        # Next Volume
+                                publisher=str(entry[5]),     # Publisher
+                                author=str(entry[6]),        # Author
+                                alt_names=str(entry[7]),     # Alternate Names
+                                rowid=entry[0])              # Row ID (for updates) 
                 print(series)
                 print("----------------------------------------")
                 
