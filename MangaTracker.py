@@ -128,9 +128,11 @@ class Series(object):
         valid_keys = ["name", "volumes_owned", "is_completed",
                       "next_volume", "publisher", "author",
                       "alt_names", "rowid"]
+        next_vol_found = False
+
         for key in valid_keys:
             self.__dict__[key] = kwargs.get(key)
-            
+        
         # self.name = str(name)
         # self.volumes_owned = str(volumes_owned)
         # self.is_completed = is_completed
@@ -142,6 +144,8 @@ class Series(object):
         # self.rowid = rowid
         self.vol_arr = [int(x) for x in self.volumes_owned.split(',')]
         self.volumes_owned_readable = ""
+        if self.next_volume == -1:
+            self.next_volume = self.calculate_next_volume()
 
     def get_volumes_owned(self):
         """
@@ -196,12 +200,12 @@ class Series(object):
         """Returns whether all volumes for series are in collection"""
         return "Yes" if self.is_completed == 1 else "No"
 
-    def get_next_volume(self):
-        """Returns the lowest-numbered volume not in collection"""
-        # check if calculated, otherwise return current value
-        if self.next_volume <= 0:
-            self.next_volume = self.calculate_next_volume()
-        return self.next_volume
+    # def get_next_volume(self):
+    #     """Returns the lowest-numbered volume not in collection"""
+    #     # check if calculated, otherwise return current value
+    #     if self.next_volume <= 0:
+    #         self.next_volume = self.calculate_next_volume()
+    #     return self.next_volume
 
     def get_volumes_owned_binary(self):
         """Converts vol_arr to a single binary string listing all volumes"""
@@ -240,7 +244,7 @@ class Series(object):
                                self.name.replace("'", "''"),
                                self.volumes_owned,
                                self.is_completed,
-                               self.get_next_volume(),
+                               self.next_volume,
                                self.publisher.replace("'", "''"),
                                self.author.replace("'", "''"),
                                self.alt_names.replace("'", "''")))
@@ -465,7 +469,7 @@ class Series(object):
                            self.name.replace("'", "''"),
                            self.volumes_owned,
                            self.is_completed,
-                           self.get_next_volume(),
+                           self.next_volume,
                            self.publisher.replace("'", "''"),
                            self.author.replace("'", "''"),
                            self.alt_names.replace("'", "''"),
@@ -479,9 +483,25 @@ class Series(object):
                   "Alternate names: " + self.alt_names + "\n"
                   "Author: " + self.author + "\n"
                   "Published by: " + self.publisher +
-                  ("\nNext Volume: %d" % self.get_next_volume()
+                  ("\nNext Volume: %d" % self.next_volume
                    if not self.is_completed else ""))
         return result
+
+def entry_to_series(entry):
+    """
+    entry_to_series()
+    Takes a single row from a database query and converts it
+    into a series.
+    """
+    series = Series(name=str(entry[1]),          # Series Name
+                    volumes_owned=str(entry[2]), # Volumes Owned
+                    is_completed=entry[3],       # Is Completed
+                    next_volume=entry[4],        # Next Volume
+                    publisher=str(entry[5]),     # Publisher
+                    author=str(entry[6]),        # Author
+                    alt_names=str(entry[7]),     # Alternate Names
+                    rowid=entry[0])              # Row ID (for updates)
+    return series
 
 def print_database(data_mgr):
     """
@@ -500,14 +520,7 @@ def print_database(data_mgr):
                 return
 
         print("----------------------------------------")
-        series = Series(name=str(entry[1]),          # Series Name
-                        volumes_owned=str(entry[2]), # Volumes Owned
-                        is_completed=entry[3],       # Is Completed
-                        next_volume=entry[4],        # Next Volume
-                        publisher=str(entry[5]),     # Publisher
-                        author=str(entry[6]),        # Author
-                        alt_names=str(entry[7]),     # Alternate Names
-                        rowid=entry[0])              # Row ID (for updates)
+        series = entry_to_series(entry)
         print(series)
         count += 1
 
@@ -554,6 +567,7 @@ def input_series(data_mgr):
     return Series(name=series_name,
                   volumes_owned=volumes_owned,
                   is_completed=is_completed,
+                  next_volume=-1,
                   publisher=publisher,
                   author=author, alt_names=alt_names)
 
@@ -638,15 +652,7 @@ def print_entries_list(entries):
                 return
 
         print("----------------------------------------")
-        series = Series(name=str(entry[1]),          # Series Name
-                        volumes_owned=str(entry[2]), # Volumes Owned
-                        is_completed=entry[3],       # Is Completed
-                        next_volume=entry[4],        # Next Volume
-                        publisher=str(entry[5]),     # Publisher
-                        author=str(entry[6]),        # Author
-                        alt_names=str(entry[7]),     # Alternate Names
-                        rowid=entry[0])              # Row ID (for updates)
-        
+        series = entry_to_series(entry)
         print(series)
         count += 1
 
@@ -688,15 +694,7 @@ def list_series(DATA_MGR):
     if selection == 'g' or selection == 'G':
         cur = DATA_MGR.query("SELECT rowid, * FROM Series ORDER BY name")
         entries = cur.fetchall()
-        series_list = [Series(name=str(entry[1]),          # Series Name
-                              volumes_owned=str(entry[2]), # Volumes Owned
-                              is_completed=entry[3],       # Is Completed
-                              next_volume=entry[4],        # Next Volume
-                              publisher=str(entry[5]),     # Publisher
-                              author=str(entry[6]),        # Author
-                              alt_names=str(entry[7]),     # Alternate Names
-                              rowid=entry[0])              # Row ID (for updates)
-                       for entry in entries]
+        series_list = [entry_to_series(entry) for entry in entries]
         series_with_gaps = []
 
         for series in series_list:
@@ -831,14 +829,7 @@ def main():
 
             for entry in entries:
                 print("----------------------------------------")
-                series = Series(name=str(entry[1]),          # Series Name
-                                volumes_owned=str(entry[2]), # Volumes Owned
-                                is_completed=entry[3],       # Is Completed
-                                next_volume=entry[4],        # Next Volume
-                                publisher=str(entry[5]),     # Publisher
-                                author=str(entry[6]),        # Author
-                                alt_names=str(entry[7]),     # Alternate Names
-                                rowid=entry[0])              # Row ID (for updates) 
+                series = entry_to_series(entry)
                 print(series)
                 print("----------------------------------------")
                 
