@@ -50,6 +50,9 @@ Temporary Items
 *.*~
 #*.*#
 
+# Python junk
+__pycache__
+
 # Databases (may contain sensitive information)
 *.db
 
