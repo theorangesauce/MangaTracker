@@ -284,6 +284,15 @@ def search_for_series(data_mgr):
     entries = cur.fetchall()
     return (entries, search_term)
 
+def remove_series_from_database(data_mgr, series):
+    """
+    remove_series_from_database()
+    Takes a DatabaseManager object and a Series object, and removes
+    the associated series from the database
+    """
+    cur = data_mgr.query("DELETE FROM Series WHERE "
+                         "rowid = %d" % series.rowid)
+
 def main():
     """
     main()
@@ -311,8 +320,8 @@ def main():
     print_database(DATA_MGR)
 
     while True:
-        user_input = input("[S]earch, [L]ist, [A]dd, "
-                           "[E]dit, [O]ptions, E[x]it: ")
+        user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, "
+                           "[R]emove, [O]ptions, E[x]it: ")
 
         if user_input == 'x' or user_input == 'X':
             break
@@ -382,8 +391,42 @@ def main():
                 if count != len(entries):
                     print("Next Series:")
 
+        # Remove
+        if user_input in ('r', 'R'):
+            entries, search_term = search_for_series(DATA_MGR)
+            count = 0
+
+            print()
+            if len(entries) == 0:
+                print("No series found for '{0}'."
+                      .format(search_term))
+                continue
+
+            print("Found {0} entries for '{1}':"
+                  .format(len(entries), search_term))
+
+            for entry in entries:
+                print("----------------------------------------")
+                series = entry_to_series(entry)
+                print(series)
+                print("----------------------------------------")
+                
+                remove_series = input("Remove series from database? (y/N/q): ")
+                if remove_series in ('q', 'Q'):
+                    break
+                if remove_series in ('y', 'Y'):
+                    remove_series = input("Are you sure? "
+                                          "This cannot be undone. (y/N): ")
+                    if remove_series in ('y', 'Y'):
+                        remove_series_from_database(DATA_MGR, series)
+                    break
+
+                count += 1
+                if count != len(entries):
+                    print("Next Series:")
+
         # Options
-        if user_input == 'o' or user_input == 'O':
+        if user_input in ('o', 'O'):
             print("-- OPTIONS --")
             print("1. Change Database Name")
             print("2. Change Volume Limit")
