@@ -38,9 +38,9 @@ def entry_to_series(entry):
                     compact_list=COMPACT_LIST)   # Config properties
     return series
 
-def print_database(data_mgr):
+def print_all_series(data_mgr):
     """
-    print_database(data_mgr)
+    print_all_series(data_mgr)
     Print status of all series in database
     """
     cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY name")
@@ -264,7 +264,7 @@ def list_series(DATA_MGR):
             return
 
     # Default (print all)
-    print_database(DATA_MGR)
+    print_all_series(DATA_MGR)
 
 def search_for_series(data_mgr):
     """
@@ -317,7 +317,7 @@ def main():
     COMPACT_LIST = config.getboolean('config', 'compact_list', fallback=False)
 
     DATA_MGR = DatabaseManager(DATABASE_NAME, init_database)
-    print_database(DATA_MGR)
+    print_all_series(DATA_MGR)
 
     while True:
         user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, "
@@ -452,6 +452,7 @@ def main():
                             config.write(config_ini)
                     else:
                         print("Database name not changed.")
+                    pass
 
                 # 2. Change volume limit
                 elif option == 2:
@@ -594,7 +595,7 @@ def series_test():
     # TEST 3: DatabaseManager and related functions
     data_mgr = DatabaseManager("test.db")
     data_mgr.add_series_to_database(series1)
-    print_database(data_mgr)
+    print_all_series(data_mgr)
     os.remove("test.db")
 
 if __name__ == "__main__":
