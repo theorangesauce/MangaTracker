@@ -456,11 +456,16 @@ def main():
 
                 # 2. Change volume limit
                 elif option == 2:
-                    # TODO: allow changing volume limit
-                    #      (needs some way to change existing database entries
-                    print("Currently, volume limit is hard-coded; changing it"
-                          "may cause issues. Functionality will be added at"
-                          "a later date.")
+                    new_vol_limit = input("Enter new volume limit"
+                                          "(Must be multiple of 32): ")
+                    new_vol_limit = int(new_vol_limit)
+                    if(new_vol_limit % 32 == 0 and new_vol_limit >= 32):
+                        config["config"]["volume_limit"] = str(new_vol_limit)
+                        VOLUME_LIMIT = new_vol_limit
+                        with open("config.ini", "w") as config_ini:
+                            config.write(config_ini)
+                    else:
+                        print("Invalid volume limit, not changed.")
                     pass
 
                 # 3. Change series per page ( 0 for no limit)
