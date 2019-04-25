@@ -522,6 +522,10 @@ def main():
                     if delete_database == 'y' or delete_database == 'Y':
                         os.rename(DATABASE_NAME, DATABASE_NAME+".bak")
                         DATA_MGR = DatabaseManager(False)
+                
+                else:
+                    print("Invalid option, returning to main screen")
+                    pass
 
             except Exception:
                 print("Failure, returning to main screen")
