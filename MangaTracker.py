@@ -169,7 +169,8 @@ def list_series(DATA_MGR):
 
         if len(series_with_gaps) > 0:
             print("----------------------------------------")
-            return
+
+        return
 
     # Default (print all)
     print_all_series(DATA_MGR)
