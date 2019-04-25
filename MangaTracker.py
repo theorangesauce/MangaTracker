@@ -503,13 +503,13 @@ def main():
                             config.write(config_ini)
                     pass
 
-                # 4. Reset to default
+                # 5. Reset to default
                 elif option == 5:
                     default = input("Reset all settings to default? (y/N): ")
                     if default == 'y' or default == 'Y':
                         set_default_cfg("config.ini")
 
-                # 5. Clear database (Does not prompt user for series)
+                # 6. Clear database (Does not prompt user for series)
                 elif option == 6:
                     delete_database = input("Remove Database? "\
                                             "(will copy to {0}.bak) y/N: "
