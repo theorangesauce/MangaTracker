@@ -5,9 +5,8 @@
 import os
 import math
 import configparser
-from DatabaseManager import DatabaseManager
-from DatabaseManager import regexp
-from Series import Series, init_database
+from DatabaseManager import *
+from Series import *
 
 # Global constants - fallback in case config.ini cannot be read
 
@@ -61,97 +60,6 @@ def print_all_series(data_mgr):
 
     if len(entries) > 0:
         print("----------------------------------------")
-
-def input_series(data_mgr):
-    """
-    input_series():
-    Gets values for the name of a manga series, volumes currently owned,
-    and whether the series is completed, and returns a Series() object
-    """
-    series_name = input("Enter manga name or leave blank to cancel: ")
-    if series_name == "":
-        return None
-    # try:
-    cur = data_mgr.query("Select name FROM Series WHERE name = '{0}'"
-                         .format(series_name.replace("'", "''")))
-    row = cur.fetchall()
-    if len(row) > 0:
-        print("Name already in database!")
-        return None
-    # except:
-    #     print("Database query failed, continuing...")
-    volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
-    volumes_owned = generate_volumes_owned(volumes_raw)
-
-    author = input("Enter author or leave blank if unknown: ")
-    if author == "":
-        author = "Unknown"
-
-    publisher = input("Enter publisher (leave blank if unknown): ")
-    if publisher == "":
-        publisher = "Unknown"
-
-    alt_names = input("Enter any alternate names for this series, if any: ")
-
-    is_completed = input("Is this series completed? (y/N): ")
-    if is_completed != 'y' and is_completed != 'Y':
-        is_completed = 0
-    else:
-        is_completed = 1
-
-    return Series(name=series_name,
-                  volumes_owned=volumes_owned,
-                  is_completed=is_completed,
-                  next_volume=-1,
-                  publisher=publisher,
-                  author=author, alt_names=alt_names)
-
-def generate_volumes_owned(str):
-    """
-    generate_volumes_owned(str):
-    Takes a string of numbers in a comma-separated list (ex. "1, 3-5, 7"),
-    stores them bitwise in 32-bit integers, then concatenates bitwise
-    representations of them in a string and returns the result
-    """
-    arr_length = int(math.ceil(VOLUME_LIMIT / 32))
-    vol_arr = [0 for x in range(0, arr_length)]
-    entered_values = [x.strip() for x in str.split(',')]
-    for num in entered_values:
-        if num == '' or num == "None": # empty string, no volumes
-            continue
-        if '-' in num: # two integers separated by dash
-            # should always have 2 integers
-            nums = [int(k) for k in num.split('-')]
-            if nums[0] < 1:
-                print("Start volume must be greater than zero; "\
-                      "token %s ignored" % num)
-                continue
-            if nums[1] > VOLUME_LIMIT:
-                print("End volume too high; consider raising volume limit "\
-                      "(currently {0})".format(VOLUME_LIMIT))
-                nums[1] = 128
-            for i in range(nums[0]-1, nums[1]):
-                vol_arr[i // 32] |= 1 << (i % 32)
-        else: # single integer
-            try:
-                num = int(num) - 1
-            except:
-                print("Invalid token: {0}".format(num))
-                continue
-            if num < 0:
-                print("Token {0} ignored; volume number must be "\
-                      "greater than zero".format(num))
-                continue
-            if num >= VOLUME_LIMIT:
-                print("Token {0} ignored; volume number must be lower "\
-                      "than volume limit (currently {1})"
-                      .format(num, VOLUME_LIMIT))
-                continue
-            vol_arr[num // 32] |= 1 << (num % 32)
-    result = ""
-    for num in vol_arr:
-        result += format(num) + ','
-    return result[:-1]
 
 def set_default_config(filename):
     """
@@ -347,7 +255,7 @@ def main():
         # Add Series
         if user_input == 'a' or user_input == 'A':
             try:
-                new_series = input_series(DATA_MGR)
+                new_series = input_series(DATA_MGR, VOLUME_LIMIT)
             except KeyboardInterrupt:
                 print("\nAdd series operation cancelled")
                 new_series = None
