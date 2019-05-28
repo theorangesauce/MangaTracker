@@ -12,7 +12,7 @@ class DatabaseManager(object):
     """
     def __init__(self, database_name, init_database, new_db_needed=True):
         """
-        __init__(self, database_name, init_database boolean)
+        __init__(self, database_name, init_database, boolean)
         Set up a manager for the database, loading from a file or
         creating a new database if one does not exist. Once
         database is created, the program calls a specialized

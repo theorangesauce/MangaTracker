@@ -24,6 +24,10 @@ class Series(object):
         alt_names -- Alternate names for series (ex. in other languages)
             (default to empty string)
         rowid -- Row ID in database to use for updates (default None)
+        volume_limit -- The current maximum number of volumes tracked 
+            per series
+        compact_list -- A boolean deciding whether __str__ should return
+            a single line or multiple lines.
         """
         valid_keys = ["name", "volumes_owned", "is_completed",
                       "next_volume", "publisher", "author",
@@ -447,3 +451,4 @@ def input_series(data_mgr, volume_limit):
                   next_volume=-1,
                   publisher=publisher,
                   author=author, alt_names=alt_names)
+
