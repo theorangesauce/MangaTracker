@@ -24,13 +24,28 @@ class Config(object):
 
         self.config = configparser.ConfigParser()
         self.config.read(filename)
-
+        
+        self.filename = filename
         self.database_name = config.get('config', 'database_name', fallback='manga.db')
         self.volume_limit = config.getint('config', 'volume_limit', fallback=128)
         self.paginated = config.getboolean('config', 'paginated', fallback=False)
         self.series_per_page = config.getint('config', 'series_per_page', fallback=5)
         self.compact_list = config.getboolean('config', 'compact_list', fallback=False)
+    
+    def set_property(self, prop_name, prop_value):
+        """
+        set_property(self, prop_name, prop_value)
+        Set a config property to a new value. Checks to ensure that
+        prop_name refers to a valid property, and prop_value is a valid
+        value for that property
+        """
+        if prop_name == "database_name":
+            if isinstance(prop_value, str) 
+            and len(prop_value) > 0
+            and prop_value[-3:] == ".db":
+                self.config["config"]["database_name"] = prop_value
 
+        self.config.write(self.filename)
 
 def set_default_config(filename):
     """
