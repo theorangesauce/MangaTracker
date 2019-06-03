@@ -7,6 +7,7 @@ import math
 import configparser
 from DatabaseManager import *
 from Series import *
+from Config import config
 
 # Global constants - fallback in case config.ini cannot be read
 
@@ -60,25 +61,6 @@ def print_all_series(data_mgr):
 
     if len(entries) > 0:
         print("----------------------------------------")
-
-def set_default_config(filename):
-    """
-    set_default_config()
-    Saves default config to desired filename
-    """
-    if os.path.isfile(filename):
-        os.remove(filename)
-
-    config = configparser.ConfigParser()
-    default_cfg = {'config': {'database_name' : 'manga.db',
-                              'volume_limit' : 128,
-                              'paginated' : 0,
-                              'series_per_page' : 5,
-                              'compact_list': 0}}
-
-    config.read_dict(default_cfg)
-    with open('config.ini', 'w') as config_ini:
-        config.write(config_ini)
 
 def print_entries_list(entries):
     """
