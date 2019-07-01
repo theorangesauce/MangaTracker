@@ -4,11 +4,24 @@
 import os
 import configparser
 
-class Config(object):
+class Singleton(object):
     """
-    Config(object)
+    Singleton(object)
+
+    Abstract class which ensures that only one instance of the 
+    class ever exists.
+    """
+    def __new__(cls, *args, **kw):
+        if not hasattr(cls, '_instance'):
+            orig = super(Singleton, cls)
+            cls._instance = orig.__new__(cls, *args, **kw)
+        return cls._instance
+
+class Config(Singleton):
+    """
+    Config(Singleton)
     Container for a configparser object. Will be able retrieve config items
-    for MangaTracker
+    for MangaTracker.
     """
     def __init__(self, filename="config.ini"):
         """
@@ -78,4 +91,4 @@ def set_default_config(filename):
     with open('config.ini', 'w') as config_ini:
         config.write(config_ini)
         
-config = Config();
+
