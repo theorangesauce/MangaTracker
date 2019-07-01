@@ -19,7 +19,7 @@ class Config(object):
         Arguments:
         filename (String) -- Name of file for loading/saving config info 
         """
-        if !os.path.isfile(filename):
+        if not os.path.isfile(filename):
             set_default_config(filename)
 
         self.config = configparser.ConfigParser()
