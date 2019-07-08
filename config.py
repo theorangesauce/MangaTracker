@@ -70,7 +70,8 @@ class Config(Singleton):
             if (isinstance(prop_value, int) and prop_value in [0, 1])
             or isinstance(prop_value, bool):
                 self.config["config"]["compact_list"] = prop_value
-        self.config.write(self.filename)
+        with open(self.filename, 'w') as config_ini:
+            self.config.write(config_ini)
 
 def set_default_config(filename):
     """
