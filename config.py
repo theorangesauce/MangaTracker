@@ -33,7 +33,7 @@ class Config(Singleton):
         filename (String) -- Name of file for loading/saving config info 
         """
         if not os.path.isfile(filename):
-            set_default_config(filename)
+            self.set_default_config(filename)
 
         self.config = configparser.ConfigParser()
         self.config.read(filename)
@@ -73,23 +73,31 @@ class Config(Singleton):
         with open(self.filename, 'w') as config_ini:
             self.config.write(config_ini)
 
-def set_default_config(filename):
-    """
-    set_default_config()
-    Saves default config to desired filename
-    """
-    if os.path.isfile(filename):
-        os.remove(filename)
+    def set_default_config(filename):
+        """
+        set_default_config()
+        Saves default config to desired filename
+        """
+        if os.path.isfile(filename):
+            os.remove(filename)
 
-    config = configparser.ConfigParser()
-    default_cfg = {'config': {'database_name' : 'manga.db',
-                              'volume_limit' : 128,
-                              'paginated' : 0,
-                              'series_per_page' : 5,
-                              'compact_list': 0}}
+        config = configparser.ConfigParser()
+        default_cfg = {'config': {'database_name' : 'manga.db',
+                                  'volume_limit' : 128,
+                                  'paginated' : 0,
+                                  'series_per_page' : 5,
+                                  'compact_list': 0}}
 
-    config.read_dict(default_cfg)
-    with open('config.ini', 'w') as config_ini:
-        config.write(config_ini)
+        config.read_dict(default_cfg)
+        with open(filename, 'w') as config_ini:
+            config.write(config_ini)
         
+        # Reset class variables for config object as well
+        self.config = config
+        self.filename = filename
+        self.database_name = 'manga.db'
+        self.volume_limit = 128
+        self.paginated = False
+        self.series_per_page = 5
+        self.compact_list = False
 
