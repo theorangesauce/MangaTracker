@@ -7,7 +7,7 @@ import math
 import configparser
 from DatabaseManager import *
 from Series import *
-from Config import config
+from Config import Config
 
 # Global constants - fallback in case config.ini cannot be read
 
@@ -23,9 +23,6 @@ def entry_to_series(entry):
     Takes a single row from a database query and converts it
     into a series.
     """
-    global VOLUME_LIMIT
-    global COMPACT_LIST
-
     series = Series(name=str(entry[1]),          # Series Name
                     volumes_owned=str(entry[2]), # Volumes Owned
                     is_completed=entry[3],       # Is Completed
@@ -33,9 +30,7 @@ def entry_to_series(entry):
                     publisher=str(entry[5]),     # Publisher
                     author=str(entry[6]),        # Author
                     alt_names=str(entry[7]),     # Alternate Names
-                    rowid=entry[0],              # Row ID (for updates)
-                    volume_limit=VOLUME_LIMIT,
-                    compact_list=COMPACT_LIST)   # Config properties
+                    rowid=entry[0])              # Row ID (for updates)
     return series
 
 def print_all_series(data_mgr):
@@ -46,8 +41,11 @@ def print_all_series(data_mgr):
     cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY name")
     entries = cur.fetchall()
     count = 0
+    config = Config()
+
     for entry in entries:
-        if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
+        if config.paginated and count != 0 and 
+        count % config.series_per_page == 0:
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -68,9 +66,11 @@ def print_entries_list(entries):
     Function to print all items matching database query
     """
     count = 0
+    config = Config()
 
     for entry in entries:
-        if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
+        if config.paginated and count != 0 and 
+        count % config.series_per_page == 0:
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -86,8 +86,15 @@ def print_entries_list(entries):
         print("----------------------------------------")
 
 def list_series(DATA_MGR):
+    """
+    list_series()
+
+    Lists all series from the database which meet user-specified criteria
+    """
     selection = input("List [A]ll / [C]omplete / "
                       "[I]ncomplete / Series with [G]aps: ")
+    config = Config()
+
     # Completed Series
     if selection == 'c' or selection == 'C':
         cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
@@ -137,7 +144,8 @@ def list_series(DATA_MGR):
 
         count = 0
         for series in series_with_gaps:
-            if PAGINATED and count != 0 and count % SERIES_PER_PAGE == 0:
+            if config.paginated and count != 0 and 
+            count % config.series_per_page == 0:
                 print("----------------------------------------")
                 continue_print = input("Press Enter to continue "
                                        "or type 'q' to stop: ")
@@ -189,25 +197,9 @@ def main():
     main()
     Main driver function for mangatracker program
     """
-    if not os.path.isfile("config.ini"):
-        set_default_config("config.ini")
-
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-
-    global DATABASE_NAME
-    global VOLUME_LIMIT
-    global PAGINATED    
-    global SERIES_PER_PAGE
-    global COMPACT_LIST
-
-    DATABASE_NAME = config.get('config', 'database_name', fallback='manga.db')
-    VOLUME_LIMIT = config.getint('config', 'volume_limit', fallback=128)
-    PAGINATED = config.getboolean('config', 'paginated', fallback=False)
-    SERIES_PER_PAGE = config.getint('config', 'series_per_page', fallback=5)
-    COMPACT_LIST = config.getboolean('config', 'compact_list', fallback=False)
-
+    config = Config()
     DATA_MGR = DatabaseManager(DATABASE_NAME, init_database)
+
     print_all_series(DATA_MGR)
 
     while True:
@@ -238,7 +230,7 @@ def main():
         # Add Series
         if user_input == 'a' or user_input == 'A':
             try:
-                new_series = input_series(DATA_MGR, VOLUME_LIMIT)
+                new_series = input_series(DATA_MGR)
             except KeyboardInterrupt:
                 print("\nAdd series operation cancelled")
                 new_series = None
@@ -328,19 +320,12 @@ def main():
             option = input("Enter a number to modify option: ")
             try:
                 option = int(option)
-                config = configparser.ConfigParser()
-                config.read("config.ini")
-
                 # 1. Change database name
                 if option == 1:
                     new_db_name = input("Enter new database name, or leave "\
                                         "blank to leave unchanged: ")
                     if new_db_name != "" and not os.exists(new_db_name):
-                        os.rename(DATABASE_NAME, new_db_name)
-                        config["config"]["database_name"] = new_db_name
-                        DATABASE_NAME = new_db_name
-                        with open("config.ini", "w") as config_ini:
-                            config.write(config_ini)
+                        config.set_property("database_name", new_db_name)
                     else:
                         print("Database name not changed.")
                     pass
@@ -351,10 +336,7 @@ def main():
                                           "(Must be multiple of 32): ")
                     new_vol_limit = int(new_vol_limit)
                     if(new_vol_limit % 32 == 0 and new_vol_limit >= 32):
-                        config["config"]["volume_limit"] = str(new_vol_limit)
-                        VOLUME_LIMIT = new_vol_limit
-                        with open("config.ini", "w") as config_ini:
-                            config.write(config_ini)
+                        config.set_property("volume_limit", new_vol_limit)
                     else:
                         print("Invalid volume limit, not changed.")
                     pass
@@ -365,49 +347,35 @@ def main():
                                                 "series to display per page, "
                                                 "or 0 to not use pages: ")
                     if new_series_per_page == '0':
-                        config["config"]["paginated"] = 0
-                        PAGINATED = False
-                        with open("config.ini", "w") as config_ini:
-                            config.write(config_ini)
+                        config.set_property("paginated", False)
                     try:
                         new_series_per_page = int(new_series_per_page)
                         if new_series_per_page < 1:
                             print("Series per page must be greater than 1!")
                         else:
-                            config["config"]["series_per_page"] = (
-                                new_series_per_page)
-                            config["config"]["paginated"] = 1
-                            SERIES_PER_PAGE = new_series_per_page
-                            PAGINATED = True
-                            with open("config.ini", "w") as config_ini:
-                                config.write(config_ini)
-                    except Exception:
+                            config.set_property("series_per_page", 
+                                                new_series_per_page)
+                            config.set_property("paginated", True)
+                    except (ValueError, TypeError):
                         pass
                 
                 # 4. Use compact descriptions when listing series
                 elif option == 4:
                     use_compact_list = input("Use compact descriptions? (y/N): ")
                     if use_compact_list == 'y' or use_compact_list == 'Y':
-                        config["config"]["compact_list"] = "1"
-                        COMPACT_LIST = True
-                        with open("config.ini", "w") as config_ini:
-                            config.write(config_ini)
+                        config.set_property("compact_list", True)
                     else:
-                        config["config"]["compact_list"] = "0"
-                        COMPACT_LIST = False
-                        with open("config.ini", "w") as config_ini:
-                            config.write(config_ini)
-                    pass
+                        config.set_property("compact_list", False)
 
                 # 5. Reset to default
                 elif option == 5:
                     default = input("Reset all settings to default? (y/N): ")
                     if default == 'y' or default == 'Y':
-                        set_default_cfg("config.ini")
+                        config.set_default_cfg("config.ini")
 
                 # 6. Clear database (Does not prompt user for series)
                 elif option == 6:
-                    delete_database = input("Remove Database? "\
+                    delete_database = input("Remove Database? "
                                             "(will copy to {0}.bak) y/N: "
                                             .format(DATABASE_NAME))
                     if delete_database == 'y' or delete_database == 'Y':
@@ -417,9 +385,6 @@ def main():
                 else:
                     print("Invalid option, returning to main screen")
                     pass
-
-            except Exception:
-                print("Failure, returning to main screen")
 
 # TESTING CODE
 def series_test():
