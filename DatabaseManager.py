@@ -23,7 +23,7 @@ class DatabaseManager(object):
         self.cur = self.con.cursor()
 
         if init_database is not None:
-            init_database(self)
+            init_database(self, new_db_needed)
 
     def query(self, arg):
         """Runs a query on the database and returns the result"""

@@ -337,7 +337,7 @@ class Series(object):
             return self.compact_string()
         return self.full_string()
 
-def init_database(data_mgr):
+def init_database(data_mgr, new_db_needed=True):
     """
     init_database()
     Initializes a DatabaseManager() object for use
