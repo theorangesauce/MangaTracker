@@ -44,8 +44,8 @@ def print_all_series(data_mgr):
     config = Config()
 
     for entry in entries:
-        if config.paginated and count != 0 and 
-        count % config.series_per_page == 0:
+        if (config.paginated and count != 0 
+            and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -69,8 +69,8 @@ def print_entries_list(entries):
     config = Config()
 
     for entry in entries:
-        if config.paginated and count != 0 and 
-        count % config.series_per_page == 0:
+        if (config.paginated and count != 0 
+            and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -144,8 +144,8 @@ def list_series(DATA_MGR):
 
         count = 0
         for series in series_with_gaps:
-            if config.paginated and count != 0 and 
-            count % config.series_per_page == 0:
+            if (config.paginated and count != 0 
+                and count % config.series_per_page == 0):
                 print("----------------------------------------")
                 continue_print = input("Press Enter to continue "
                                        "or type 'q' to stop: ")
@@ -335,7 +335,7 @@ def main():
                     new_vol_limit = input("Enter new volume limit"
                                           "(Must be multiple of 32): ")
                     new_vol_limit = int(new_vol_limit)
-                    if(new_vol_limit % 32 == 0 and new_vol_limit >= 32):
+                    if new_vol_limit % 32 == 0 and new_vol_limit >= 32:
                         config.set_property("volume_limit", new_vol_limit)
                     else:
                         print("Invalid volume limit, not changed.")
