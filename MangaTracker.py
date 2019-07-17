@@ -385,7 +385,9 @@ def main():
                 else:
                     print("Invalid option, returning to main screen")
                     pass
-
+            except ValueError:
+                print("Invalid option, returning to main screen")
+ 
 # TESTING CODE
 def series_test():
     """
