@@ -1,5 +1,6 @@
 import math
 from DatabaseManager import DatabaseManager
+from config import Config
 
 class Series(object):
     """
@@ -31,12 +32,10 @@ class Series(object):
         """
         valid_keys = ["name", "volumes_owned", "is_completed",
                       "next_volume", "publisher", "author",
-                      "alt_names", "rowid", "volume_limit",
-                      "compact_list"]
+                      "alt_names", "rowid"]
 
         self.next_volume = -1
-        self.volume_limit = 128
-        self.compact_list = False
+        self.config = Config()
         for key in valid_keys:
             self.__dict__[key] = kwargs.get(key)
 
@@ -92,7 +91,7 @@ class Series(object):
                 index += 1
 
             if first != -1: # last set of volumes reaches volume limit
-                last = self.volume_limit
+                last = self.config.volume_limit
                 self.volumes_owned_readable += (
                     "{0}, ".format(first) if first == last
                     else "{0}-{1}, ".format(first, last))
@@ -199,8 +198,7 @@ class Series(object):
                     volumes_to_add = input(
                         "Enter volumes to add (ex. 1, 3-5): ")
 
-                    volumes_to_add = generate_volumes_owned(volumes_to_add, 
-                                                            self.volume_limit)
+                    volumes_to_add = generate_volumes_owned(volumes_to_add)
                     vol_arr_to_add = [int(x) for x in
                                       volumes_to_add.split(",")]
                     self.vol_arr = [x | y for x, y in
@@ -210,7 +208,7 @@ class Series(object):
                     self.next_volume = self.calculate_next_volume()
                     self.volumes_owned_readable = ""
                     self.volumes_owned = generate_volumes_owned(
-                        self.get_volumes_owned(), self.volume_limit)
+                        self.get_volumes_owned())
 
                 # Remove Volumes
                 # TODO: if empty after removal, prompt to delete series
@@ -218,8 +216,7 @@ class Series(object):
                     volumes_to_rmv = input(
                         "Enter volumes to remove (ex. 1, 3-5): ")
 
-                    volumes_to_rmv = generate_volumes_owned(volumes_to_rmv,
-                                                            self.volume_limit)
+                    volumes_to_rmv = generate_volumes_owned(volumes_to_rmv)
                     vol_arr_to_remove = [int(x) for x in
                                          volumes_to_rmv.split(",")]
                     self.vol_arr = [~x & y for x, y in
@@ -229,7 +226,7 @@ class Series(object):
                     self.next_volume = self.calculate_next_volume()
                     self.volumes_owned_readable = ""
                     self.volumes_owned = generate_volumes_owned(
-                        self.get_volumes_owned(), self.volume_limit)
+                        self.get_volumes_owned())
 
             # Change Author
             elif selection == 'a' or selection == 'A':
@@ -333,7 +330,7 @@ class Series(object):
         Returns a string representation of the object (defaults to
         full_string()
         """
-        if self.compact_list:
+        if self.config.compact_list:
             return self.compact_string()
         return self.full_string()
 
@@ -361,13 +358,14 @@ def init_database(data_mgr, new_db_needed=True):
                     print("Failed to add series! (name conflict)")
                 next_series = input_series(data_mgr)
 
-def generate_volumes_owned(str, volume_limit):
+def generate_volumes_owned(str):
     """
     generate_volumes_owned(str):
     Takes a string of numbers in a comma-separated list (ex. "1, 3-5, 7"),
     stores them bitwise in 32-bit integers, then concatenates bitwise
     representations of them in a string and returns the result
     """
+    volume_limit = Config().volume_limit
     arr_length = int(math.ceil(volume_limit / 32))
     vol_arr = [0 for x in range(0, arr_length)]
     entered_values = [x.strip() for x in str.split(',')]
@@ -408,12 +406,13 @@ def generate_volumes_owned(str, volume_limit):
         result += format(num) + ','
     return result[:-1]
 
-def input_series(data_mgr, volume_limit):
+def input_series(data_mgr):
     """
     input_series():
     Gets values for the name of a manga series, volumes currently owned,
     and whether the series is completed, and returns a Series() object
     """
+    volume_limit = Config().volume_limit
     series_name = input("Enter manga name or leave blank to cancel: ")
     if series_name == "":
         return None
@@ -427,7 +426,7 @@ def input_series(data_mgr, volume_limit):
     # except:
     #     print("Database query failed, continuing...")
     volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
-    volumes_owned = generate_volumes_owned(volumes_raw, volume_limit)
+    volumes_owned = generate_volumes_owned(volumes_raw)
 
     author = input("Enter author or leave blank if unknown: ")
     if author == "":
