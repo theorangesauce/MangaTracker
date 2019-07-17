@@ -39,11 +39,21 @@ class Config(Singleton):
         self.config.read(filename)
         
         self.filename = filename
-        self.database_name = config.get('config', 'database_name', fallback='manga.db')
-        self.volume_limit = config.getint('config', 'volume_limit', fallback=128)
-        self.paginated = config.getboolean('config', 'paginated', fallback=False)
-        self.series_per_page = config.getint('config', 'series_per_page', fallback=5)
-        self.compact_list = config.getboolean('config', 'compact_list', fallback=False)
+        self.database_name = self.config.get('config', 
+                                             'database_name', 
+                                             fallback='manga.db')
+        self.volume_limit = self.config.getint('config', 
+                                               'volume_limit', 
+                                               fallback=128)
+        self.paginated = self.config.getboolean('config', 
+                                                'paginated', 
+                                                fallback=False)
+        self.series_per_page = self.config.getint('config', 
+                                                  'series_per_page', 
+                                                  fallback=5)
+        self.compact_list = self.config.getboolean('config', 
+                                                   'compact_list', 
+                                                   fallback=False)
     
     def set_property(self, prop_name, prop_value):
         """
