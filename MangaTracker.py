@@ -351,7 +351,7 @@ def main():
                     try:
                         new_series_per_page = int(new_series_per_page)
                         if new_series_per_page < 1:
-                            print("Series per page must be greater than 1!")
+                            print("Series per page must be greater than 1")
                         else:
                             config.set_property("series_per_page", 
                                                 new_series_per_page)
