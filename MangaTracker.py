@@ -7,7 +7,7 @@ import math
 import configparser
 from DatabaseManager import *
 from Series import *
-from Config import Config
+from config import Config
 
 # Global constants - fallback in case config.ini cannot be read
 
