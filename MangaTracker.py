@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# MangaTracker
+# mangatracker.py
 # Program to track owned and desired manga series
 
 import os
 import math
 import configparser
-from DatabaseManager import *
-from Series import *
+from databasemanager import *
+from series import *
 from config import Config
 
 # Global constants - fallback in case config.ini cannot be read

@@ -1,4 +1,4 @@
-# Config
+# config.py
 # Store and retrieve config variables from config.ini
 
 import os
@@ -30,7 +30,8 @@ class Config(Singleton):
         for later retrieval
 
         Arguments:
-        filename (String) -- Name of file for loading/saving config info 
+        filename (String) -- Name of file for loading/saving config info,
+        defaults to config.ini
         """
         if not os.path.isfile(filename):
             self.set_default_config(filename)
@@ -110,4 +111,3 @@ class Config(Singleton):
         self.paginated = False
         self.series_per_page = 5
         self.compact_list = False
-

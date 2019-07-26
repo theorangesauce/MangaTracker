@@ -1,4 +1,4 @@
-# DatabaseManager.py
+# databasemanager.py
 # SQLite3 Database Manager for Series objects
 
 import sqlite3 as lite

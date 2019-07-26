@@ -1,5 +1,8 @@
+# series.py
+# Container for information regarding a manga series
+
 import math
-from DatabaseManager import DatabaseManager
+from databasemanager import DatabaseManager
 from config import Config
 
 class Series(object):
