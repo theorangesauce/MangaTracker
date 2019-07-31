@@ -9,14 +9,6 @@ from databasemanager import *
 from series import *
 from config import Config
 
-# Global constants - fallback in case config.ini cannot be read
-
-DATABASE_NAME = "manga.db"
-VOLUME_LIMIT = 128
-PAGINATED = False
-SERIES_PER_PAGE = 5
-COMPACT_LIST = True
-
 def entry_to_series(entry):
     """
     entry_to_series()
@@ -198,7 +190,7 @@ def main():
     Main driver function for mangatracker program
     """
     config = Config()
-    DATA_MGR = DatabaseManager(DATABASE_NAME, init_database)
+    DATA_MGR = DatabaseManager(config.database_name, init_database)
 
     print_all_series(DATA_MGR)
 
@@ -377,9 +369,10 @@ def main():
                 elif option == 6:
                     delete_database = input("Remove Database? "
                                             "(will copy to {0}.bak) y/N: "
-                                            .format(DATABASE_NAME))
+                                            .format(config.database_name))
                     if delete_database == 'y' or delete_database == 'Y':
-                        os.rename(DATABASE_NAME, DATABASE_NAME+".bak")
+                        os.rename(config.database_name, 
+                                  config.database_name+".bak")
                         DATA_MGR = DatabaseManager(False)
                 
                 else:
@@ -412,9 +405,10 @@ def series_test():
         print("Error generating volumes for '-1, 1, 3'")
 
     try:
-        generate_volumes_owned("1, 3, %d" % (VOLUME_LIMIT + 1))
+        generate_volumes_owned("1, 3, %d" % (Config().volume_limit + 1))
     except:
-        print("Error generating volumes for '1, 3, %d'" % (VOLUME_LIMIT + 1))
+        print("Error generating volumes for '1, 3, %d'" 
+              % (Config().volume_limit + 1))
 
     if test_failed:
         print("**TEST 1 FAILED**")
