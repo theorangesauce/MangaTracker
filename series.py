@@ -109,13 +109,6 @@ class Series(object):
         """Returns whether all volumes for series are in collection"""
         return "Yes" if self.is_completed == 1 else "No"
 
-    # def get_next_volume(self):
-    #     """Returns the lowest-numbered volume not in collection"""
-    #     # check if calculated, otherwise return current value
-    #     if self.next_volume <= 0:
-    #         self.next_volume = self.calculate_next_volume()
-    #     return self.next_volume
-
     def get_volumes_owned_binary(self):
         """Converts vol_arr to a single binary string listing all volumes"""
         vol_str = ""
