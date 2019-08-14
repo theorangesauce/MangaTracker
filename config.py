@@ -46,12 +46,9 @@ class Config(Singleton):
         self.volume_limit = self.config.getint('config', 
                                                'volume_limit', 
                                                fallback=128)
-        self.paginated = self.config.getboolean('config', 
-                                                'paginated', 
-                                                fallback=False)
         self.series_per_page = self.config.getint('config', 
                                                   'series_per_page', 
-                                                  fallback=5)
+                                                  fallback=0)
         self.compact_list = self.config.getboolean('config', 
                                                    'compact_list', 
                                                    fallback=False)
@@ -70,10 +67,6 @@ class Config(Singleton):
         elif prop_name == "volume_limit":
             if isinstance(prop_value, int) and prop_value > 0:
                 self.config["config"]["volume_limit"] = str(prop_value)
-        elif prop_name == "paginated":
-            if ((isinstance(prop_value, int) and prop_value in [0, 1]) 
-                or isinstance(prop_value, bool)):
-                self.config["config"]["paginated"] = str(prop_value)
         elif prop_name == "series_per_page":
             if isinstance(prop_value, int) and prop_value >= 0:
                 self.config["config"]["series_per_page"] = str(prop_value)
@@ -95,19 +88,17 @@ class Config(Singleton):
         config = configparser.ConfigParser()
         default_cfg = {'config': {'database_name' : 'manga.db',
                                   'volume_limit' : 128,
-                                  'paginated' : 0,
-                                  'series_per_page' : 5,
+                                  'series_per_page' : 0,
                                   'compact_list': 0}}
 
         config.read_dict(default_cfg)
         with open(filename, 'w') as config_ini:
             config.write(config_ini)
-        
+
         # Reset class variables for config object as well
         self.config = config
         self.filename = filename
         self.database_name = 'manga.db'
         self.volume_limit = 128
-        self.paginated = False
-        self.series_per_page = 5
+        self.series_per_page = 0
         self.compact_list = False

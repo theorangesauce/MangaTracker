@@ -36,7 +36,7 @@ def print_all_series(data_mgr):
     config = Config()
 
     for entry in entries:
-        if (config.paginated and count != 0 
+        if (config.series_per_page != 0 and count != 0 
             and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
@@ -61,7 +61,7 @@ def print_entries_list(entries):
     config = Config()
 
     for entry in entries:
-        if (config.paginated and count != 0 
+        if (config.series_per_page != 0 and count != 0 
             and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
@@ -136,7 +136,7 @@ def list_series(DATA_MGR):
 
         count = 0
         for series in series_with_gaps:
-            if (config.paginated and count != 0 
+            if (config.series_per_page != 0 and count != 0 
                 and count % config.series_per_page == 0):
                 print("----------------------------------------")
                 continue_print = input("Press Enter to continue "
@@ -339,17 +339,17 @@ def main():
                                                 "series to display per page, "
                                                 "or 0 to not use pages: ")
                     if new_series_per_page == '0':
-                        config.set_property("paginated", False)
-                    try:
-                        new_series_per_page = int(new_series_per_page)
-                        if new_series_per_page < 1:
-                            print("Series per page must be greater than 1")
-                        else:
-                            config.set_property("series_per_page", 
-                                                new_series_per_page)
-                            config.set_property("paginated", True)
-                    except (ValueError, TypeError):
-                        pass
+                        config.set_property("series_per_page", 0)
+                    else: 
+                        try:
+                            new_series_per_page = int(new_series_per_page)
+                            if new_series_per_page < 1:
+                                print("Series per page must be greater than 1")
+                            else:
+                                config.set_property("series_per_page", 
+                                                    new_series_per_page)
+                        except (ValueError, TypeError):
+                            pass
                 
                 # 4. Use compact descriptions when listing series
                 elif option == 4:
