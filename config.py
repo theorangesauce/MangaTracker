@@ -69,18 +69,18 @@ class Config(Singleton):
                 self.config["config"]["database_name"] = prop_value
         elif prop_name == "volume_limit":
             if isinstance(prop_value, int) and prop_value > 0:
-                self.config["config"]["volume_limit"] = prop_value
+                self.config["config"]["volume_limit"] = str(prop_value)
         elif prop_name == "paginated":
             if ((isinstance(prop_value, int) and prop_value in [0, 1]) 
                 or isinstance(prop_value, bool)):
-                self.config["config"]["paginated"] = prop_value
+                self.config["config"]["paginated"] = str(prop_value)
         elif prop_name == "series_per_page":
-            if isinstance(prop_value, int) and prop_value > 0:
-                self.config["config"]["series_per_page"] = prop_value
+            if isinstance(prop_value, int) and prop_value >= 0:
+                self.config["config"]["series_per_page"] = str(prop_value)
         elif prop_name == "compact_list":
             if ((isinstance(prop_value, int) and prop_value in [0, 1])
                 or isinstance(prop_value, bool)):
-                self.config["config"]["compact_list"] = prop_value
+                self.config["config"]["compact_list"] = str(prop_value)
         with open(self.filename, 'w') as config_ini:
             self.config.write(config_ini)
 
