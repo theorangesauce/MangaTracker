@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# mangatracker.py
-# Program to track owned and desired manga series
-
-import os
-import math
-import configparser
-from databasemanager import *
+""" mangatracker.py
+Program to track owned and desired manga series.
+Run using ./mangatracker.py
+"""
+import os.path
+from databasemanager import DatabaseManager
+from databasemanager import regexp
 from series import *
 from config import Config
 
@@ -36,12 +36,14 @@ def print_all_series(data_mgr):
     config = Config()
 
     for entry in entries:
-        if (config.series_per_page != 0 and count != 0 
-            and count % config.series_per_page == 0):
+        if (config.series_per_page != 0
+            and count != 0
+            and count % config.series_per_page == 0
+        ):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
-            if continue_print == 'q' or continue_print == 'Q':
+            if continue_print in ('q', 'Q'):
                 return
 
         print("----------------------------------------")
@@ -61,12 +63,14 @@ def print_entries_list(entries):
     config = Config()
 
     for entry in entries:
-        if (config.series_per_page != 0 and count != 0 
-            and count % config.series_per_page == 0):
+        if (config.series_per_page != 0
+            and count != 0
+            and count % config.series_per_page == 0
+        ):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
-            if continue_print == 'q' or continue_print == 'Q':
+            if continue_print in ('q', 'Q'):
                 return
 
         print("----------------------------------------")
@@ -77,7 +81,7 @@ def print_entries_list(entries):
     if len(entries) > 0:
         print("----------------------------------------")
 
-def list_series(DATA_MGR):
+def list_series(data_mgr):
     """
     list_series()
 
@@ -88,8 +92,8 @@ def list_series(DATA_MGR):
     config = Config()
 
     # Completed Series
-    if selection == 'c' or selection == 'C':
-        cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
+    if selection in ('c', 'C'):
+        cur = data_mgr.query("SELECT rowid, * FROM Series WHERE "
                              "is_completed = 1 ORDER BY name")
         entries = cur.fetchall()
 
@@ -102,8 +106,8 @@ def list_series(DATA_MGR):
         return
 
     # Incomplete Series
-    if selection == 'i' or selection == 'I':
-        cur = DATA_MGR.query("SELECT rowid, * FROM Series WHERE "
+    if selection in ('i', 'I'):
+        cur = data_mgr.query("SELECT rowid, * FROM Series WHERE "
                              "is_completed = 0 ORDER BY name")
         entries = cur.fetchall()
 
@@ -116,8 +120,8 @@ def list_series(DATA_MGR):
         return
 
     # Series with Gaps
-    if selection == 'g' or selection == 'G':
-        cur = DATA_MGR.query("SELECT rowid, * FROM Series ORDER BY name")
+    if selection in ('g', 'G'):
+        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY name")
         entries = cur.fetchall()
         series_list = [entry_to_series(entry) for entry in entries]
         series_with_gaps = []
@@ -136,12 +140,14 @@ def list_series(DATA_MGR):
 
         count = 0
         for series in series_with_gaps:
-            if (config.series_per_page != 0 and count != 0 
-                and count % config.series_per_page == 0):
+            if (config.series_per_page != 0
+                and count != 0
+                and count % config.series_per_page == 0
+            ):
                 print("----------------------------------------")
                 continue_print = input("Press Enter to continue "
                                        "or type 'q' to stop: ")
-                if continue_print == 'q' or continue_print == 'Q':
+                if continue_print in ('q', 'Q'):
                     return
 
             print("----------------------------------------")
@@ -155,7 +161,7 @@ def list_series(DATA_MGR):
         return
 
     # Default (print all)
-    print_all_series(DATA_MGR)
+    print_all_series(data_mgr)
 
 def search_for_series(data_mgr):
     """
@@ -181,8 +187,8 @@ def remove_series_from_database(data_mgr, series):
     Takes a DatabaseManager object and a Series object, and removes
     the associated series from the database
     """
-    cur = data_mgr.query("DELETE FROM Series WHERE "
-                         "rowid = %d" % series.rowid)
+    data_mgr.query("DELETE FROM Series WHERE "
+                   "rowid = %d" % series.rowid)
 
 def main():
     """
@@ -190,20 +196,20 @@ def main():
     Main driver function for mangatracker program
     """
     config = Config()
-    DATA_MGR = DatabaseManager(config.database_name, init_database)
+    data_mgr = DatabaseManager(config.database_name, init_database)
 
-    print_all_series(DATA_MGR)
+    print_all_series(data_mgr)
 
     while True:
         user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, "
                            "[R]emove, [O]ptions, E[x]it: ")
 
-        if user_input == 'x' or user_input == 'X':
+        if user_input in ('x', 'X'):
             break
 
-        if user_input == 's' or user_input == 'S':
+        if user_input in ('s', 'S'):
             # TODO: color matching text (maybe not?)
-            entries, search_term = search_for_series(DATA_MGR)
+            entries, search_term = search_for_series(data_mgr)
 
             print()
             if len(entries) == 0:
@@ -216,19 +222,19 @@ def main():
             print_entries_list(entries)
             continue
 
-        if user_input == 'l' or user_input == 'L':
-            list_series(DATA_MGR)
+        if user_input in ('l', 'L'):
+            list_series(data_mgr)
 
         # Add Series
-        if user_input == 'a' or user_input == 'A':
+        if user_input in ('a', 'A'):
             try:
-                new_series = input_series(DATA_MGR)
+                new_series = input_series(data_mgr)
             except KeyboardInterrupt:
                 print("\nAdd series operation cancelled")
                 new_series = None
 
-            if new_series != None:
-                new_series.add_series_to_database(DATA_MGR)
+            if new_series is not None:
+                new_series.add_series_to_database(data_mgr)
                 print("----------------------------------------")
                 print(new_series)
                 print("----------------------------------------")
@@ -236,8 +242,8 @@ def main():
             continue
 
         # Edit Series
-        if user_input == 'e' or user_input == 'E':
-            entries, search_term = search_for_series(DATA_MGR)
+        if user_input in ('e', 'E'):
+            entries, search_term = search_for_series(data_mgr)
             count = 0
 
             print()
@@ -254,12 +260,12 @@ def main():
                 series = entry_to_series(entry)
                 print(series)
                 print("----------------------------------------")
-                
+
                 found_series = input("Edit this series? (y/N/q): ")
-                if found_series == 'q' or found_series == 'Q':
+                if found_series in ('q', 'Q'):
                     break
-                if found_series == 'y' or found_series == 'Y':
-                    series.edit(DATA_MGR)
+                if found_series in ('y', 'Y'):
+                    series.edit(data_mgr)
                     break
 
                 count += 1
@@ -268,7 +274,7 @@ def main():
 
         # Remove
         if user_input in ('r', 'R'):
-            entries, search_term = search_for_series(DATA_MGR)
+            entries, search_term = search_for_series(data_mgr)
             count = 0
 
             print()
@@ -285,7 +291,7 @@ def main():
                 series = entry_to_series(entry)
                 print(series)
                 print("----------------------------------------")
-                
+
                 remove_series = input("Remove series from database? (y/N/q): ")
                 if remove_series in ('q', 'Q'):
                     break
@@ -293,7 +299,7 @@ def main():
                     remove_series = input("Are you sure? "
                                           "This cannot be undone. (y/N): ")
                     if remove_series in ('y', 'Y'):
-                        remove_series_from_database(DATA_MGR, series)
+                        remove_series_from_database(data_mgr, series)
                     break
 
                 count += 1
@@ -316,11 +322,10 @@ def main():
                 if option == 1:
                     new_db_name = input("Enter new database name, or leave "\
                                         "blank to leave unchanged: ")
-                    if new_db_name != "" and not os.exists(new_db_name):
+                    if new_db_name != "" and not os.path.exists(new_db_name):
                         config.set_property("database_name", new_db_name)
                     else:
                         print("Database name not changed.")
-                    pass
 
                 # 2. Change volume limit
                 elif option == 2:
@@ -331,7 +336,6 @@ def main():
                         config.set_property("volume_limit", new_vol_limit)
                     else:
                         print("Invalid volume limit, not changed.")
-                    pass
 
                 # 3. Change series per page ( 0 for no limit)
                 elif option == 3:
@@ -340,21 +344,21 @@ def main():
                                                 "or 0 to not use pages: ")
                     if new_series_per_page == '0':
                         config.set_property("series_per_page", 0)
-                    else: 
+                    else:
                         try:
                             new_series_per_page = int(new_series_per_page)
                             if new_series_per_page < 1:
                                 print("Series per page must be greater than 1")
                             else:
-                                config.set_property("series_per_page", 
+                                config.set_property("series_per_page",
                                                     new_series_per_page)
                         except (ValueError, TypeError):
                             pass
-                
+
                 # 4. Use compact descriptions when listing series
                 elif option == 4:
                     use_compact_list = input("Use compact descriptions? (y/N): ")
-                    if use_compact_list == 'y' or use_compact_list == 'Y':
+                    if use_compact_list in ('y', 'Y'):
                         config.set_property("compact_list", True)
                     else:
                         config.set_property("compact_list", False)
@@ -362,25 +366,25 @@ def main():
                 # 5. Reset to default
                 elif option == 5:
                     default = input("Reset all settings to default? (y/N): ")
-                    if default == 'y' or default == 'Y':
-                        config.set_default_cfg("config.ini")
+                    if default in ('y', 'Y'):
+                        config.set_default_config("config.ini")
 
                 # 6. Clear database (Does not prompt user for series)
                 elif option == 6:
                     delete_database = input("Remove Database? "
                                             "(will copy to {0}.bak) y/N: "
                                             .format(config.database_name))
-                    if delete_database == 'y' or delete_database == 'Y':
-                        os.rename(config.database_name, 
+                    if delete_database in ('y', 'Y'):
+                        os.rename(config.database_name,
                                   config.database_name+".bak")
-                        DATA_MGR = DatabaseManager(False)
-                
+                        data_mgr = DatabaseManager(False, init_database)
+
                 else:
                     print("Invalid option, returning to main screen")
-                    pass
+
             except ValueError:
                 print("Invalid option, returning to main screen")
- 
+
 # TESTING CODE
 def series_test():
     """
@@ -407,7 +411,7 @@ def series_test():
     try:
         generate_volumes_owned("1, 3, %d" % (Config().volume_limit + 1))
     except:
-        print("Error generating volumes for '1, 3, %d'" 
+        print("Error generating volumes for '1, 3, %d'"
               % (Config().volume_limit + 1))
 
     if test_failed:
