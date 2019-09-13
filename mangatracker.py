@@ -119,46 +119,59 @@ def list_series(data_mgr):
 
     # Series with Gaps
     elif selection in ('g', 'G'):
-        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY name")
-        entries = cur.fetchall()
-        series_list = [entry_to_series(entry) for entry in entries]
-        series_with_gaps = []
-
-        for series in series_list:
-            binary_str = series.get_volumes_owned_binary()
-            if regexp("1*0+1", binary_str):
-                series_with_gaps.append(series)
-
-        if len(series_with_gaps) == 0:
-            print("No series with gaps found.")
-            return
-
-        print("Found {0} series with gaps:".format(
-            len(series_with_gaps)))
-
-        count = 0
-        for series in series_with_gaps:
-            if (config.series_per_page != 0
-                and count != 0
-                and count % config.series_per_page == 0
-            ):
-                print("----------------------------------------")
-                continue_print = input("Press Enter to continue "
-                                       "or type 'q' to stop: ")
-                if continue_print in ('q', 'Q'):
-                    return
-
-            print("----------------------------------------")
-            print(series)
-            #print("----------------------------------------")
-            count += 1
-
-        if len(series_with_gaps) > 0:
-            print("----------------------------------------")
+        get_series_with_gaps(data_mgr, config)
 
     # Default (print all)
     else:
         print_all_series(data_mgr)
+
+def list_series_with_gaps(data_mgr, config):
+    """
+    get_series_with_gaps()
+    Retrieves and prints the list of all series in the database
+    for which there is a gap (the set of all volumes is not continuous)
+    
+    Arguments:
+    data_mgr - DatabaseManager object with active connection to database
+    config - Config object with current config settings loaded.
+    """
+    cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY name")
+    entries = cur.fetchall()
+    series_list = [entry_to_series(entry) for entry in entries]
+    series_with_gaps = []
+
+    for series in series_list:
+        binary_str = series.get_volumes_owned_binary()
+        if regexp("1*0+1", binary_str):
+            series_with_gaps.append(series)
+
+    if len(series_with_gaps) == 0:
+        print("No series with gaps found.")
+        return
+
+    print("Found {0} series with gaps:".format(
+        len(series_with_gaps)))
+
+    count = 0
+    for series in series_with_gaps:
+        if (config.series_per_page != 0
+            and count != 0
+            and count % config.series_per_page == 0
+        ):
+            print("----------------------------------------")
+            continue_print = input("Press Enter to continue "
+                                   "or type 'q' to stop: ")
+            if continue_print in ('q', 'Q'):
+                return
+
+        print("----------------------------------------")
+        print(series)
+        #print("----------------------------------------")
+        count += 1
+
+    if len(series_with_gaps) > 0:
+        print("----------------------------------------")
+
 
 def search_for_series(data_mgr):
     """
