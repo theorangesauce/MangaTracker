@@ -103,10 +103,9 @@ def list_series(data_mgr):
 
         print("Found {0} completed series:".format(len(entries)))
         print_entries_list(entries)
-        return
 
     # Incomplete Series
-    if selection in ('i', 'I'):
+    elif selection in ('i', 'I'):
         cur = data_mgr.query("SELECT rowid, * FROM Series WHERE "
                              "is_completed = 0 ORDER BY name")
         entries = cur.fetchall()
@@ -117,10 +116,9 @@ def list_series(data_mgr):
 
         print("Found {0} incomplete series:".format(len(entries)))
         print_entries_list(entries)
-        return
 
     # Series with Gaps
-    if selection in ('g', 'G'):
+    elif selection in ('g', 'G'):
         cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY name")
         entries = cur.fetchall()
         series_list = [entry_to_series(entry) for entry in entries]
@@ -158,10 +156,9 @@ def list_series(data_mgr):
         if len(series_with_gaps) > 0:
             print("----------------------------------------")
 
-        return
-
     # Default (print all)
-    print_all_series(data_mgr)
+    else:
+        print_all_series(data_mgr)
 
 def search_for_series(data_mgr):
     """
