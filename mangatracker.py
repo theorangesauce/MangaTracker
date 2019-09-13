@@ -305,82 +305,85 @@ def main():
 
         # Options
         if user_input in ('o', 'O'):
-            print("-- OPTIONS --")
-            print("1. Change Database Name")
-            print("2. Change Volume Limit")
-            print("3. Change Series Displayed Per Page")
-            print("4. Use Compact Descriptions")
-            print("5. Reset to Default Settings")
-            print("6. Clear Database")
-            option = input("Enter a number to modify option: ")
-            try:
-                option = int(option)
-                # 1. Change database name
-                if option == 1:
-                    new_db_name = input("Enter new database name, or leave "\
-                                        "blank to leave unchanged: ")
-                    if new_db_name != "" and not os.path.exists(new_db_name):
-                        config.set_property("database_name", new_db_name)
+            options_menu(data_mgr, config)
+
+def options_menu(data_mgr, config):
+    print("-- OPTIONS --")
+    print("1. Change Database Name")
+    print("2. Change Volume Limit")
+    print("3. Change Series Displayed Per Page")
+    print("4. Use Compact Descriptions")
+    print("5. Reset to Default Settings")
+    print("6. Clear Database")
+    option = input("Enter a number to modify option: ")
+    try:
+        option = int(option)
+        # 1. Change database name
+        if option == 1:
+            new_db_name = input("Enter new database name, or leave "\
+                                "blank to leave unchanged: ")
+            if new_db_name != "" and not os.path.exists(new_db_name):
+                config.set_property("database_name", new_db_name)
+            else:
+                print("Database name not changed.")
+
+        # 2. Change volume limit
+        elif option == 2:
+            new_vol_limit = input("Enter new volume limit"
+                                  "(Must be multiple of 32): ")
+            new_vol_limit = int(new_vol_limit)
+            if new_vol_limit % 32 == 0 and new_vol_limit >= 32:
+                config.set_property("volume_limit", new_vol_limit)
+            else:
+                print("Invalid volume limit, not changed.")
+
+        # 3. Change series per page ( 0 for no limit)
+        elif option == 3:
+            new_series_per_page = input("Enter maximum number of "
+                                        "series to display per page, "
+                                        "or 0 to not use pages: ")
+            if new_series_per_page == '0':
+                config.set_property("series_per_page", 0)
+            else:
+                try:
+                    new_series_per_page = int(new_series_per_page)
+                    if new_series_per_page < 1:
+                        print("Series per page must be greater than 1")
                     else:
-                        print("Database name not changed.")
+                        config.set_property("series_per_page",
+                                            new_series_per_page)
+                except (ValueError, TypeError):
+                    pass
 
-                # 2. Change volume limit
-                elif option == 2:
-                    new_vol_limit = input("Enter new volume limit"
-                                          "(Must be multiple of 32): ")
-                    new_vol_limit = int(new_vol_limit)
-                    if new_vol_limit % 32 == 0 and new_vol_limit >= 32:
-                        config.set_property("volume_limit", new_vol_limit)
-                    else:
-                        print("Invalid volume limit, not changed.")
+        # 4. Use compact descriptions when listing series
+        elif option == 4:
+            use_compact_list = input("Use compact descriptions? (y/N): ")
+            if use_compact_list in ('y', 'Y'):
+                config.set_property("compact_list", True)
+            else:
+                config.set_property("compact_list", False)
 
-                # 3. Change series per page ( 0 for no limit)
-                elif option == 3:
-                    new_series_per_page = input("Enter maximum number of "
-                                                "series to display per page, "
-                                                "or 0 to not use pages: ")
-                    if new_series_per_page == '0':
-                        config.set_property("series_per_page", 0)
-                    else:
-                        try:
-                            new_series_per_page = int(new_series_per_page)
-                            if new_series_per_page < 1:
-                                print("Series per page must be greater than 1")
-                            else:
-                                config.set_property("series_per_page",
-                                                    new_series_per_page)
-                        except (ValueError, TypeError):
-                            pass
+        # 5. Reset to default
+        elif option == 5:
+            default = input("Reset all settings to default? (y/N): ")
+            if default in ('y', 'Y'):
+                config.set_default_config("config.ini")
 
-                # 4. Use compact descriptions when listing series
-                elif option == 4:
-                    use_compact_list = input("Use compact descriptions? (y/N): ")
-                    if use_compact_list in ('y', 'Y'):
-                        config.set_property("compact_list", True)
-                    else:
-                        config.set_property("compact_list", False)
+        # 6. Clear database (Does not prompt user for series)
+        elif option == 6:
+            delete_database = input("Remove Database? "
+                                    "(will copy to {0}.bak) y/N: "
+                                    .format(config.database_name))
+            if delete_database in ('y', 'Y'):
+                os.rename(config.database_name,
+                          config.database_name+".bak")
+                data_mgr = DatabaseManager(False, init_database)
 
-                # 5. Reset to default
-                elif option == 5:
-                    default = input("Reset all settings to default? (y/N): ")
-                    if default in ('y', 'Y'):
-                        config.set_default_config("config.ini")
+        else:
+            print("Invalid option, returning to main screen")
 
-                # 6. Clear database (Does not prompt user for series)
-                elif option == 6:
-                    delete_database = input("Remove Database? "
-                                            "(will copy to {0}.bak) y/N: "
-                                            .format(config.database_name))
-                    if delete_database in ('y', 'Y'):
-                        os.rename(config.database_name,
-                                  config.database_name+".bak")
-                        data_mgr = DatabaseManager(False, init_database)
-
-                else:
-                    print("Invalid option, returning to main screen")
-
-            except ValueError:
-                print("Invalid option, returning to main screen")
+    except ValueError:
+        print("Invalid option, returning to main screen")
 
 if __name__ == "__main__":
     main()
