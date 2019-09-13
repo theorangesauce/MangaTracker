@@ -240,74 +240,114 @@ def main():
 
         # Edit Series
         if user_input in ('e', 'E'):
-            entries, search_term = search_for_series(data_mgr)
-            count = 0
-
-            print()
-            if len(entries) == 0:
-                print("No series found for '{0}'."
-                      .format(search_term))
-                continue
-
-            print("Found {0} entries for '{1}':"
-                  .format(len(entries), search_term))
-
-            for entry in entries:
-                print("----------------------------------------")
-                series = entry_to_series(entry)
-                print(series)
-                print("----------------------------------------")
-
-                found_series = input("Edit this series? (y/N/q): ")
-                if found_series in ('q', 'Q'):
-                    break
-                if found_series in ('y', 'Y'):
-                    series.edit(data_mgr)
-                    break
-
-                count += 1
-                if count != len(entries):
-                    print("Next Series:")
+            edit_series(data_mgr)
 
         # Remove
         if user_input in ('r', 'R'):
-            entries, search_term = search_for_series(data_mgr)
-            count = 0
-
-            print()
-            if len(entries) == 0:
-                print("No series found for '{0}'."
-                      .format(search_term))
-                continue
-
-            print("Found {0} entries for '{1}':"
-                  .format(len(entries), search_term))
-
-            for entry in entries:
-                print("----------------------------------------")
-                series = entry_to_series(entry)
-                print(series)
-                print("----------------------------------------")
-
-                remove_series = input("Remove series from database? (y/N/q): ")
-                if remove_series in ('q', 'Q'):
-                    break
-                if remove_series in ('y', 'Y'):
-                    remove_series = input("Are you sure? "
-                                          "This cannot be undone. (y/N): ")
-                    if remove_series in ('y', 'Y'):
-                        remove_series_from_database(data_mgr, series)
-                    break
-
-                count += 1
-                if count != len(entries):
-                    print("Next Series:")
+            remove_series(data_mgr)
 
         # Options
         if user_input in ('o', 'O'):
-            options_menu(data_mgr, config)
+            options_menu(config)
+            # Reset database connection if name changed or database deleted
+            data_mgr = DatabaseManager(config.database_name, None)
 
-def options_menu(data_mgr, config):
+def edit_series(data_mgr):
+    """
+    edit_series()
+    Retrieves a list of potential series to edit based on
+    user input, and iterates through the list until the user
+    selects one to edit.
+    
+    Arguments:
+    data_mgr - DatabaseManager object connected to active database
+    """
+    entries, search_term = search_for_series(data_mgr)
+    count = 0
+
+    print()
+    if len(entries) == 0:
+        print("No series found for '{0}'."
+              .format(search_term))
+        return
+
+    print("Found {0} entries for '{1}':"
+          .format(len(entries), search_term))
+
+    for entry in entries:
+        print("----------------------------------------")
+        series = entry_to_series(entry)
+        print(series)
+        print("----------------------------------------")
+
+        found_series = input("Edit this series? (y/N/q): ")
+        if found_series in ('q', 'Q'):
+            break
+        if found_series in ('y', 'Y'):
+            series.edit(data_mgr)
+            break
+
+        count += 1
+        if count != len(entries):
+            print("Next Series:")
+
+def remove_series(data_mgr):
+    """
+    remove_series()
+    Allows user to select a series to remove from the database
+
+    Arguments:
+    data_mgr - DatabaseManager object connected to current database
+    """
+    entries, search_term = search_for_series(data_mgr)
+    count = 0
+
+    print()
+    if len(entries) == 0:
+        print("No series found for '{0}'."
+              .format(search_term))
+        return
+
+    print("Found {0} entries for '{1}':"
+          .format(len(entries), search_term))
+
+    for entry in entries:
+        print("----------------------------------------")
+        series = entry_to_series(entry)
+        print(series)
+        print("----------------------------------------")
+
+        remove = input("Remove series from database? (y/N/q): ")
+        if remove in ('q', 'Q'):
+            break
+        if remove in ('y', 'Y'):
+            remove = input("Are you sure? "
+                                  "This cannot be undone. (y/N): ")
+            if remove in ('y', 'Y'):
+                remove_series_from_database(data_mgr, series)
+            break
+
+        count += 1
+        if count != len(entries):
+            print("Next Series:")
+
+def options_menu(config):
+    """
+    options_menu()
+    Change config options for MangaTracker
+    Options:
+    1. Change name of database file (default manga.db)
+    2. Change the maximum number of volumes allowed
+       per series (default 128)
+    3. Change number of series displayed per page (default 0)
+    4. Select either verbose descriptions or
+       1-line descriptions (default verbose)
+    5. Reset all settings to default
+
+    Arguments:
+    data_mgr - DatabaseManager object connected to current database
+    config - Config object with current config settings loaded
+    """
     print("-- OPTIONS --")
     print("1. Change Database Name")
     print("2. Change Volume Limit")
@@ -377,7 +417,7 @@ def options_menu(data_mgr, config):
             if delete_database in ('y', 'Y'):
                 os.rename(config.database_name,
                           config.database_name+".bak")
-                data_mgr = DatabaseManager(False, init_database)
+                DatabaseManager(False, init_database)
 
         else:
             print("Invalid option, returning to main screen")
