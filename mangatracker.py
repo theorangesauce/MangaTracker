@@ -39,9 +39,9 @@ def print_all_series(data_mgr):
 
     for entry in entries:
         if (config.series_per_page != 0
-            and count != 0
-            and count % config.series_per_page == 0
-        ):
+                and count != 0
+                and count % config.series_per_page == 0
+           ):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -67,9 +67,9 @@ def print_entries_list(entries):
 
     for entry in entries:
         if (config.series_per_page != 0
-            and count != 0
-            and count % config.series_per_page == 0
-        ):
+                and count != 0
+                and count % config.series_per_page == 0
+           ):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -160,9 +160,9 @@ def list_series_with_gaps(data_mgr, config):
     count = 0
     for series in series_with_gaps:
         if (config.series_per_page != 0
-            and count != 0
-            and count % config.series_per_page == 0
-        ):
+                and count != 0
+                and count % config.series_per_page == 0
+           ):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
