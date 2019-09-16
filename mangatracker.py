@@ -53,7 +53,7 @@ def print_all_series(data_mgr):
         print(series)
         count += 1
 
-    if len(entries) > 0:
+    if entries:
         print("----------------------------------------")
 
 
@@ -81,7 +81,7 @@ def print_entries_list(entries):
         print(series)
         count += 1
 
-    if len(entries) > 0:
+    if entries:
         print("----------------------------------------")
 
 
@@ -101,7 +101,7 @@ def list_series(data_mgr):
                              "is_completed = 1 ORDER BY name")
         entries = cur.fetchall()
 
-        if len(entries) == 0:
+        if not entries:
             print("No completed series found.")
             return
 
@@ -114,7 +114,7 @@ def list_series(data_mgr):
                              "is_completed = 0 ORDER BY name")
         entries = cur.fetchall()
 
-        if len(entries) == 0:
+        if not entries:
             print("No incomplete series found.")
             return
 
@@ -150,7 +150,7 @@ def list_series_with_gaps(data_mgr, config):
         if regexp("1*0+1", binary_str):
             series_with_gaps.append(series)
 
-    if len(series_with_gaps) == 0:
+    if not series_with_gaps:
         print("No series with gaps found.")
         return
 
@@ -173,7 +173,7 @@ def list_series_with_gaps(data_mgr, config):
         print(series)
         count += 1
 
-    if len(series_with_gaps) > 0:
+    if series_with_gaps:
         print("----------------------------------------")
 
 
@@ -228,7 +228,7 @@ def main():
             entries, search_term = search_for_series(data_mgr)
 
             print()
-            if len(entries) == 0:
+            if not entries:
                 print("No series found for '{0}'."
                       .format(search_term))
                 continue
@@ -286,7 +286,7 @@ def edit_series(data_mgr):
     count = 0
 
     print()
-    if len(entries) == 0:
+    if not entries:
         print("No series found for '{0}'."
               .format(search_term))
         return
@@ -324,7 +324,7 @@ def remove_series(data_mgr):
     count = 0
 
     print()
-    if len(entries) == 0:
+    if not entries:
         print("No series found for '{0}'."
               .format(search_term))
         return
