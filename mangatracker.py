@@ -119,7 +119,7 @@ def list_series(data_mgr):
 
     # Series with Gaps
     elif selection in ('g', 'G'):
-        get_series_with_gaps(data_mgr, config)
+        list_series_with_gaps(data_mgr, config)
 
     # Default (print all)
     else:
@@ -127,10 +127,10 @@ def list_series(data_mgr):
 
 def list_series_with_gaps(data_mgr, config):
     """
-    get_series_with_gaps()
+    list_series_with_gaps()
     Retrieves and prints the list of all series in the database
     for which there is a gap (the set of all volumes is not continuous)
-    
+
     Arguments:
     data_mgr - DatabaseManager object with active connection to database
     config - Config object with current config settings loaded.
@@ -271,7 +271,7 @@ def edit_series(data_mgr):
     Retrieves a list of potential series to edit based on
     user input, and iterates through the list until the user
     selects one to edit.
-    
+
     Arguments:
     data_mgr - DatabaseManager object connected to active database
     """
