@@ -9,21 +9,23 @@ from databasemanager import regexp
 from series import *
 from config import Config
 
+
 def entry_to_series(entry):
     """
     entry_to_series()
     Takes a single row from a database query and converts it
     into a series.
     """
-    series = Series(name=str(entry[1]),          # Series Name
-                    volumes_owned=str(entry[2]), # Volumes Owned
-                    is_completed=entry[3],       # Is Completed
-                    next_volume=entry[4],        # Next Volume
-                    publisher=str(entry[5]),     # Publisher
-                    author=str(entry[6]),        # Author
-                    alt_names=str(entry[7]),     # Alternate Names
-                    rowid=entry[0])              # Row ID (for updates)
+    series = Series(name=str(entry[1]),           # Series Name
+                    volumes_owned=str(entry[2]),  # Volumes Owned
+                    is_completed=entry[3],        # Is Completed
+                    next_volume=entry[4],         # Next Volume
+                    publisher=str(entry[5]),      # Publisher
+                    author=str(entry[6]),         # Author
+                    alt_names=str(entry[7]),      # Alternate Names
+                    rowid=entry[0])               # Row ID (for updates)
     return series
+
 
 def print_all_series(data_mgr):
     """
@@ -54,6 +56,7 @@ def print_all_series(data_mgr):
     if len(entries) > 0:
         print("----------------------------------------")
 
+
 def print_entries_list(entries):
     """
     print_entries_list()
@@ -80,6 +83,7 @@ def print_entries_list(entries):
 
     if len(entries) > 0:
         print("----------------------------------------")
+
 
 def list_series(data_mgr):
     """
@@ -125,6 +129,7 @@ def list_series(data_mgr):
     else:
         print_all_series(data_mgr)
 
+
 def list_series_with_gaps(data_mgr, config):
     """
     list_series_with_gaps()
@@ -166,7 +171,6 @@ def list_series_with_gaps(data_mgr, config):
 
         print("----------------------------------------")
         print(series)
-        #print("----------------------------------------")
         count += 1
 
     if len(series_with_gaps) > 0:
@@ -191,6 +195,7 @@ def search_for_series(data_mgr):
     entries = cur.fetchall()
     return (entries, search_term)
 
+
 def remove_series_from_database(data_mgr, series):
     """
     remove_series_from_database()
@@ -199,6 +204,7 @@ def remove_series_from_database(data_mgr, series):
     """
     data_mgr.query("DELETE FROM Series WHERE "
                    "rowid = %d" % series.rowid)
+
 
 def main():
     """
@@ -265,6 +271,7 @@ def main():
             # Reset database connection if name changed or database deleted
             data_mgr = DatabaseManager(config.database_name, None)
 
+
 def edit_series(data_mgr):
     """
     edit_series()
@@ -304,6 +311,7 @@ def edit_series(data_mgr):
         if count != len(entries):
             print("Next Series:")
 
+
 def remove_series(data_mgr):
     """
     remove_series()
@@ -335,7 +343,7 @@ def remove_series(data_mgr):
             break
         if remove in ('y', 'Y'):
             remove = input("Are you sure? "
-                                  "This cannot be undone. (y/N): ")
+                           "This cannot be undone. (y/N): ")
             if remove in ('y', 'Y'):
                 remove_series_from_database(data_mgr, series)
             break
@@ -343,6 +351,7 @@ def remove_series(data_mgr):
         count += 1
         if count != len(entries):
             print("Next Series:")
+
 
 def options_menu(config):
     """
@@ -373,7 +382,7 @@ def options_menu(config):
         option = int(option)
         # 1. Change database name
         if option == 1:
-            new_db_name = input("Enter new database name, or leave "\
+            new_db_name = input("Enter new database name, or leave "
                                 "blank to leave unchanged: ")
             if new_db_name != "" and not os.path.exists(new_db_name):
                 config.set_property("database_name", new_db_name)
@@ -437,6 +446,7 @@ def options_menu(config):
 
     except ValueError:
         print("Invalid option, returning to main screen")
+
 
 if __name__ == "__main__":
     main()
