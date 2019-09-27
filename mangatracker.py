@@ -370,13 +370,13 @@ def options_menu(config):
     data_mgr - DatabaseManager object connected to current database
     config - Config object with current config settings loaded
     """
-    print("-- OPTIONS --")
-    print("1. Change Database Name")
-    print("2. Change Volume Limit")
-    print("3. Change Series Displayed Per Page")
-    print("4. Use Compact Descriptions")
-    print("5. Reset to Default Settings")
-    print("6. Clear Database")
+    print("-- OPTIONS --\n"
+          "1. Change Database Name\n"
+          "2. Change Volume Limit\n"
+          "3. Change Series Displayed Per Page\n"
+          "4. Use Compact Descriptions\n"
+          "5. Reset to Default Settings\n"
+          "6. Clear Database")
     option = input("Enter a number to modify option: ")
     try:
         option = int(option)
