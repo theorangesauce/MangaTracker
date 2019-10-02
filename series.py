@@ -1,6 +1,8 @@
-# series.py
-# Container for information regarding a manga series
+""" series.py
+Container for information regarding a manga series
 
+Copyright 2019 by Nicholas Bishop
+"""
 import math
 from databasemanager import DatabaseManager
 from config import Config

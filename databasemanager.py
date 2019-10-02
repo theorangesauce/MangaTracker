@@ -1,6 +1,8 @@
-# databasemanager.py
-# SQLite3 Database Manager for Series objects
+""" databasemanager.py
+SQLite3 Database Manager for Series objects
 
+Copyright 2019 by Nicholas Bishop
+"""
 import sqlite3 as lite
 import re
 

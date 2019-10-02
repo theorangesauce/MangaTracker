@@ -1,6 +1,8 @@
-# config.py
-# Store and retrieve config variables from config.ini
+""" config.py
+Store and retrieve config variables from config.ini
 
+Copyright 2019 by Nicholas Bishop
+"""
 import os
 import configparser
 

@@ -2,6 +2,8 @@
 """ mangatracker.py
 Program to track owned and desired manga series.
 Run using ./mangatracker.py
+
+Copyright 2019 by Nicholas Bishop
 """
 import os.path
 from databasemanager import DatabaseManager
