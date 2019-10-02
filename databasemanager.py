@@ -7,7 +7,7 @@ import sqlite3 as lite
 import re
 
 # TODO: Create an author table and a publisher table
-class DatabaseManager(object):
+class DatabaseManager():
     """
     DatabaseManager(object)
     Main interface between program and SQLite3 database
