@@ -3,6 +3,7 @@ Container for information regarding a manga series
 
 Copyright 2019 by Nicholas Bishop
 """
+
 import math
 from databasemanager import DatabaseManager
 from config import Config
@@ -30,7 +31,7 @@ class Series(object):
         alt_names -- Alternate names for series (ex. in other languages)
             (default to empty string)
         rowid -- Row ID in database to use for updates (default None)
-        volume_limit -- The current maximum number of volumes tracked 
+        volume_limit -- The current maximum number of volumes tracked
             per series
         compact_list -- A boolean deciding whether __str__ should return
             a single line or multiple lines.
@@ -138,7 +139,7 @@ class Series(object):
         Returns True on success, False on failure.
         """
         cur = data_mgr.query("SELECT name FROM Series WHERE name='{0}'"
-                   .format(self.name.replace("'", "''")))
+                             .format(self.name.replace("'", "''")))
         entries = cur.fetchall()
 
         if len(entries) == 0:
@@ -279,6 +280,7 @@ class Series(object):
         if self.rowid == None:
             self.add_series_to_database(data_mgr)
             return
+
         data_mgr.query("UPDATE Series SET "
                        "name = '{0}', "
                        "volumes_owned = '{1}', "
@@ -337,7 +339,7 @@ def init_database(data_mgr, new_db_needed=True):
     init_database()
     Initializes a DatabaseManager() object for use
     storing data for Series objects
-    
+
     Passed as argument to DatabaseManager() constructor
     """
     data_mgr.query("SELECT name FROM sqlite_master "\
@@ -345,8 +347,8 @@ def init_database(data_mgr, new_db_needed=True):
 
     if data_mgr.cur.fetchone() == None:
         data_mgr.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "
-                   "is_completed INT, next_volume INT, publisher TEXT, "
-                   "author TEXT, alt_names TEXT, PRIMARY KEY(name))")
+                       "is_completed INT, next_volume INT, publisher TEXT, "
+                       "author TEXT, alt_names TEXT, PRIMARY KEY(name))")
         if new_db_needed:
             next_series = input_series(data_mgr)
             while next_series != None:
@@ -407,6 +409,7 @@ def generate_volumes_owned(str):
 def input_series(data_mgr):
     """
     input_series():
+
     Gets values for the name of a manga series, volumes currently owned,
     and whether the series is completed, and returns a Series() object
     """
@@ -448,4 +451,3 @@ def input_series(data_mgr):
                   next_volume=-1,
                   publisher=publisher,
                   author=author, alt_names=alt_names)
-

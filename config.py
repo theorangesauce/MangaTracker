@@ -10,7 +10,7 @@ class Singleton(object):
     """
     Singleton(object)
 
-    Abstract class which ensures that only one instance of the 
+    Abstract class which ensures that only one instance of the
     class ever exists.
     """
     def __new__(cls, *args, **kw):
@@ -40,21 +40,21 @@ class Config(Singleton):
 
         self.config = configparser.ConfigParser()
         self.config.read(filename)
-        
+
         self.filename = filename
-        self.database_name = self.config.get('config', 
-                                             'database_name', 
+        self.database_name = self.config.get('config',
+                                             'database_name',
                                              fallback='manga.db')
-        self.volume_limit = self.config.getint('config', 
-                                               'volume_limit', 
+        self.volume_limit = self.config.getint('config',
+                                               'volume_limit',
                                                fallback=128)
-        self.series_per_page = self.config.getint('config', 
-                                                  'series_per_page', 
+        self.series_per_page = self.config.getint('config',
+                                                  'series_per_page',
                                                   fallback=0)
-        self.compact_list = self.config.getboolean('config', 
-                                                   'compact_list', 
+        self.compact_list = self.config.getboolean('config',
+                                                   'compact_list',
                                                    fallback=False)
-    
+
     def set_property(self, prop_name, prop_value):
         """
         set_property(self, prop_name, prop_value)
