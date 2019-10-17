@@ -8,7 +8,9 @@ Copyright 2019 by Nicholas Bishop
 import os.path
 from databasemanager import DatabaseManager
 from databasemanager import regexp
-from series import *
+from series import Series
+from series import input_series
+from series import init_database
 from config import Config
 
 
