@@ -185,44 +185,9 @@ class Series():
                     else:
                         self.name = series_name
                         print("Name changed to \"{0}\".".format(series_name))
-            elif selection == 'v' or selection == 'V':
-                change_volumes = input("[A]dd or [R]emove volumes, or leave "
-                                       "blank if unchanged: ")
 
-                # Add Volumes
-                if change_volumes == "a" or change_volumes == "A":
-                    volumes_to_add = input(
-                        "Enter volumes to add (ex. 1, 3-5): ")
-
-                    volumes_to_add = generate_volumes_owned(volumes_to_add)
-                    vol_arr_to_add = [int(x) for x in
-                                      volumes_to_add.split(",")]
-                    self.vol_arr = [x | y for x, y in
-                                    zip(vol_arr_to_add, self.vol_arr)]
-
-                    # update related fields
-                    self.next_volume = self.calculate_next_volume()
-                    self.volumes_owned_readable = ""
-                    self.volumes_owned = generate_volumes_owned(
-                        self.get_volumes_owned())
-
-                # Remove Volumes
-                # TODO: if empty after removal, prompt to delete series
-                if change_volumes == "r" or change_volumes == "R":
-                    volumes_to_rmv = input(
-                        "Enter volumes to remove (ex. 1, 3-5): ")
-
-                    volumes_to_rmv = generate_volumes_owned(volumes_to_rmv)
-                    vol_arr_to_remove = [int(x) for x in
-                                         volumes_to_rmv.split(",")]
-                    self.vol_arr = [~x & y for x, y in
-                                    zip(vol_arr_to_remove, self.vol_arr)]
-
-                    # update related fields
-                    self.next_volume = self.calculate_next_volume()
-                    self.volumes_owned_readable = ""
-                    self.volumes_owned = generate_volumes_owned(
-                        self.get_volumes_owned())
+            elif selection in ('v', 'V'):
+                self.edit_volumes()
 
             # Change Author
             elif selection in ('a', 'A'):
@@ -267,6 +232,50 @@ class Series():
         save_series = input("Save changes? (y/N): ")
         if save_series in ('y', 'Y'):
             self.update_database_entry(data_mgr)
+
+    def edit_volumes(self):
+        """
+        edit_volumes()
+        Changes which volumes are marked as owned in
+        the series object.
+        """
+        change_volumes = input("[A]dd or [R]emove volumes, or leave "
+                               "blank if unchanged: ")
+
+        # Add Volumes
+        if change_volumes in ('a', 'A'):
+            volumes_to_add = input(
+                "Enter volumes to add (ex. 1, 3-5): ")
+
+            volumes_to_add = generate_volumes_owned(volumes_to_add)
+            vol_arr_to_add = [int(x) for x in
+                              volumes_to_add.split(",")]
+            self.vol_arr = [x | y for x, y in
+                            zip(vol_arr_to_add, self.vol_arr)]
+
+            # update related fields
+            self.next_volume = self.calculate_next_volume()
+            self.volumes_owned_readable = ""
+            self.volumes_owned = generate_volumes_owned(
+                self.get_volumes_owned())
+
+        # Remove Volumes
+        # TODO: if empty after removal, prompt to delete series
+        if change_volumes in ('r', 'R'):
+            volumes_to_rmv = input(
+                "Enter volumes to remove (ex. 1, 3-5): ")
+
+            volumes_to_rmv = generate_volumes_owned(volumes_to_rmv)
+            vol_arr_to_remove = [int(x) for x in
+                                 volumes_to_rmv.split(",")]
+            self.vol_arr = [~x & y for x, y in
+                            zip(vol_arr_to_remove, self.vol_arr)]
+
+            # update related fields
+            self.next_volume = self.calculate_next_volume()
+            self.volumes_owned_readable = ""
+            self.volumes_owned = generate_volumes_owned(
+                self.get_volumes_owned())
 
     def update_database_entry(self, data_mgr):
         """
