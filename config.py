@@ -6,7 +6,7 @@ Copyright 2019 by Nicholas Bishop
 import os
 import configparser
 
-class Singleton(object):
+class Singleton():
     """
     Singleton(object)
 
@@ -63,8 +63,9 @@ class Config(Singleton):
         value for that property
         """
         if prop_name == "database_name":
-            if (isinstance(prop_value, str) and len(prop_value) > 0 
-                and prop_value[-3:] == ".db"):
+            if (prop_value and isinstance(prop_value, str)
+                    and prop_value[-3:] == ".db"
+               ):
                 self.config["config"]["database_name"] = prop_value
         elif prop_name == "volume_limit":
             if isinstance(prop_value, int) and prop_value > 0:
@@ -74,12 +75,13 @@ class Config(Singleton):
                 self.config["config"]["series_per_page"] = str(prop_value)
         elif prop_name == "compact_list":
             if ((isinstance(prop_value, int) and prop_value in [0, 1])
-                or isinstance(prop_value, bool)):
+                    or isinstance(prop_value, bool)
+               ):
                 self.config["config"]["compact_list"] = str(prop_value)
         with open(self.filename, 'w') as config_ini:
             self.config.write(config_ini)
 
-    def set_default_config(filename):
+    def set_default_config(self, filename):
         """
         set_default_config()
         Saves default config to desired filename

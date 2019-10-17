@@ -5,12 +5,12 @@ Copyright 2019 by Nicholas Bishop
 """
 
 import math
-from databasemanager import DatabaseManager
 from config import Config
 
-class Series(object):
+class Series():
     """
-    Series(object)
+    Series()
+
     A single manga series. Contains the name of the series, the number of
     volumes currently owned, whether the series is completed
     """
@@ -40,8 +40,6 @@ class Series(object):
                       "next_volume", "publisher", "author",
                       "alt_names", "rowid"]
 
-        self.next_volume = -1
-        self.config = Config()
         for key in valid_keys:
             self.__dict__[key] = kwargs.get(key)
 
@@ -97,7 +95,7 @@ class Series(object):
                 index += 1
 
             if first != -1: # last set of volumes reaches volume limit
-                last = self.config.volume_limit
+                last = Config().volume_limit
                 self.volumes_owned_readable += (
                     "{0}, ".format(first) if first == last
                     else "{0}-{1}, ".format(first, last))
@@ -142,7 +140,7 @@ class Series(object):
                              .format(self.name.replace("'", "''")))
         entries = cur.fetchall()
 
-        if len(entries) == 0:
+        if not entries:
             data_mgr.query("INSERT INTO Series VALUES("
                            "'{0}','{1}',{2},{3},'{4}','{5}','{6}')"
                            .format(
@@ -166,23 +164,22 @@ class Series(object):
         Automatically updates dependent fields (ex. next volume)
         """
         selection = ''
-        while selection != 'e' and selection != 'E':
+        while selection not in ('e', 'E'):
             selection = input("Edit: \n[N]ame / [V]olumes / [A]uthor / "
                               "[P]ublisher \n[Alt]ernate Names /"
                               "[C]ompletion Status / [E]nd: ")
-            if selection == 'n' or selection == 'N':
+            if selection in ('n', 'N'):
                 series_name = input("Enter new series name or leave "
                                     "blank if unchanged: ")
                 if series_name == "":
                     print("Name not changed.")
-                    pass
                 else:
                     cur = data_mgr.query("Select name FROM Series WHERE "
                                          "name = '{0}'"
                                          .format(series_name
                                                  .replace("'", "''")))
                     row = cur.fetchall()
-                    if len(row) > 0:
+                    if row:
                         print("New name already present in database,"
                               "not changed")
                     else:
@@ -228,7 +225,7 @@ class Series(object):
                         self.get_volumes_owned())
 
             # Change Author
-            elif selection == 'a' or selection == 'A':
+            elif selection in ('a', 'A'):
                 author = input("Enter author or leave blank if unchanged: ")
                 if author == "":
                     pass
@@ -237,7 +234,7 @@ class Series(object):
                     print("Author changed to \"{0}\".".format(author))
 
             # Change Publisher
-            elif selection == 'p' or selection == 'P':
+            elif selection in ('p', 'P'):
                 publisher = input("Enter publisher or leave blank "
                                   "if unchanged: ")
                 if publisher == "":
@@ -253,12 +250,12 @@ class Series(object):
                     self.alt_names = alt_names
 
             # Change Completion Status
-            elif selection == 'c' or selection == 'C':
+            elif selection in ('c', 'C'):
                 is_completed = input("Is this series completed? (y/N) (Leave "
                                      "blank if unchanged): ")
                 if is_completed == "":
                     pass
-                elif is_completed != 'y' and is_completed != 'Y':
+                elif is_completed not in ('y', 'Y'):
                     is_completed = 0
                 else:
                     is_completed = 1
@@ -268,7 +265,7 @@ class Series(object):
             print("----------------------------------------")
 
         save_series = input("Save changes? (y/N): ")
-        if save_series == 'y' or save_series == 'Y':
+        if save_series in ('y', 'Y'):
             self.update_database_entry(data_mgr)
 
     def update_database_entry(self, data_mgr):
@@ -277,7 +274,7 @@ class Series(object):
         Updates all fields in database for series based on unique identifier;
         adds series to database if not currently in database
         """
-        if self.rowid == None:
+        if self.rowid is None:
             self.add_series_to_database(data_mgr)
             return
 
@@ -330,7 +327,7 @@ class Series(object):
         Returns a string representation of the object (defaults to
         full_string()
         """
-        if self.config.compact_list:
+        if Config().compact_list:
             return self.compact_string()
         return self.full_string()
 
@@ -345,22 +342,23 @@ def init_database(data_mgr, new_db_needed=True):
     data_mgr.query("SELECT name FROM sqlite_master "\
                    "WHERE type='table' AND name='Series'")
 
-    if data_mgr.cur.fetchone() == None:
+    if data_mgr.cur.fetchone() is None:
         data_mgr.query("CREATE TABLE Series(name TEXT, volumes_owned TEXT, "
                        "is_completed INT, next_volume INT, publisher TEXT, "
                        "author TEXT, alt_names TEXT, PRIMARY KEY(name))")
         if new_db_needed:
             next_series = input_series(data_mgr)
-            while next_series != None:
+            while next_series is not None:
                 if next_series.add_series_to_database(data_mgr):
                     print(next_series)
                 else:
                     print("Failed to add series! (name conflict)")
                 next_series = input_series(data_mgr)
 
-def generate_volumes_owned(str):
+def generate_volumes_owned(vol_list):
     """
-    generate_volumes_owned(str):
+    generate_volumes_owned(vol_list):
+
     Takes a string of numbers in a comma-separated list (ex. "1, 3-5, 7"),
     stores them bitwise in 32-bit integers, then concatenates bitwise
     representations of them in a string and returns the result
@@ -368,9 +366,9 @@ def generate_volumes_owned(str):
     volume_limit = Config().volume_limit
     arr_length = int(math.ceil(volume_limit / 32))
     vol_arr = [0 for x in range(0, arr_length)]
-    entered_values = [x.strip() for x in str.split(',')]
+    entered_values = [x.strip() for x in vol_list.split(',')]
     for num in entered_values:
-        if num == '' or num == "None": # empty string, no volumes
+        if num in ('', 'None'): # empty string, no volumes
             continue
         if '-' in num: # two integers separated by dash
             # should always have 2 integers
@@ -388,7 +386,7 @@ def generate_volumes_owned(str):
         else: # single integer
             try:
                 num = int(num) - 1
-            except:
+            except ValueError:
                 print("Invalid token: {0}".format(num))
                 continue
             if num < 0:
@@ -413,7 +411,6 @@ def input_series(data_mgr):
     Gets values for the name of a manga series, volumes currently owned,
     and whether the series is completed, and returns a Series() object
     """
-    volume_limit = Config().volume_limit
     series_name = input("Enter manga name or leave blank to cancel: ")
     if series_name == "":
         return None
@@ -421,7 +418,7 @@ def input_series(data_mgr):
     cur = data_mgr.query("Select name FROM Series WHERE name = '{0}'"
                          .format(series_name.replace("'", "''")))
     row = cur.fetchall()
-    if len(row) > 0:
+    if row:
         print("Name already in database!")
         return None
     # except:
@@ -440,7 +437,7 @@ def input_series(data_mgr):
     alt_names = input("Enter any alternate names for this series, if any: ")
 
     is_completed = input("Is this series completed? (y/N): ")
-    if is_completed != 'y' and is_completed != 'Y':
+    if is_completed not in ('y', 'Y'):
         is_completed = 0
     else:
         is_completed = 1
