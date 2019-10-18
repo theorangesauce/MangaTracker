@@ -162,12 +162,15 @@ class Series():
         Allows user to modify all fields of a series. User selects field
         to modify from menu, continuing until user decides to save.
         Automatically updates dependent fields (ex. next volume)
+        Returns True if the series has no volumes and the user chooses
+        to delete it, False otherwise
         """
         selection = ''
         while selection not in ('e', 'E'):
             selection = input("Edit: \n[N]ame / [V]olumes / [A]uthor / "
                               "[P]ublisher \n[Alt]ernate Names /"
                               "[C]ompletion Status / [E]nd: ")
+            # Change Name
             if selection in ('n', 'N'):
                 series_name = input("Enter new series name or leave "
                                     "blank if unchanged: ")
@@ -185,9 +188,11 @@ class Series():
                     else:
                         self.name = series_name
                         print("Name changed to \"{0}\".".format(series_name))
-
+                        
+            # Change Volumes
             elif selection in ('v', 'V'):
-                self.edit_volumes()
+                if self.edit_volumes():
+                    return True
 
             # Change Author
             elif selection in ('a', 'A'):
@@ -232,12 +237,16 @@ class Series():
         save_series = input("Save changes? (y/N): ")
         if save_series in ('y', 'Y'):
             self.update_database_entry(data_mgr)
+        
+        return False
 
     def edit_volumes(self):
         """
         edit_volumes()
         Changes which volumes are marked as owned in
         the series object.
+        Returns True if the series has no volumes and the user
+        chooses to delete it, False otherwise.
         """
         change_volumes = input("[A]dd or [R]emove volumes, or leave "
                                "blank if unchanged: ")
@@ -260,7 +269,6 @@ class Series():
                 self.get_volumes_owned())
 
         # Remove Volumes
-        # TODO: if empty after removal, prompt to delete series
         if change_volumes in ('r', 'R'):
             volumes_to_rmv = input(
                 "Enter volumes to remove (ex. 1, 3-5): ")
@@ -270,12 +278,22 @@ class Series():
                                  volumes_to_rmv.split(",")]
             self.vol_arr = [~x & y for x, y in
                             zip(vol_arr_to_remove, self.vol_arr)]
+            
+            print(self.vol_arr)
+            if all(not x for x in self.vol_arr):
+                user_input = input("No volumes owned for series. "
+                                   "Remove from database? (y/N): ")
+                if user_input in ('y', 'Y'):
+                    return True
+                
 
             # update related fields
             self.next_volume = self.calculate_next_volume()
             self.volumes_owned_readable = ""
             self.volumes_owned = generate_volumes_owned(
                 self.get_volumes_owned())
+        
+        return False
 
     def update_database_entry(self, data_mgr):
         """

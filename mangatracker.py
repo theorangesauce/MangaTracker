@@ -308,7 +308,12 @@ def edit_series(data_mgr):
         if found_series in ('q', 'Q'):
             break
         if found_series in ('y', 'Y'):
-            series.edit(data_mgr)
+            if series.edit(data_mgr):
+                delete_confirm = input("Are you sure you want to remove %s? "
+                                       "This cannot be undone. (y/N): "
+                                       % (series.name))
+                if delete_confirm in ('y', 'Y'):
+                    remove_series_from_database(data_mgr, series)
             break
 
         count += 1
