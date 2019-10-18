@@ -216,8 +216,8 @@ class Series():
 
             # Change Completion Status
             elif selection in ('c', 'C'):
-                is_completed = input("Is this series completed? (y/N) (Leave "
-                                     "blank if unchanged): ")
+                is_completed = input("Have you completed this series? (y/N)" 
+                                     "(Leave blank if unchanged): ")
                 if is_completed == "":
                     pass
                 elif is_completed not in ('y', 'Y'):
@@ -445,7 +445,7 @@ def input_series(data_mgr):
 
     alt_names = input("Enter any alternate names for this series, if any: ")
 
-    is_completed = input("Is this series completed? (y/N): ")
+    is_completed = input("Have you completed this series? (y/N): ")
     if is_completed not in ('y', 'Y'):
         is_completed = 0
     else:
