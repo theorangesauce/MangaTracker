@@ -208,6 +208,7 @@ def remove_series_from_database(data_mgr, series):
     """
     data_mgr.query("DELETE FROM Series WHERE "
                    "rowid = %d" % series.rowid)
+    print("Series '%s' removed from database." % (series.name))
 
 
 def main():
