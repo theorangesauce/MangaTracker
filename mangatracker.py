@@ -453,7 +453,8 @@ def options_menu(config):
 
         else:
             print("Invalid option, returning to main screen")
-
+    
+    # int(option) fails
     except ValueError:
         print("Invalid option, returning to main screen")
 
