@@ -31,12 +31,12 @@ def entry_to_series(entry):
     return series
 
 
-def print_all_series(data_mgr):
+def print_all_series(data_mgr, order="name"):
     """
     print_all_series(data_mgr)
     Print status of all series in database
     """
-    cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY name")
+    cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % (order))
     entries = cur.fetchall()
     count = 0
     config = Config()
@@ -95,8 +95,8 @@ def list_series(data_mgr):
 
     Lists all series from the database which meet user-specified criteria
     """
-    selection = input("List [A]ll / [C]omplete / "
-                      "[I]ncomplete / Series with [G]aps: ")
+    selection = input("List [A]ll / by [O]ther Field / [C]omplete / "
+                      "[I]ncomplete / with [G]aps: ")
     config = Config()
 
     # Completed Series
@@ -129,10 +129,30 @@ def list_series(data_mgr):
     elif selection in ('g', 'G'):
         list_series_with_gaps(data_mgr, config)
 
+    # Order by another field
+    elif selection in ('o', 'O'):
+        list_series_by_field(data_mgr)
+
     # Default (print all)
     else:
         print_all_series(data_mgr)
 
+def list_series_by_field(data_mgr):
+    """
+    list_series_by_field()
+
+    List items ordered by a specific field when listing all series.
+
+    Arguments:
+    data_mgr - DatabaseManager object used for interfacing with database
+    """
+    selection = input("Sort by [N]ame / [A]uthor / [P]ublisher: ")
+    if selection in ('a', 'A'):
+        print_all_series(data_mgr, "author")
+    elif selection in ('p', 'P'):
+        print_all_series(data_mgr, "publisher")
+    else:
+        print_all_series(data_mgr, "name")
 
 def list_series_with_gaps(data_mgr, config):
     """
@@ -425,6 +445,7 @@ def options_menu(config):
                         config.set_property("series_per_page",
                                             new_series_per_page)
                 except (ValueError, TypeError):
+                    print("Invalid value, not changed.")
                     pass
 
         # 4. Use compact descriptions when listing series
@@ -453,7 +474,7 @@ def options_menu(config):
 
         else:
             print("Invalid option, returning to main screen")
-    
+
     # int(option) fails
     except ValueError:
         print("Invalid option, returning to main screen")
