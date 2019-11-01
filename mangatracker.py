@@ -446,7 +446,6 @@ def options_menu(config):
                                             new_series_per_page)
                 except (ValueError, TypeError):
                     print("Invalid value, not changed.")
-                    pass
 
         # 4. Use compact descriptions when listing series
         elif option == 4:
