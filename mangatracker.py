@@ -39,10 +39,14 @@ def print_all_series(data_mgr, order="name"):
     """
     cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % (order))
     entries = cur.fetchall()
+    unknown_entries = []
     count = 0
     config = Config()
 
     for entry in entries:
+        if entry[SI[order.upper()]] == "Unknown":
+            unknown_entries.append(entry)
+            continue
         if (config.series_per_page != 0
                 and count != 0
                 and count % config.series_per_page == 0
@@ -57,6 +61,23 @@ def print_all_series(data_mgr, order="name"):
         series = entry_to_series(entry)
         print(series)
         count += 1
+
+    if unknown_entries:
+        for entry in unknown_entries:
+            if (config.series_per_page != 0
+                    and count != 0
+                    and count % config.series_per_page == 0
+               ):
+                print("----------------------------------------")
+                continue_print = input("Press Enter to continue "
+                                       "or type 'q' to stop: ")
+                if continue_print in ('q', 'Q'):
+                    return
+
+            print("----------------------------------------")
+            series = entry_to_series(entry)
+            print(series)
+            count += 1
 
     if entries:
         print("----------------------------------------")
