@@ -208,7 +208,7 @@ def search_for_series(data_mgr):
     search term given by user, returns the search term and
     any matching entries
     """
-    search_term = input("Search for series by name or publisher: ")
+    search_term = input("Search for series by name or other field: ")
     cur = data_mgr.query("SELECT rowid, * FROM Series WHERE "
                          "name LIKE '%{0}%' OR "
                          "publisher LIKE '%{0}%' OR "
