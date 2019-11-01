@@ -5,7 +5,18 @@ Copyright 2019 by Nicholas Bishop
 """
 
 import math
+from enum import IntEnum
 from config import Config
+
+class SeriesItems(IntEnum):
+    ROWID = 0
+    NAME = 1
+    VOL_OWNED = 2
+    IS_COMPLETED = 3
+    NEXT_VOLUME = 4
+    PUBLISHER = 5
+    AUTHOR = 6
+    ALT_NAMES = 7
 
 class Series():
     """

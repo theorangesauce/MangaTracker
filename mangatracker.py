@@ -9,10 +9,10 @@ import os.path
 from databasemanager import DatabaseManager
 from databasemanager import regexp
 from series import Series
+from series import SeriesItems as SI
 from series import input_series
 from series import init_database
 from config import Config
-
 
 def entry_to_series(entry):
     """
@@ -20,14 +20,15 @@ def entry_to_series(entry):
     Takes a single row from a database query and converts it
     into a series.
     """
-    series = Series(name=str(entry[1]),           # Series Name
-                    volumes_owned=str(entry[2]),  # Volumes Owned
-                    is_completed=entry[3],        # Is Completed
-                    next_volume=entry[4],         # Next Volume
-                    publisher=str(entry[5]),      # Publisher
-                    author=str(entry[6]),         # Author
-                    alt_names=str(entry[7]),      # Alternate Names
-                    rowid=entry[0])               # Row ID (for updates)
+    series = Series(name=str(entry[SI.NAME]),                # Series Name
+                    volumes_owned=str(entry[SI.VOL_OWNED]),  # Volumes Owned
+                    is_completed=entry[SI.IS_COMPLETED],     # Is Completed
+                    next_volume=entry[SI.NEXT_VOLUME],       # Next Volume
+                    publisher=str(entry[SI.PUBLISHER]),      # Publisher
+                    author=str(entry[SI.AUTHOR]),            # Author
+                    alt_names=str(entry[SI.ALT_NAMES]),      # Alternate Names
+                    rowid=entry[SI.ROWID])                   # Row ID 
+                                                             # (for updates)
     return series
 
 
