@@ -176,6 +176,8 @@ class Series():
         Returns True if the series has no volumes and the user chooses
         to delete it, False otherwise
         """
+        reserved_words = ["unknown"]
+        
         selection = ''
         while selection not in ('e', 'E'):
             selection = input("Edit: \n[N]ame / [V]olumes / [A]uthor / "
@@ -187,6 +189,9 @@ class Series():
                                     "blank if unchanged: ")
                 if series_name == "":
                     print("Name not changed.")
+                elif series_name.lower() in reserved_words:
+                    print("'{0}' is a reserved word. Name not changed."
+                          .format(series_name)) 
                 else:
                     cur = data_mgr.query("Select name FROM Series WHERE "
                                          "name = '{0}'"
@@ -449,8 +454,15 @@ def input_series(data_mgr):
     Gets values for the name of a manga series, volumes currently owned,
     and whether the series is completed, and returns a Series() object
     """
+    reserved_words = ["unknown"]
+
     series_name = input("Enter manga name or leave blank to cancel: ")
     if series_name == "":
+        return None
+
+    if series_name.lower() in reserved_words:
+        print("'{0}' is a reserved word and cannot be used."
+              .format(series_name))
         return None
     # try:
     cur = data_mgr.query("Select name FROM Series WHERE name = '{0}'"
