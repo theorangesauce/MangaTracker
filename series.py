@@ -185,6 +185,7 @@ class Series():
                               "[C]ompletion Status / [E]nd: ")
             # Change Name
             if selection in ('n', 'N'):
+                print("Current Name: {0}".format(self.name))
                 series_name = input("Enter new series name or leave "
                                     "blank if unchanged: ")
                 if series_name == "":
@@ -207,11 +208,13 @@ class Series():
                         
             # Change Volumes
             elif selection in ('v', 'V'):
+                print("Volumes Owned: {0}".format(self.get_volumes_owned()))
                 if self.edit_volumes():
                     return True
 
             # Change Author
             elif selection in ('a', 'A'):
+                print("Current Author: {0}".format(self.author))
                 author = input("Enter author or leave blank if unchanged: ")
                 if author == "":
                     pass
@@ -221,6 +224,7 @@ class Series():
 
             # Change Publisher
             elif selection in ('p', 'P'):
+                print("Current Publisher: {0}".format(self.publisher))
                 publisher = input("Enter publisher or leave blank "
                                   "if unchanged: ")
                 if publisher == "":
@@ -231,20 +235,21 @@ class Series():
 
             # Change Alternate Names
             elif selection.lower() == "alt":
+                print("Current Alt. Names: {0}".format(self.alt_names))
                 alt_names = input("Enter any alternate names for this series: ")
                 if alt_names != "":
                     self.alt_names = alt_names
 
             # Change Completion Status
             elif selection in ('c', 'C'):
-                is_completed = input("Have you completed this series? (y/N)" 
+                is_completed = input("Have you completed this series? (y/n)" 
                                      "(Leave blank if unchanged): ")
-                if is_completed == "":
+                if is_completed not in ('y', 'Y', 'n', 'N'):
                     pass
-                elif is_completed not in ('y', 'Y'):
-                    is_completed = 0
-                else:
+                elif is_completed in ('y', 'Y'):
                     is_completed = 1
+                else:
+                    is_completed = 0
 
             print("----------------------------------------")
             print(self.full_string())
