@@ -166,7 +166,6 @@ class Series():
 
         return False
 
-    # TODO: Show current value when editing
     def edit(self, data_mgr):
         """
         edit()
