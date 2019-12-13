@@ -9,6 +9,13 @@ from enum import IntEnum
 from config import Config
 
 class SeriesItems(IntEnum):
+    """
+    SeriesItems(IntEnum)
+
+    An enum tracking the database column numbers for each series
+    property, when selected using 'SELECT rowid, * FROM Series'. Allows
+    for column order to change while keeping changes local to series.py.
+    """
     ROWID = 0
     NAME = 1
     VOL_OWNED = 2
@@ -176,7 +183,7 @@ class Series():
         to delete it, False otherwise
         """
         reserved_words = ["unknown"]
-        
+
         selection = ''
         while selection not in ('e', 'E'):
             selection = input("Edit: \n[N]ame / [V]olumes / [A]uthor / "
@@ -191,7 +198,7 @@ class Series():
                     print("Name not changed.")
                 elif series_name.lower() in reserved_words:
                     print("'{0}' is a reserved word. Name not changed."
-                          .format(series_name)) 
+                          .format(series_name))
                 else:
                     cur = data_mgr.query("Select name FROM Series WHERE "
                                          "name = '{0}'"
@@ -204,7 +211,7 @@ class Series():
                     else:
                         self.name = series_name
                         print("Name changed to \"{0}\".".format(series_name))
-                        
+
             # Change Volumes
             elif selection in ('v', 'V'):
                 print("Volumes Owned: {0}".format(self.get_volumes_owned()))
@@ -241,7 +248,7 @@ class Series():
 
             # Change Completion Status
             elif selection in ('c', 'C'):
-                is_completed = input("Have you completed this series? (y/n)" 
+                is_completed = input("Have you completed this series? (y/n)"
                                      "(Leave blank if unchanged): ")
                 if is_completed not in ('y', 'Y', 'n', 'N'):
                     pass
@@ -257,7 +264,7 @@ class Series():
         save_series = input("Save changes? (y/N): ")
         if save_series in ('y', 'Y'):
             self.update_database_entry(data_mgr)
-        
+
         return False
 
     def edit_volumes(self):
@@ -298,21 +305,21 @@ class Series():
                                  volumes_to_rmv.split(",")]
             self.vol_arr = [~x & y for x, y in
                             zip(vol_arr_to_remove, self.vol_arr)]
-            
+
             print(self.vol_arr)
             if all(not x for x in self.vol_arr):
                 user_input = input("No volumes owned for series. "
                                    "Remove from database? (y/N): ")
                 if user_input in ('y', 'Y'):
                     return True
-                
+
 
             # update related fields
             self.next_volume = self.calculate_next_volume()
             self.volumes_owned_readable = ""
             self.volumes_owned = generate_volumes_owned(
                 self.get_volumes_owned())
-        
+
         return False
 
     def update_database_entry(self, data_mgr):
