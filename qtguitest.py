@@ -37,6 +37,11 @@ def get_list_items(data_mgr, mw, order="name"):
         series_item = QListWidgetItem(series.compact_string())
         series_item.setData(Qt.UserRole, series.rowid)
         mw.list_series.addItem(series_item)
+    for entry in unknown_entries:
+        series = entry_to_series(entry)
+        series_item = QListWidgetItem(series.compact_string())
+        series_item.setData(Qt.UserRole, series.rowid)
+        mw.list_series.addItem(series_item)
         
 def gui_main():
     config = Config()
