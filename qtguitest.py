@@ -41,7 +41,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         header.setSectionResizeMode(1, QHeaderView.Stretch)
         
         # Populate table
-        for i in range(0, len(headings)):
+        for i in range(len(headings)):
             headerItem = QTableWidgetItem(headings[i])
             dataItem = QTableWidgetItem(data[i])
             self.series_info_display.setItem(i, 0, headerItem)
