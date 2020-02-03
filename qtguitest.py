@@ -16,12 +16,46 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         super(MangaTrackerGUI, self).__init__(parent)
         self.setupUi(self)
         self.set_styles()
+        self.list_series.currentItemChanged.connect(self.display_series)
 
     def set_styles(self):
         self.list_series.setStyleSheet(
             "QListWidget::item {padding-top:8px;"
             "padding-bottom:8px; border:1px solid #5DA9F6;}"
             "QListWidget::item:selected{background:#5DA9F6;}")
+
+    def table_setup(self, series):
+        headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
+                    "Next Volume", "Publisher", "Completed"]
+        data = [series.name, series.alt_names, series.author,
+                series.volumes_owned_readable, series.next_volume,
+                series.publisher, "Yes" if series.is_completed else "No"]
+
+        # Prepare table
+        self.series_info_display.clear()
+        self.series_info_display.setRowCount(len(headings))
+        self.series_info_display.setColumnCount(2)
+        header = self.series_info_display.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        
+        # Populate table
+        for i in range(0, len(headings)):
+            headerItem = QTableWidgetItem(headings[i])
+            dataItem = QTableWidgetItem(data[i])
+            self.series_info_display.setItem(i, 0, headerItem)
+            self.series_info_display.setItem(i, 1, dataItem)
+            
+
+    def display_series(self):
+        # DEBUG
+        # print(self.list_series.currentItem().data(Qt.UserRole))
+        data_mgr = DatabaseManager(Config().database_name, None)
+        series_rowid = self.list_series.currentItem().data(Qt.UserRole)
+        cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
+                             % series_rowid)
+        series = entry_to_series(cur.fetchone())
+        self.table_setup(series)
 
 def get_list_items(data_mgr, mw, order="name"):
     cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % order)
@@ -46,7 +80,6 @@ def get_list_items(data_mgr, mw, order="name"):
 def gui_main():
     config = Config()
     data_mgr = DatabaseManager(config.database_name, init_database)
-
     app = QApplication(sys.argv)
     main_window = MangaTrackerGUI()
     get_list_items(data_mgr, main_window)
