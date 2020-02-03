@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mangatracker-gui.ui',
 # licensing of 'mangatracker-gui.ui' applies.
 #
-# Created: Wed Jan 29 19:15:36 2020
+# Created: Mon Feb  3 11:00:19 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -46,6 +46,7 @@ class Ui_MainWindow(object):
         self.series_info_display.setColumnCount(2)
         self.series_info_display.setRowCount(0)
         self.series_info_display.horizontalHeader().setVisible(False)
+        self.series_info_display.verticalHeader().setVisible(False)
         self.right_column_container.addWidget(self.series_info_display)
         self.right_button_container = QtWidgets.QGridLayout()
         self.right_button_container.setObjectName("right_button_container")
