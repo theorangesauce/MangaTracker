@@ -17,6 +17,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.setupUi(self)
         self.set_styles()
         self.list_series.currentItemChanged.connect(self.display_series)
+        self.filter_series.textChanged.connect(self.filter_series_list)
 
     def set_styles(self):
         self.list_series.setStyleSheet(
@@ -57,6 +58,32 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         series = entry_to_series(cur.fetchone())
         self.table_setup(series)
 
+    def filter_series_list(self):
+        filter_text = self.filter_series.text()
+        # If empty string, make sure all items are visible
+        if not filter_text:
+            for i in range(self.list_series.count()):
+                self.list_series.item(i).setHidden(False)
+            return
+        
+        matches = self.list_series.findItems(filter_text, Qt.MatchContains)
+
+        ### Can't use this because 'if item in matches' throws
+        ### 'Operator not implemented' error
+        # for i in range(self.list_series.count()):
+        #     item = self.list_series.item(i)
+        #     print(item)
+        #     if item in matches:
+        #         item.setHidden(False)
+        #     else:
+        #         item.setHidden(True)
+        
+        # Hide all items, then show items which match filter  
+        for i in range(self.list_series.count()):
+            self.list_series.item(i).setHidden(True)
+        for i in matches:
+            i.setHidden(False)
+        
 def get_list_items(data_mgr, mw, order="name"):
     cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % order)
     entries = cur.fetchall()
