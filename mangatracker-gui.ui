@@ -53,6 +53,9 @@
        <layout class="QVBoxLayout" name="right_column_container">
         <item>
          <widget class="QTableWidget" name="series_info_display">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
           <property name="columnCount">
            <number>2</number>
           </property>

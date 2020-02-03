@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mangatracker-gui.ui',
 # licensing of 'mangatracker-gui.ui' applies.
 #
-# Created: Mon Feb  3 11:00:19 2020
+# Created: Mon Feb  3 14:35:27 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -41,6 +41,7 @@ class Ui_MainWindow(object):
         self.right_column_container = QtWidgets.QVBoxLayout()
         self.right_column_container.setObjectName("right_column_container")
         self.series_info_display = QtWidgets.QTableWidget(self.centralwidget)
+        self.series_info_display.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.series_info_display.setColumnCount(2)
         self.series_info_display.setObjectName("series_info_display")
         self.series_info_display.setColumnCount(2)
