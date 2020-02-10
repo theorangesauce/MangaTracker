@@ -73,7 +73,7 @@ class Series():
         self.vol_arr = [int(x) for x in self.volumes_owned.split(',')]
         self.volumes_owned_readable = ""
         self.get_volumes_owned()
-        if self.next_volume == -1:
+        if self.next_volume == -1 or not self.next_volume:
             self.next_volume = self.calculate_next_volume()
 
     def get_volumes_owned(self):
