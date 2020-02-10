@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mangatracker-gui.ui',
 # licensing of 'mangatracker-gui.ui' applies.
 #
-# Created: Mon Feb  3 14:35:27 2020
+# Created: Fri Feb  7 14:20:30 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -52,15 +52,19 @@ class Ui_MainWindow(object):
         self.right_button_container = QtWidgets.QGridLayout()
         self.right_button_container.setObjectName("right_button_container")
         self.edit_series_button = QtWidgets.QPushButton(self.centralwidget)
+        self.edit_series_button.setEnabled(False)
         self.edit_series_button.setObjectName("edit_series_button")
         self.right_button_container.addWidget(self.edit_series_button, 0, 0, 1, 1)
         self.remove_series_button = QtWidgets.QPushButton(self.centralwidget)
+        self.remove_series_button.setEnabled(False)
         self.remove_series_button.setObjectName("remove_series_button")
         self.right_button_container.addWidget(self.remove_series_button, 0, 1, 1, 1)
         self.add_next_volume_button = QtWidgets.QPushButton(self.centralwidget)
+        self.add_next_volume_button.setEnabled(False)
         self.add_next_volume_button.setObjectName("add_next_volume_button")
         self.right_button_container.addWidget(self.add_next_volume_button, 1, 0, 1, 1)
         self.mark_as_completed_button = QtWidgets.QPushButton(self.centralwidget)
+        self.mark_as_completed_button.setEnabled(False)
         self.mark_as_completed_button.setObjectName("mark_as_completed_button")
         self.right_button_container.addWidget(self.mark_as_completed_button, 1, 1, 1, 1)
         self.right_column_container.addLayout(self.right_button_container)

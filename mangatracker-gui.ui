@@ -73,6 +73,9 @@
          <layout class="QGridLayout" name="right_button_container">
           <item row="0" column="0">
            <widget class="QPushButton" name="edit_series_button">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Edit</string>
             </property>
@@ -80,6 +83,9 @@
           </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="remove_series_button">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Remove</string>
             </property>
@@ -87,6 +93,9 @@
           </item>
           <item row="1" column="0">
            <widget class="QPushButton" name="add_next_volume_button">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Add Next Volume</string>
             </property>
@@ -94,6 +103,9 @@
           </item>
           <item row="1" column="1">
            <widget class="QPushButton" name="mark_as_completed_button">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Mark as Completed</string>
             </property>
