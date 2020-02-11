@@ -90,7 +90,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         # Populate table
         for i in range(len(headings)):
             headerItem = QTableWidgetItem(headings[i])
-            dataItem = QTableWidgetItem(data[i])
+            dataItem = QTableWidgetItem(str(data[i]))
             self.series_info_display.setItem(i, 0, headerItem)
             self.series_info_display.setItem(i, 1, dataItem)
             
