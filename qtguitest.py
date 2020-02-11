@@ -3,6 +3,7 @@ import sys
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 import ui_mainwindow
+import ui_editseries
 from databasemanager import DatabaseManager
 from databasemanager import regexp
 from series import Series
@@ -11,6 +12,46 @@ from series import init_database
 from config import Config
 from mangatracker import entry_to_series
 
+class MangaTrackerEditWindow(QWidget, ui_editseries.Ui_EditSeries):
+    def __init__(self, rowid, parent=None):
+        super(MangaTrackerEditWindow, self).__init__(parent)
+        self.setupUi(self)
+        self.edit_series_save_button.clicked.connect(self.save_edit)
+        self.edit_series_cancel_button.clicked.connect(self.close)
+        self.rowid = rowid
+        data_mgr = DatabaseManager(Config().database_name, None)
+        cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
+                             % rowid)
+        series = entry_to_series(cur.fetchone())
+        self.table_setup(series)
+
+    def save_edit(self):
+        ### STUB
+        self.close()
+        
+    def table_setup(self, series):
+        headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
+                    "Next Volume", "Publisher", "Completed"]
+        data = [series.name, series.alt_names, series.author,
+                series.volumes_owned_readable, series.next_volume,
+                series.publisher, "Yes" if series.is_completed else "No"]
+
+        # Prepare table
+        self.edit_series_table.clear()
+        self.edit_series_table.setRowCount(len(headings))
+        self.edit_series_table.setColumnCount(2)
+        header = self.edit_series_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        
+        # Populate table
+        for i in range(len(headings)):
+            headerItem = QTableWidgetItem(headings[i])
+            dataItem = QTableWidgetItem(str(data[i]))
+            headerItem.setFlags(headerItem.flags() & ~int(Qt.ItemIsEditable))
+            self.edit_series_table.setItem(i, 0, headerItem)
+            self.edit_series_table.setItem(i, 1, dataItem)
+
 class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
     def __init__(self, parent=None):
         super(MangaTrackerGUI, self).__init__(parent)
@@ -18,6 +59,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.set_styles()
         self.list_series.currentItemChanged.connect(self.display_series)
         self.filter_series.textChanged.connect(self.filter_series_list)
+        self.edit_series_button.clicked.connect(self.open_edit_window)
 
     def set_styles(self):
         self.list_series.setStyleSheet(
@@ -25,6 +67,11 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             "padding-bottom:8px; border:1px solid #5DA9F6;}"
             "QListWidget::item:selected{background:#5DA9F6;}")
 
+    def open_edit_window(self):
+        series_rowid = self.list_series.currentItem().data(Qt.UserRole)
+        self.edit_window = MangaTrackerEditWindow(series_rowid)
+        self.edit_window.show()        
+        
     def table_setup(self, series):
         headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
                     "Next Volume", "Publisher", "Completed"]
