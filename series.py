@@ -515,13 +515,13 @@ class EditSeries():
     def name(self, series, name):
         reserved_words = ["unknown"]
         
-        if name == "":
+        if not name:
             print("Name not changed.")
-            return 1
+            return (1, "No name entered")
         elif name.lower() in reserved_words:
             print("'{0}' is a reserved word. Name not changed."
                   .format(name))
-            return 2
+            return (2, "{0} is a reserved word".format(name))
         else:
             cur = data_mgr.query("Select name FROM Series WHERE "
                                  "name = '{0}'"
@@ -531,28 +531,41 @@ class EditSeries():
             if row:
                 print("New name already present in database,"
                       "not changed")
-                return 3
+                return (3, "Name already present in database")
             else:
                 series.name = name
                 print("Name changed to \"{0}\".".format(series_name))
-                return 0
+                return (0, "")
 
     def volumes(self, series, vol_str):
         ### STUB
         return 1
 
     def author(self, series, author):
-        ### STUB
-        return 1
+        if author:
+            series.author = author
+            return (0, "")
+        return (1, "No author name entered")
 
     def publisher(self, series, publisher):
-        ### STUB
-        return 1
+        if publisher:
+            series.publisher = publisher
+            return (0, "")
+        return (1, "No publisher name entered")
 
     def alt_names(self, series, alt_names):
-        ### STUB
-        return 1
+        if alt_names:
+            series.alt_names = alt_names
+            return (0, "")
+        return (1, "No alternate names entered")
 
     def completion(self, series, completion):
-        ### STUB
-        return 1
+        positive_inputs = ["y", "complete", "yes", "1"]
+        negative_inputs = ["n", "incomplete", "no", "0"]
+        if completion.lower() in positive_inputs:
+            series.is_completed = 1
+            return (0, "")
+        elif completion.lower() in negative_inputs:
+            series.is_completed = 0
+            return (0, "")
+        return (1, "Invalid value for completion status")
