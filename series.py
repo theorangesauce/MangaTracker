@@ -510,3 +510,49 @@ def input_series(data_mgr):
                   next_volume=-1,
                   publisher=publisher,
                   author=author, alt_names=alt_names)
+
+class EditSeries():
+    def name(self, series, name):
+        reserved_words = ["unknown"]
+        
+        if name == "":
+            print("Name not changed.")
+            return 1
+        elif name.lower() in reserved_words:
+            print("'{0}' is a reserved word. Name not changed."
+                  .format(name))
+            return 2
+        else:
+            cur = data_mgr.query("Select name FROM Series WHERE "
+                                 "name = '{0}'"
+                                 .format(name
+                                         .replace("'", "''")))
+            row = cur.fetchall()
+            if row:
+                print("New name already present in database,"
+                      "not changed")
+                return 3
+            else:
+                series.name = name
+                print("Name changed to \"{0}\".".format(series_name))
+                return 0
+
+    def volumes(self, series, vol_str):
+        ### STUB
+        return 1
+
+    def author(self, series, author):
+        ### STUB
+        return 1
+
+    def publisher(self, series, publisher):
+        ### STUB
+        return 1
+
+    def alt_names(self, series, alt_names):
+        ### STUB
+        return 1
+
+    def completion(self, series, completion):
+        ### STUB
+        return 1
