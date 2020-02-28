@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mangatracker-gui.ui',
 # licensing of 'mangatracker-gui.ui' applies.
 #
-# Created: Fri Feb  7 14:20:30 2020
+# Created: Fri Feb 28 10:18:28 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -16,15 +16,19 @@ class Ui_MainWindow(object):
         MainWindow.resize(710, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.main_window_container = QtWidgets.QHBoxLayout()
-        self.main_window_container.setObjectName("main_window_container")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.left_column_container = QtWidgets.QVBoxLayout()
         self.left_column_container.setObjectName("left_column_container")
+        self.filter_series_container = QtWidgets.QHBoxLayout()
+        self.filter_series_container.setObjectName("filter_series_container")
         self.filter_series = QtWidgets.QLineEdit(self.centralwidget)
         self.filter_series.setObjectName("filter_series")
-        self.left_column_container.addWidget(self.filter_series)
+        self.filter_series_container.addWidget(self.filter_series)
+        self.filter_button = QtWidgets.QToolButton(self.centralwidget)
+        self.filter_button.setObjectName("filter_button")
+        self.filter_series_container.addWidget(self.filter_button)
+        self.left_column_container.addLayout(self.filter_series_container)
         self.list_series = QtWidgets.QListWidget(self.centralwidget)
         self.list_series.setObjectName("list_series")
         self.left_column_container.addWidget(self.list_series)
@@ -37,7 +41,7 @@ class Ui_MainWindow(object):
         self.add_series_button.setObjectName("add_series_button")
         self.left_button_container.addWidget(self.add_series_button)
         self.left_column_container.addLayout(self.left_button_container)
-        self.main_window_container.addLayout(self.left_column_container)
+        self.horizontalLayout_2.addLayout(self.left_column_container)
         self.right_column_container = QtWidgets.QVBoxLayout()
         self.right_column_container.setObjectName("right_column_container")
         self.series_info_display = QtWidgets.QTableWidget(self.centralwidget)
@@ -68,8 +72,7 @@ class Ui_MainWindow(object):
         self.mark_as_completed_button.setObjectName("mark_as_completed_button")
         self.right_button_container.addWidget(self.mark_as_completed_button, 1, 1, 1, 1)
         self.right_column_container.addLayout(self.right_button_container)
-        self.main_window_container.addLayout(self.right_column_container)
-        self.horizontalLayout_3.addLayout(self.main_window_container)
+        self.horizontalLayout_2.addLayout(self.right_column_container)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -78,6 +81,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
         self.filter_series.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Filter", None, -1))
+        self.filter_button.setText(QtWidgets.QApplication.translate("MainWindow", "...", None, -1))
         self.settings_button.setText(QtWidgets.QApplication.translate("MainWindow", "Settings", None, -1))
         self.add_series_button.setText(QtWidgets.QApplication.translate("MainWindow", "Add", None, -1))
         self.edit_series_button.setText(QtWidgets.QApplication.translate("MainWindow", "Edit", None, -1))
