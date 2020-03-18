@@ -27,8 +27,54 @@ class MangaTrackerEditWindow(QWidget, ui_editseries.Ui_EditSeries):
 
     def save_edit(self):
         ### STUB
-        self.close()
-        
+        reserved_words = ["unknown"]
+        confirm_dialog = QMessageBox.question(
+            self, "Save Changes",
+            "Are you sure you want to save changes?\nThis cannot be undone.",
+            QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+            QMessageBox.Cancel)
+
+        if confirm_dialog == QMessageBox.Save:
+            series_keys = ["name", "alt_names", "author",
+                           "volumes_owned", "next_volume",
+                           "publisher", "is_completed"]
+            data_mgr = DatabaseManager(Config().database_name, None)
+
+            for i in range(len(series_keys)):
+                new_data = self.edit_series_table.item(i, 1).text()
+                if series_keys[i] == "name":
+                    if new_data and self.series.name != new_data:
+                        cur = data_mgr.query("SELECT name FROM Series WHERE "
+                                             "name = '{0}'"
+                                             .format(new_data
+                                                     .replace("'", "''")))
+                        row = cur.fetchall()
+                        if not row:
+                            self.series.name = new_data
+                            
+                elif series_keys[i] == "volumes_owned":
+                    new_data = generate_volumes_owned(new_data)
+                    self.series.volumes_owned = new_data
+                    self.series.vol_arr = [int(x) for x in
+                                           self.series.volumes_owned.split(',')]
+                    
+                elif series_keys[i] == "next_volume":
+                    self.series.next_volume = self.series.calculate_next_volume()
+                    
+                elif series_keys[i] == "is_completed":
+                    if new_data in ["Yes", "yes", "Y", "y", 1]:
+                        self.series.is_completed = 1
+                    elif new_data in ["No", "no", "N", "n", 0]:
+                        self.series.is_completed = 0
+
+                else:
+                    self.series.__dict__[series_keys[i]] = new_data
+
+            self.series.update_database_entry(data_mgr)
+            self.close()
+        elif confirm_dialog == QMessageBox.Discard:
+            self.close()
+                
     def table_setup(self, series):
         headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
                     "Next Volume", "Publisher", "Completed"]
