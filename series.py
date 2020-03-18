@@ -43,7 +43,7 @@ class Series():
             volumes in collection
         is_completed (Int) -- whether all volumes owned or not
         next_volume -- Lowest-numbered volume not currently owned; set by
-            get_next_volume() (default -1)
+            calculate_next_volume() (default -1)
         publisher -- Publisher for series (default 'Unknown')
         author -- Author for series
         alt_names -- Alternate names for series (ex. in other languages)
