@@ -9,6 +9,7 @@ from databasemanager import regexp
 from series import Series
 from series import SeriesItems as SI
 from series import init_database
+from series import generate_volumes_owned
 from config import Config
 from mangatracker import entry_to_series
 
