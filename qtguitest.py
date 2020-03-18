@@ -94,7 +94,6 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             self.series_info_display.setItem(i, 0, headerItem)
             self.series_info_display.setItem(i, 1, dataItem)
             
-
     def display_series(self):
         # DEBUG
         # print(self.list_series.currentItem().data(Qt.UserRole))
@@ -134,7 +133,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             self.list_series.item(i).setHidden(True)
         for i in matches:
             i.setHidden(False)
-        
+
 def get_list_items(data_mgr, mw, order="name"):
     cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % order)
     entries = cur.fetchall()
@@ -160,6 +159,7 @@ def gui_main():
     data_mgr = DatabaseManager(config.database_name, init_database)
     app = QApplication(sys.argv)
     main_window = MangaTrackerGUI()
+
     get_list_items(data_mgr, main_window)
     main_window.show()
     app.exec_()
