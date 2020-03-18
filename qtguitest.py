@@ -14,7 +14,20 @@ from config import Config
 from mangatracker import entry_to_series
 
 class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
+    """Series editing window for Mangatracker GUI interface.
+
+    Displays a user-editable table containing series properties, which
+    can be edited and saved using a button at the bottom of the
+    window.
+
+    """
     def __init__(self, rowid, parent=None):
+        """Initializes edit window
+
+        Retrieves series information from database and populates table
+        with the results for the user to edit.
+
+        """
         super(MangaTrackerEditWindow, self).__init__(parent)
         self.setupUi(self)
         self.edit_series_save_button.clicked.connect(self.save_edit)
@@ -27,7 +40,16 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
         self.table_setup(self.series)
 
     def save_edit(self):
-        ### STUB
+        """Saves changes to series object or discards them depending on user choice.
+
+        Displays a dialog to the user asking if they want to save. If
+        'save' is selected, all modified properties of the series are
+        saved to the database and the edit window closes. If 'discard'
+        is selected, the window closes without saving any changes. If
+        'cancel' is selected, the dialog is closed and editing can
+        continue.
+
+        """
         reserved_words = ["unknown"]
         confirm_dialog = QMessageBox.question(
             self, "Save Changes",
@@ -77,6 +99,14 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
             self.close()
                 
     def table_setup(self, series):
+        """Generates table elements based on series.
+
+        Clears any existing elements in the table, then uses series to
+        generate a two-column table, with headings in the first column
+        and data in the second. The first column is not editable,
+        while the second column is editable.
+
+        """
         headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
                     "Next Volume", "Publisher", "Completed"]
         data = [series.name, series.alt_names, series.author,
