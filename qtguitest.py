@@ -13,7 +13,7 @@ from series import generate_volumes_owned
 from config import Config
 from mangatracker import entry_to_series
 
-class MangaTrackerEditWindow(QWidget, ui_editseries.Ui_EditSeries):
+class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
     def __init__(self, rowid, parent=None):
         super(MangaTrackerEditWindow, self).__init__(parent)
         self.setupUi(self)
@@ -117,7 +117,9 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
     def open_edit_window(self):
         series_rowid = self.list_series.currentItem().data(Qt.UserRole)
         self.edit_window = MangaTrackerEditWindow(series_rowid)
-        self.edit_window.show()        
+        self.edit_window.setWindowModality(Qt.ApplicationModal)
+        self.edit_window.finished.connect(self.display_series)
+        self.edit_window.show()
         
     def table_setup(self, series):
         headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
@@ -149,6 +151,8 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
                              % series_rowid)
         series = entry_to_series(cur.fetchone())
+
+        self.list_series.currentItem().setText(series.compact_string())
         self.table_setup(series)
         self.edit_series_button.setEnabled(True)
         self.remove_series_button.setEnabled(True)

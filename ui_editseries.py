@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mangatracker-gui-edit.ui',
 # licensing of 'mangatracker-gui-edit.ui' applies.
 #
-# Created: Fri Feb  7 10:11:07 2020
+# Created: Wed Mar 18 11:39:22 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
