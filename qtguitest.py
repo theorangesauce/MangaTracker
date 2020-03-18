@@ -22,8 +22,8 @@ class MangaTrackerEditWindow(QWidget, ui_editseries.Ui_EditSeries):
         data_mgr = DatabaseManager(Config().database_name, None)
         cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
                              % rowid)
-        series = entry_to_series(cur.fetchone())
-        self.table_setup(series)
+        self.series = entry_to_series(cur.fetchone())
+        self.table_setup(self.series)
 
     def save_edit(self):
         ### STUB
