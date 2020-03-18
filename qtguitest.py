@@ -100,7 +100,18 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
             self.edit_series_table.setItem(i, 1, dataItem)
 
 class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
+    """Main window for the MangaTracker GUI interface. 
+
+    Contains a list of all series in the database on the left, and a
+    table on the right to show the currently selected series. A user
+    can filter the list using a search bar directly above the list. A
+    user can add a series, remove a series, change settings, edit a
+    series, add the next volume for a series, or mark a series as
+    completed using buttons at the bottom of the window.
+
+    """
     def __init__(self, parent=None):
+        """Creates main window, links buttons and filter bar to functions."""
         super(MangaTrackerGUI, self).__init__(parent)
         self.setupUi(self)
         self.set_styles()
@@ -109,12 +120,20 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.edit_series_button.clicked.connect(self.open_edit_window)
 
     def set_styles(self):
+        """Sets styling for list items."""
         self.list_series.setStyleSheet(
             "QListWidget::item {padding-top:8px;"
             "padding-bottom:8px; border:1px solid #5DA9F6;}"
             "QListWidget::item:selected{background:#5DA9F6;}")
 
     def open_edit_window(self):
+        """Opens edit window for selected series.
+
+        Retrieves the unique rowid for the selected series, and
+        initializes the MangaTrackerEditWindow() class. Triggers
+        display_series() when edit window is closed.
+
+        """
         series_rowid = self.list_series.currentItem().data(Qt.UserRole)
         self.edit_window = MangaTrackerEditWindow(series_rowid)
         self.edit_window.setWindowModality(Qt.ApplicationModal)
@@ -122,6 +141,13 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.edit_window.show()
         
     def table_setup(self, series):
+        """Generates table elements based on series.
+
+        Clears any existing elements in the table, then uses series to
+        generate a two-column table, with headings in the first column
+        and data in the second.
+
+        """
         headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
                     "Next Volume", "Publisher", "Completed"]
         data = [series.name, series.alt_names, series.author,
@@ -144,8 +170,16 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             self.series_info_display.setItem(i, 1, dataItem)
             
     def display_series(self):
-        # DEBUG
-        # print(self.list_series.currentItem().data(Qt.UserRole))
+        """Retrieves and displays info for selected series.
+
+        This function retrieves the unique rowid for the selected
+        series and retrieves the series from the database. It then
+        updates all main window elements which show series info to
+        show up-to-date properties. Once all series information is
+        properly displayed, buttons which can change the selected
+        series's properties are enabled.
+
+        """
         data_mgr = DatabaseManager(Config().database_name, None)
         series_rowid = self.list_series.currentItem().data(Qt.UserRole)
         cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
@@ -160,6 +194,17 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.mark_as_completed_button.setEnabled(True)
 
     def filter_series_list(self):
+        """Hides list elements whose text does not contain a user-provided string.
+        
+        When the text in the filter bar above the list is edited, this
+        function takes the updated text and compares it to each
+        element of the list. If the series string in the list element
+        does not contain the updated text, the element will be
+        hidden. As a result, the filter only works on name, author,
+        and 'Completed'; functionality for filtering by other
+        properties is planned for future updates.
+
+        """
         filter_text = self.filter_series.text()
         # If empty string, make sure all items are visible
         if not filter_text:
@@ -186,6 +231,14 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             i.setHidden(False)
 
 def get_list_items(data_mgr, mw, order="name"):
+    """Retrieves all series from database and populates list in main window.
+
+    Populates the list in the main window with the compact_string()
+    representations of all the series in the database, sorting by the
+    given property (default "name") and placing any series with an
+    unknown value for that property at the end of the list
+
+    """
     cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % order)
     entries = cur.fetchall()
     unknown_entries = []
@@ -206,6 +259,7 @@ def get_list_items(data_mgr, mw, order="name"):
         mw.list_series.addItem(series_item)
         
 def gui_main():
+    """Starts the main window for MangaTracker GUI"""
     config = Config()
     data_mgr = DatabaseManager(config.database_name, init_database)
     app = QApplication(sys.argv)
