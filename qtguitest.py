@@ -24,8 +24,8 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
     def __init__(self, rowid, parent=None):
         """Initializes edit window
 
-        Retrieves series information from database and populates table
-        with the results for the user to edit.
+        Retrieves series information from database and populates the
+        table with the results for the user to edit.
 
         """
         super(MangaTrackerEditWindow, self).__init__(parent)
@@ -104,7 +104,7 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
         Clears any existing elements in the table, then uses series to
         generate a two-column table, with headings in the first column
         and data in the second. The first column is not editable,
-        while the second column is editable.
+        and the second column is editable.
 
         """
         headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
@@ -126,6 +126,8 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
             headerItem = QTableWidgetItem(headings[i])
             dataItem = QTableWidgetItem(str(data[i]))
             headerItem.setFlags(headerItem.flags() & ~int(Qt.ItemIsEditable))
+            if headings[i] in ["Next Volume", "Completed"]:
+                dataItem.setFlags(dataItem.flags() & ~int(Qt.ItemIsEditable))
             self.edit_series_table.setItem(i, 0, headerItem)
             self.edit_series_table.setItem(i, 1, dataItem)
 
