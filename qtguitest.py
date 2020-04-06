@@ -281,7 +281,10 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         unknown_entries = []
         count = 0
         config = Config()
+        selected_series = None
 
+        if self.list_series.currentItem():
+            selected_series = self.list_series.currentItem().data(Qt.UserRole)
         self.list_series.clear()
         for entry in entries:
             if entry[SI[order.upper()]] == "Unknown":
@@ -291,11 +294,15 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             series_item = QListWidgetItem(series.compact_string())
             series_item.setData(Qt.UserRole, series.rowid)
             self.list_series.addItem(series_item)
+            if selected_series and selected_series == series.rowid:
+                self.list_series.setCurrentItem(series_item)
         for entry in unknown_entries:
             series = entry_to_series(entry)
             series_item = QListWidgetItem(series.compact_string())
             series_item.setData(Qt.UserRole, series.rowid)
             self.list_series.addItem(series_item)
+            if selected_series and selected_series == series.rowid:
+                self.list_series.setCurrentItem(series_item)
         
 def gui_main():
     """Starts the main window for MangaTracker GUI"""
