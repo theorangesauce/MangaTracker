@@ -272,6 +272,8 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         unknown value for that property at the end of the list
 
         """
+        if not order:
+            order = "name"
         data_mgr = DatabaseManager(Config().database_name, None)
         cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % order)
         entries = cur.fetchall()
