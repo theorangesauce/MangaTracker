@@ -147,6 +147,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         super(MangaTrackerGUI, self).__init__(parent)
         self.setupUi(self)
         self.set_styles()
+        self.get_list_items()
         self.list_series.currentItemChanged.connect(self.display_series)
         self.filter_series.textChanged.connect(self.filter_series_list)
         self.edit_series_button.clicked.connect(self.open_edit_window)
@@ -262,33 +263,36 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         for i in matches:
             i.setHidden(False)
 
-def get_list_items(data_mgr, mw, order="name"):
-    """Retrieves all series from database and populates list in main window.
+    def get_list_items(self, order="name"):
+        """Retrieves all series from database and populates list in main window.
 
-    Populates the list in the main window with the compact_string()
-    representations of all the series in the database, sorting by the
-    given property (default "name") and placing any series with an
-    unknown value for that property at the end of the list
+        Populates the list in the main window with the compact_string()
+        representations of all the series in the database, sorting by the
+        given property (default "name") and placing any series with an
+        unknown value for that property at the end of the list
 
-    """
-    cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % order)
-    entries = cur.fetchall()
-    unknown_entries = []
-    count = 0
-    config = Config()
-    for entry in entries:
-        if entry[SI[order.upper()]] == "Unknown":
-            unknown_entries.append(entry)
-            continue
-        series = entry_to_series(entry)
-        series_item = QListWidgetItem(series.compact_string())
-        series_item.setData(Qt.UserRole, series.rowid)
-        mw.list_series.addItem(series_item)
-    for entry in unknown_entries:
-        series = entry_to_series(entry)
-        series_item = QListWidgetItem(series.compact_string())
-        series_item.setData(Qt.UserRole, series.rowid)
-        mw.list_series.addItem(series_item)
+        """
+        data_mgr = DatabaseManager(Config().database_name, None)
+        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % order)
+        entries = cur.fetchall()
+        unknown_entries = []
+        count = 0
+        config = Config()
+
+        self.list_series.clear()
+        for entry in entries:
+            if entry[SI[order.upper()]] == "Unknown":
+                unknown_entries.append(entry)
+                continue
+            series = entry_to_series(entry)
+            series_item = QListWidgetItem(series.compact_string())
+            series_item.setData(Qt.UserRole, series.rowid)
+            self.list_series.addItem(series_item)
+        for entry in unknown_entries:
+            series = entry_to_series(entry)
+            series_item = QListWidgetItem(series.compact_string())
+            series_item.setData(Qt.UserRole, series.rowid)
+            self.list_series.addItem(series_item)
         
 def gui_main():
     """Starts the main window for MangaTracker GUI"""
@@ -297,7 +301,6 @@ def gui_main():
     app = QApplication(sys.argv)
     main_window = MangaTrackerGUI()
 
-    get_list_items(data_mgr, main_window)
     main_window.show()
     app.exec_()
 
