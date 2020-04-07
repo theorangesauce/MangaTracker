@@ -38,8 +38,8 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
 
         """
         headings = ["Name", "Alt. Names", "Author", "Volumes Owned",
-                    "Next Volume", "Publisher", "Completed"]
-        data = ["Unknown", "", "", "", '1', "", "No"]
+                    "Publisher", "Completed"]
+        data = ["Unknown", "", "", "", "", "No"]
 
         # Prepare table
         self.add_series_table.clear()
@@ -54,7 +54,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
             headerItem = QTableWidgetItem(headings[i])
             dataItem = QTableWidgetItem(str(data[i]))
             headerItem.setFlags(headerItem.flags() & ~int(Qt.ItemIsEditable))
-            if headings[i] in ["Next Volume", "Completed"]:
+            if headings[i] == "Completed":
                 dataItem.setFlags(dataItem.flags() & ~int(Qt.ItemIsEditable))
             self.add_series_table.setItem(i, 0, headerItem)
             self.add_series_table.setItem(i, 1, dataItem)
