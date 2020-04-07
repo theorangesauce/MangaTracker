@@ -22,9 +22,54 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
         self.add_series_add_button.clicked.connect(self.add_series)
         self.add_series_cancel_button.clicked.connect(self.close)
 
+    def validate_cells(self, item):
+        if item.row() == 0: # Name
+            name = item.text()
+            data_mgr = DatabaseManager(Config().database_name, None)
+            cur = data_mgr.query("SELECT name FROM Series WHERE name = '{0}'"
+                                 .format(name.replace("'", "''")))
+            row = cur.fetchall()
+            if row or name in ["", "Unknown"]:
+                item.setBackground(Qt.red)                
+            else:
+                item.setBackground(Qt.white)
+                
+        elif item.row() == 3: # Volumes Owned
+            volumes_owned_raw = item.text()
+            pattern = "\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
+            print(regexp(pattern, volumes_owned_raw))
+            if not regexp(pattern, volumes_owned_raw):
+                item.setBackground(Qt.red)
+            else:
+                item.setBackground(Qt.white)
+
     def add_series(self):
-        # STUB
-        self.close()
+        for i in range(self.add_series_table.rowCount()):
+            if self.add_series_table.item(i, 1).background() == Qt.red:
+                return
+
+        name = self.add_series_table.item(0, 1).text()
+        if name in ["", "Unknown"]:
+            self.add_series_table.item(0, 1).setBackground(Qt.red)
+            return
+
+        alt_names = self.add_series_table.item(1, 1).text()
+        author = self.add_series_table.item(2, 1).text()
+        volumes_owned = generate_volumes_owned(
+            self.add_series_table.item(3, 1).text())
+        publisher = self.add_series_table.item(4, 1).text()
+        is_completed = 1 if self.add_series_table.item(5, 1).text == "Yes" else 0
+        
+        new_series = Series(name=name,
+                            volumes_owned=volumes_owned,
+                            is_completed=is_completed,
+                            next_volume=-1,
+                            publisher=publisher,
+                            author=author,
+                            alt_names=alt_names)
+
+        if new_series.add_series_to_database(data_mgr):
+            self.close()
         
     def table_setup(self):
         """Generates table elements for creation of a new series.
@@ -58,6 +103,8 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
                 dataItem.setFlags(dataItem.flags() & ~int(Qt.ItemIsEditable))
             self.add_series_table.setItem(i, 0, headerItem)
             self.add_series_table.setItem(i, 1, dataItem)
+
+        self.add_series_table.itemChanged.connect(self.validate_cells)
 
 
 class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
