@@ -58,7 +58,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
         volumes_owned = generate_volumes_owned(
             self.add_series_table.item(3, 1).text())
         publisher = self.add_series_table.item(4, 1).text()
-        is_completed = 1 if self.add_series_table.item(5, 1).text == "Yes" else 0
+        is_completed = 1 if self.add_series_table.cellWidget(5, 1).currentText == "Yes" else 0
         
         new_series = Series(name=name,
                             volumes_owned=volumes_owned,
@@ -97,12 +97,22 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
         # Populate table
         for i in range(len(headings)):
             headerItem = QTableWidgetItem(headings[i])
-            dataItem = QTableWidgetItem(str(data[i]))
             headerItem.setFlags(headerItem.flags() & ~int(Qt.ItemIsEditable))
-            if headings[i] == "Completed":
-                dataItem.setFlags(dataItem.flags() & ~int(Qt.ItemIsEditable))
             self.add_series_table.setItem(i, 0, headerItem)
-            self.add_series_table.setItem(i, 1, dataItem)
+            
+            if headings[i] == "Completed":
+                dataItem = QComboBox()
+                dataItem.insertItem(0, "No")
+                dataItem.insertItem(1, "Yes")
+                if str(data[i]) == "No":
+                    dataItem.setCurrentIndex(0)
+                else:
+                    dataItem.setCurrentIndex(1)
+                self.add_series_table.setCellWidget(i, 1, dataItem)
+            else:
+                dataItem = QTableWidgetItem(str(data[i]))
+                self.add_series_table.setItem(i, 1, dataItem)
+
 
         self.add_series_table.itemChanged.connect(self.validate_cells)
 
@@ -158,7 +168,11 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
             data_mgr = DatabaseManager(Config().database_name, None)
 
             for i in range(len(series_keys)):
-                new_data = self.edit_series_table.item(i, 1).text()
+                try:
+                    new_data = self.edit_series_table.item(i, 1).text()
+                except AttributeError:
+                    new_data = self.edit_series_table.cellWidget(i, 1).currentText()
+
                 if series_keys[i] == "name":
                     if new_data and self.series.name != new_data:
                         cur = data_mgr.query("SELECT name FROM Series WHERE "
@@ -216,14 +230,26 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
         header.setSectionResizeMode(1, QHeaderView.Stretch)
         
         # Populate table
-        for i in range(len(headings)):
+        for i in range(len(headings)):            
             headerItem = QTableWidgetItem(headings[i])
-            dataItem = QTableWidgetItem(str(data[i]))
             headerItem.setFlags(headerItem.flags() & ~int(Qt.ItemIsEditable))
-            if headings[i] in ["Next Volume", "Completed"]:
-                dataItem.setFlags(dataItem.flags() & ~int(Qt.ItemIsEditable))
             self.edit_series_table.setItem(i, 0, headerItem)
-            self.edit_series_table.setItem(i, 1, dataItem)
+            
+            if headings[i] == "Completed":
+                dataItem = QComboBox()
+                dataItem.insertItem(0, "No")
+                dataItem.insertItem(1, "Yes")
+                if str(data[i]) == "No":
+                    dataItem.setCurrentIndex(0)
+                else:
+                    dataItem.setCurrentIndex(1)
+                self.edit_series_table.setCellWidget(i, 1, dataItem)
+            else:
+                dataItem = QTableWidgetItem(str(data[i]))
+                if headings[i] == "Next Volume":
+                    dataItem.setFlags(dataItem.flags() & ~int(Qt.ItemIsEditable))
+                self.edit_series_table.setItem(i, 1, dataItem)
+
 
 class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
     """Main window for the MangaTracker GUI interface. 
