@@ -44,29 +44,35 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
                 item.setBackground(Qt.white)
 
     def add_series(self):
+        data_mgr = DatabaseManager(Config().database_name, None)
+        series_args = {}
         for i in range(self.add_series_table.rowCount()):
-            if self.add_series_table.item(i, 1).background() == Qt.red:
-                return
-
-        name = self.add_series_table.item(0, 1).text()
-        if name in ["", "Unknown"]:
-            self.add_series_table.item(0, 1).setBackground(Qt.red)
-            return
-
-        alt_names = self.add_series_table.item(1, 1).text()
-        author = self.add_series_table.item(2, 1).text()
-        volumes_owned = generate_volumes_owned(
-            self.add_series_table.item(3, 1).text())
-        publisher = self.add_series_table.item(4, 1).text()
-        is_completed = 1 if self.add_series_table.cellWidget(5, 1).currentText == "Yes" else 0
+            try:
+                if self.add_series_table.item(i, 1).background() == Qt.red:
+                    return
+            except AttributeError:
+                pass
+                
+            curr_heading = self.add_series_table.item(i, 0).text()
+            if curr_heading == "Name":
+                series_args['name'] = self.add_series_table.item(i, 1).text()
+                if series_args['name'] in ["", "Unknown"]:
+                    self.add_series_table.item(i, 1).setBackground(Qt.red)
+                    return
+            elif curr_heading == "Alt. Names":
+                series_args['alt_names'] = self.add_series_table.item(i, 1).text()
+            elif curr_heading == "Author":
+                series_args['author'] = self.add_series_table.item(i, 1).text()
+            elif curr_heading == "Volumes Owned":
+                series_args['volumes_owned'] = generate_volumes_owned(
+                    self.add_series_table.item(i, 1).text())
+            elif curr_heading == "Publisher":
+                series_args['publisher'] = self.add_series_table.item(i, 1).text()
+            elif curr_heading == "Completed":
+                status = self.add_series_table.cellWidget(i, 1).currentText()
+                series_args['is_completed'] = 1 if status == "Yes" else 0
         
-        new_series = Series(name=name,
-                            volumes_owned=volumes_owned,
-                            is_completed=is_completed,
-                            next_volume=-1,
-                            publisher=publisher,
-                            author=author,
-                            alt_names=alt_names)
+        new_series = Series(**series_args)
 
         if new_series.add_series_to_database(data_mgr):
             self.close()
