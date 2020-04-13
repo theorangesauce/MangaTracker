@@ -313,6 +313,12 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             
 
     def open_add_window(self):
+        """Opens window to add a new series
+
+        Initializes the MangaTrackerAddWindow class. Triggers
+        get_list_items when the add series window is closed
+
+        """
         self.add_window = MangaTrackerAddWindow()
         self.add_window.setWindowModality(Qt.ApplicationModal)
         self.add_window.finished.connect(self.get_list_items)
