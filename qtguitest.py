@@ -476,7 +476,9 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             self.list_series.addItem(series_item)
             if selected_series and selected_series == series.rowid:
                 self.list_series.setCurrentItem(series_item)
-        
+
+        self.filter_series_list()
+
 def gui_main():
     """Starts the main window for MangaTracker GUI"""
     config = Config()
