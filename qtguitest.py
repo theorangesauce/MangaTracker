@@ -19,6 +19,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
     def __init__(self, parent=None):
         super(MangaTrackerAddWindow, self).__init__(parent)
         self.setupUi(self)
+        self.added = -1
         self.table_setup()
         self.add_series_add_button.clicked.connect(self.add_series)
         self.add_series_cancel_button.clicked.connect(self.close)
@@ -76,6 +77,9 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
         new_series = Series(**series_args)
 
         if new_series.add_series_to_database(data_mgr):
+            cur = data_mgr.query("SELECT rowid FROM series WHERE name='%s'"
+                                 % series_args['name'].replace("'","''"))
+            self.added = cur.fetchone()[0]
             self.close()
         
     def table_setup(self):
@@ -450,6 +454,10 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
 
         if self.list_series.currentItem():
             selected_series = self.list_series.currentItem().data(Qt.UserRole)
+        if hasattr(self, "add_window") and self.add_window.added > -1:
+            selected_series = self.add_window.added
+            self.add_window.added = -1
+
         self.list_series.clear()
         for entry in entries:
             if entry[SI[order.upper()]] == "Unknown":
