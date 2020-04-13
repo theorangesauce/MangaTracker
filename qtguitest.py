@@ -13,6 +13,7 @@ from series import init_database
 from series import generate_volumes_owned
 from config import Config
 from mangatracker import entry_to_series
+from mangatracker import remove_series_from_database
 
 class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
     def __init__(self, parent=None):
@@ -278,6 +279,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.filter_series.textChanged.connect(self.filter_series_list)
         self.edit_series_button.clicked.connect(self.open_edit_window)
         self.add_series_button.clicked.connect(self.open_add_window)
+        self.remove_series_button.clicked.connect(self.remove_series)
 
     def set_styles(self):
         """Sets styling for list items."""
@@ -285,6 +287,30 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             "QListWidget::item {padding-top:8px;"
             "padding-bottom:8px; border:1px solid #5DA9F6;}"
             "QListWidget::item:selected{background:#5DA9F6;}")
+
+    def remove_series(self):
+        """Remove selected series from database
+
+        Removes the currently selected series from the database, after
+        prompting the user for confirmation.
+
+        """
+        data_mgr = DatabaseManager(Config().database_name, None)
+        if self.list_series.currentItem():
+            series_rowid = self.list_series.currentItem().data(Qt.UserRole)
+            cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
+                                 % series_rowid)
+            series = entry_to_series(cur.fetchone())
+            confirm_dialog = QMessageBox.question(
+                self, "Remove %s" % series.name,
+                "Are you sure you want to remove this series?\n"
+                "This can't be undone.",
+                QMessageBox.Discard | QMessageBox.Cancel,
+                QMessageBox.Cancel)
+            if confirm_dialog == QMessageBox.Discard:
+                remove_series_from_database(data_mgr, series)
+                self.get_list_items()
+            
 
     def open_add_window(self):
         self.add_window = MangaTrackerAddWindow()
