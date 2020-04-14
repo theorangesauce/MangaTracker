@@ -285,6 +285,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.add_series_button.clicked.connect(self.open_add_window)
         self.remove_series_button.clicked.connect(self.remove_series)
         self.mark_as_completed_button.clicked.connect(self.toggle_is_completed)
+        self.add_next_volume_button.clicked.connect(self.add_next_volume)
 
     def set_styles(self):
         """Sets styling for list items."""
@@ -304,6 +305,19 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             series.is_completed ^= 1
             series.update_database_entry(data_mgr)
             self.get_list_items()
+
+    def add_next_volume(self):
+        """Adds next volume to selected series."""
+        data_mgr = DatabaseManager(Config().database_name, None)
+        if self.list_series.currentItem():
+            series_rowid = self.list_series.currentItem().data(Qt.UserRole)
+            cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
+                                 % series_rowid)
+            series = entry_to_series(cur.fetchone())
+            if not series.is_completed:
+                series.add_volumes(str(series.next_volume))
+                series.update_database_entry(data_mgr)
+                self.get_list_items()
 
     def remove_series(self):
         """Remove selected series from database
