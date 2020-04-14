@@ -313,8 +313,8 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
                 QMessageBox.Cancel)
             if confirm_dialog == QMessageBox.Discard:
                 remove_series_from_database(data_mgr, series)
-                self.get_list_items()
-            
+                self.list_series.takeItem(self.list_series.currentRow())
+                self.list_series.setFocus()
 
     def open_add_window(self):
         """Opens window to add a new series
