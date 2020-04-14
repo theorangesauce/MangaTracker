@@ -445,7 +445,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         if not order:
             order = "name"
         data_mgr = DatabaseManager(Config().database_name, None)
-        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s" % order)
+        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s COLLATE NOCASE ASC" % order)
         entries = cur.fetchall()
         unknown_entries = []
         count = 0
