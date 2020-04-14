@@ -284,6 +284,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.edit_series_button.clicked.connect(self.open_edit_window)
         self.add_series_button.clicked.connect(self.open_add_window)
         self.remove_series_button.clicked.connect(self.remove_series)
+        self.mark_as_completed_button.clicked.connect(self.toggle_is_completed)
 
     def set_styles(self):
         """Sets styling for list items."""
@@ -291,6 +292,18 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             "QListWidget::item {padding-top:8px;"
             "padding-bottom:8px; border:1px solid #5DA9F6;}"
             "QListWidget::item:selected{background:#5DA9F6;}")
+
+    def toggle_is_completed(self):
+        """Toggles completion status of selected series."""
+        data_mgr = DatabaseManager(Config().database_name, None)
+        if self.list_series.currentItem():
+            series_rowid = self.list_series.currentItem().data(Qt.UserRole)
+            cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
+                                 % series_rowid)
+            series = entry_to_series(cur.fetchone())
+            series.is_completed ^= 1
+            series.update_database_entry(data_mgr)
+            self.get_list_items()
 
     def remove_series(self):
         """Remove selected series from database
