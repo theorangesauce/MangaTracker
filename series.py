@@ -267,7 +267,47 @@ class Series():
             self.update_database_entry(data_mgr)
 
         return False
+    
+    def add_volumes(self, volumes_to_add):
+        """Standalone function for adding new volumes to a series.
+        
+        Takes input in the form of a comma-separated list of volumes
+        or ranges of volumes, and adds the passed volumes to the
+        series entry.
 
+        """
+        volumes_to_add = generate_volumes_owned(volumes_to_add)
+        vol_arr_to_add = [int(x) for x in
+                          volumes_to_add.split(",")]
+        self.vol_arr = [x | y for x, y in
+                        zip(vol_arr_to_add, self.vol_arr)]
+
+        # update related fields
+        self.next_volume = self.calculate_next_volume()
+        self.volumes_owned_readable = ""
+        self.volumes_owned = generate_volumes_owned(
+            self.get_volumes_owned())
+
+    def remove_volumes(self, volumes_to_remove):
+        """Standalone function for removing volumes from a series.
+
+        Takes input in the form of a comma-separated list of volumes
+        or ranges of volumes, and removes the passed volumes from the
+        series
+
+        """
+        volumes_to_remove = generate_volumes_owned(volumes_to_remove)
+        vol_arr_to_remove = [int(x) for x in
+                             volumes_to_remove.split(",")]
+        self.vol_arr = [~x & y for x, y in
+                        zip(vol_arr_to_remove, self.vol_arr)]
+        
+        # update related fields
+        self.next_volume = self.calculate_next_volume()
+        self.volumes_owned_readable = ""
+        self.volumes_owned = generate_volumes_owned(
+            self.get_volumes_owned())
+    
     def edit_volumes(self):
         """
         edit_volumes()
