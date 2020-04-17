@@ -278,7 +278,33 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         super(MangaTrackerGUI, self).__init__(parent)
         self.setupUi(self)
         self.set_styles()
-        self.get_list_items()
+
+        self.filter_button_menu = QMenu()
+        self.filter_button_group = QActionGroup(self.filter_button_menu)
+
+        self.no_filter_action = self.filter_button_menu.addAction("No filter")
+        self.gaps_action = self.filter_button_menu.addAction("Show series with gaps")
+        self.completed_action = self.filter_button_menu.addAction("Show completed series")
+        self.incomplete_action = self.filter_button_menu.addAction("Show incomplete series")
+
+        self.filter_button_group.addAction(self.no_filter_action)
+        self.filter_button_group.addAction(self.gaps_action)
+        self.filter_button_group.addAction(self.completed_action)
+        self.filter_button_group.addAction(self.incomplete_action)
+
+        self.no_filter_action.setCheckable(True)
+        self.gaps_action.setCheckable(True)
+        self.completed_action.setCheckable(True)
+        self.incomplete_action.setCheckable(True)
+
+        self.no_filter_action.toggled.connect(self.get_list_items)
+        self.gaps_action.toggled.connect(self.get_list_items)
+        self.completed_action.toggled.connect(self.get_list_items)
+        self.incomplete_action.toggled.connect(self.get_list_items)
+
+        self.filter_button.setMenu(self.filter_button_menu)
+        self.filter_button.setPopupMode(self.filter_button.InstantPopup)
+        
         self.list_series.currentItemChanged.connect(self.display_series)
         self.filter_series.textChanged.connect(self.filter_series_list)
         self.edit_series_button.clicked.connect(self.open_edit_window)
@@ -286,6 +312,8 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.remove_series_button.clicked.connect(self.remove_series)
         self.mark_as_completed_button.clicked.connect(self.toggle_is_completed)
         self.add_next_volume_button.clicked.connect(self.add_next_volume)
+
+        self.get_list_items()
 
     def set_styles(self):
         """Sets styling for list items."""
@@ -460,6 +488,27 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         for i in matches:
             i.setHidden(False)
 
+    def check_filters(self, series):
+        """Compare series to any filters set in filter_button
+
+        If any of the filters in the filter_button_menu are selected,
+        this function returns True if the series matches the selected
+        filter and False if it does not. If no filter is selected,
+        this function always returns True.
+
+        """
+        if self.gaps_action.isChecked():
+            binary_str = series.get_volumes_owned_binary()
+            if regexp("1*0+1", binary_str):
+                return True
+            return False
+        elif self.completed_action.isChecked():
+            return series.is_completed
+        elif self.incomplete_action.isChecked():
+            return not series.is_completed
+        else:
+            return True
+            
     def get_list_items(self, order="name"):
         """Retrieves all series from database and populates list in main window.
 
@@ -469,7 +518,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         unknown value for that property at the end of the list
 
         """
-        if not order:
+        if order not in ["name", "author", "publisher", "alt_names"]:
             order = "name"
         data_mgr = DatabaseManager(Config().database_name, None)
         cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s COLLATE NOCASE ASC" % order)
@@ -491,6 +540,11 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
                 unknown_entries.append(entry)
                 continue
             series = entry_to_series(entry)
+
+            # Check if any filters are selected.
+            if not self.check_filters(series):
+                continue
+            
             series_item = QListWidgetItem(series.compact_string())
             series_item.setData(Qt.UserRole, series.rowid)
             self.list_series.addItem(series_item)
