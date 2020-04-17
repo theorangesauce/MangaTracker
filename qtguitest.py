@@ -527,6 +527,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         count = 0
         config = Config()
         selected_series = None
+        selected_series_found = False
 
         if self.list_series.currentItem():
             selected_series = self.list_series.currentItem().data(Qt.UserRole)
@@ -550,6 +551,8 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             self.list_series.addItem(series_item)
             if selected_series and selected_series == series.rowid:
                 self.list_series.setCurrentItem(series_item)
+                selected_series_found = True
+                
         for entry in unknown_entries:
             series = entry_to_series(entry)
             series_item = QListWidgetItem(series.compact_string())
@@ -557,6 +560,11 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             self.list_series.addItem(series_item)
             if selected_series and selected_series == series.rowid:
                 self.list_series.setCurrentItem(series_item)
+                selected_series_found = True
+
+        # If previous series item no longer exists, select first entry in list
+        if selected_series and not selected_series_found:
+            self.list_series.setCurrentRow(0)
 
         self.filter_series_list()
 
