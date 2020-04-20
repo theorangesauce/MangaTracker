@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import os.path
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 import ui_mainwindow
@@ -22,7 +23,21 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
         self.setupUi(self)
         self.config = Config()
         self.database_name_text.setText(self.config.database_name)
+        self.config_save.clicked.connect(self.save_changes)
         self.config_cancel.clicked.connect(self.close)
+
+    def save_changes(self):
+        name = self.database_name_text.text()
+        self.results_dialog = QMessageBox()
+        if name[-3:] == ".db" and not os.path.exists(name):
+            self.config.set_property("database_name", name)
+            self.results_dialog.setText("Database name has been changed. "
+                                        "Program must be restarted for changes to take effect.")
+            self.results_dialog.show()
+            self.close()
+        else:
+            self.results_dialog.setText("Database name must match the format *.db and not be a pre-existing file.")
+            self.results_dialog.show()
 
 class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
     def __init__(self, parent=None):
