@@ -5,6 +5,7 @@ from PySide2.QtWidgets import *
 import ui_mainwindow
 import ui_editseries
 import ui_addseries
+import ui_configdialog
 from databasemanager import DatabaseManager
 from databasemanager import regexp
 from series import Series
@@ -14,6 +15,14 @@ from series import generate_volumes_owned
 from config import Config
 from mangatracker import entry_to_series
 from mangatracker import remove_series_from_database
+
+class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
+    def __init__(self, parent=None):
+        super(MangaTrackerConfigWindow, self).__init__(parent)
+        self.setupUi(self)
+        self.config = Config()
+        self.database_name_text.setText(self.config.database_name)
+        self.config_cancel.clicked.connect(self.close)
 
 class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
     def __init__(self, parent=None):
@@ -307,6 +316,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         
         self.list_series.currentItemChanged.connect(self.display_series)
         self.filter_series.textChanged.connect(self.filter_series_list)
+        self.settings_button.clicked.connect(self.open_config_window)
         self.edit_series_button.clicked.connect(self.open_edit_window)
         self.add_series_button.clicked.connect(self.open_add_window)
         self.remove_series_button.clicked.connect(self.remove_series)
@@ -371,6 +381,12 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
                 self.list_series.takeItem(self.list_series.currentRow())
                 self.list_series.setFocus()
 
+    def open_config_window(self):
+        self.config_window = MangaTrackerConfigWindow()
+        self.config_window.setWindowModality(Qt.ApplicationModal)
+        self.config_window.finished.connect(self.get_list_items)
+        self.config_window.show()
+                    
     def open_add_window(self):
         """Opens window to add a new series
 
