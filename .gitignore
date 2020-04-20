@@ -52,6 +52,7 @@ Temporary Items
 
 # Python junk
 __pycache__
+venv
 
 # Databases (may contain sensitive information)
 *.db
