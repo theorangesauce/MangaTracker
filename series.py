@@ -43,7 +43,7 @@ class Series():
             volumes in collection
         is_completed (Int) -- whether all volumes owned or not
         next_volume -- Lowest-numbered volume not currently owned; set by
-            get_next_volume() (default -1)
+            calculate_next_volume() (default -1)
         publisher -- Publisher for series (default 'Unknown')
         author -- Author for series
         alt_names -- Alternate names for series (ex. in other languages)
@@ -72,7 +72,8 @@ class Series():
 
         self.vol_arr = [int(x) for x in self.volumes_owned.split(',')]
         self.volumes_owned_readable = ""
-        if self.next_volume == -1:
+        self.get_volumes_owned()
+        if self.next_volume == -1 or not self.next_volume:
             self.next_volume = self.calculate_next_volume()
 
     def get_volumes_owned(self):
@@ -266,7 +267,47 @@ class Series():
             self.update_database_entry(data_mgr)
 
         return False
+    
+    def add_volumes(self, volumes_to_add):
+        """Standalone function for adding new volumes to a series.
+        
+        Takes input in the form of a comma-separated list of volumes
+        or ranges of volumes, and adds the passed volumes to the
+        series entry.
 
+        """
+        volumes_to_add = generate_volumes_owned(volumes_to_add)
+        vol_arr_to_add = [int(x) for x in
+                          volumes_to_add.split(",")]
+        self.vol_arr = [x | y for x, y in
+                        zip(vol_arr_to_add, self.vol_arr)]
+
+        # update related fields
+        self.next_volume = self.calculate_next_volume()
+        self.volumes_owned_readable = ""
+        self.volumes_owned = generate_volumes_owned(
+            self.get_volumes_owned())
+
+    def remove_volumes(self, volumes_to_remove):
+        """Standalone function for removing volumes from a series.
+
+        Takes input in the form of a comma-separated list of volumes
+        or ranges of volumes, and removes the passed volumes from the
+        series
+
+        """
+        volumes_to_remove = generate_volumes_owned(volumes_to_remove)
+        vol_arr_to_remove = [int(x) for x in
+                             volumes_to_remove.split(",")]
+        self.vol_arr = [~x & y for x, y in
+                        zip(vol_arr_to_remove, self.vol_arr)]
+        
+        # update related fields
+        self.next_volume = self.calculate_next_volume()
+        self.volumes_owned_readable = ""
+        self.volumes_owned = generate_volumes_owned(
+            self.get_volumes_owned())
+    
     def edit_volumes(self):
         """
         edit_volumes()
@@ -509,3 +550,62 @@ def input_series(data_mgr):
                   next_volume=-1,
                   publisher=publisher,
                   author=author, alt_names=alt_names)
+
+class EditSeries():
+    def name(self, series, name):
+        reserved_words = ["unknown"]
+        
+        if not name:
+            print("Name not changed.")
+            return (1, "No name entered")
+        elif name.lower() in reserved_words:
+            print("'{0}' is a reserved word. Name not changed."
+                  .format(name))
+            return (2, "{0} is a reserved word".format(name))
+        else:
+            cur = data_mgr.query("Select name FROM Series WHERE "
+                                 "name = '{0}'"
+                                 .format(name
+                                         .replace("'", "''")))
+            row = cur.fetchall()
+            if row:
+                print("New name already present in database,"
+                      "not changed")
+                return (3, "Name already present in database")
+            else:
+                series.name = name
+                print("Name changed to \"{0}\".".format(series_name))
+                return (0, "")
+
+    def volumes(self, series, vol_str):
+        ### STUB
+        return 1
+
+    def author(self, series, author):
+        if author:
+            series.author = author
+            return (0, "")
+        return (1, "No author name entered")
+
+    def publisher(self, series, publisher):
+        if publisher:
+            series.publisher = publisher
+            return (0, "")
+        return (1, "No publisher name entered")
+
+    def alt_names(self, series, alt_names):
+        if alt_names:
+            series.alt_names = alt_names
+            return (0, "")
+        return (1, "No alternate names entered")
+
+    def completion(self, series, completion):
+        positive_inputs = ["y", "complete", "yes", "1"]
+        negative_inputs = ["n", "incomplete", "no", "0"]
+        if completion.lower() in positive_inputs:
+            series.is_completed = 1
+            return (0, "")
+        elif completion.lower() in negative_inputs:
+            series.is_completed = 0
+            return (0, "")
+        return (1, "Invalid value for completion status")
