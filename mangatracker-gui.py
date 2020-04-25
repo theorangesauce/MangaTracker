@@ -3,10 +3,10 @@ import sys
 import os.path
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
-import ui_mainwindow
-import ui_editseries
-import ui_addseries
-import ui_configdialog
+from ui import ui_mainwindow
+from ui import ui_editseries
+from ui import ui_addseries
+from ui import ui_configdialog
 from databasemanager import DatabaseManager
 from databasemanager import regexp
 from series import Series
