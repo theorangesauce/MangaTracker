@@ -54,6 +54,8 @@ Temporary Items
 __pycache__
 venv
 
+# Planning documents
+planning
 
 # Databases (may contain sensitive information)
 *.db
