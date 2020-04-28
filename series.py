@@ -7,6 +7,7 @@ Copyright 2019 by Nicholas Bishop
 import math
 from enum import IntEnum
 from config import Config
+from databasemanager import regexp
 
 class SeriesItems(IntEnum):
     """
@@ -458,10 +459,17 @@ def generate_volumes_owned(vol_list):
     stores them bitwise in 32-bit integers, then concatenates bitwise
     representations of them in a string and returns the result
     """
+    # Check that input is valid
+    pattern = "^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
+    if not regexp(pattern, vol_list):
+        print("Invalid input!")
+        return '0,0,0,0'
+    
     volume_limit = Config().volume_limit
     arr_length = int(math.ceil(volume_limit / 32))
     vol_arr = [0 for x in range(0, arr_length)]
     entered_values = [x.strip() for x in vol_list.split(',')]
+
     for num in entered_values:
         if num in ('', 'None'): # empty string, no volumes
             continue

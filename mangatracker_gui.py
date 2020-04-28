@@ -62,7 +62,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
                 
         elif item.row() == 3: # Volumes Owned
             volumes_owned_raw = item.text()
-            pattern = "\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
+            pattern = "^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
             print(regexp(pattern, volumes_owned_raw))
             if not regexp(pattern, volumes_owned_raw):
                 item.setBackground(Qt.red)
