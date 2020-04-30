@@ -555,7 +555,17 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         
         else:
             return True
-            
+
+    def clear_table(self):
+        """Clear series info from display table and disable buttons"""
+        self.series_info_display.clear()
+        self.series_info_display.setRowCount(0)
+        self.series_info_display.setColumnCount(0)
+        self.edit_series_button.setEnabled(False)
+        self.remove_series_button.setEnabled(False)
+        self.add_next_volume_button.setEnabled(False)
+        self.mark_as_completed_button.setEnabled(False)
+
     def get_list_items(self, order="name"):
         """Retrieves all series from database and populates list in main window.
 
@@ -613,7 +623,11 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         if selected_series and not selected_series_found:
             self.list_series.setCurrentRow(0)
 
+        if not self.list_series.currentItem():
+            self.clear_table()
+
         self.filter_series_list()
+
 
 def gui_main():
     """Starts the main window for MangaTracker GUI"""
