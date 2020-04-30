@@ -78,7 +78,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
             volumes_owned_raw = item.text()
             pattern = "^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
             print(regexp(pattern, volumes_owned_raw))
-            if not regexp(pattern, volumes_owned_raw):
+            if not regexp(pattern, volumes_owned_raw) and volumes_owned_raw not in ["None", "0", ""]:
                 item.setBackground(Qt.red)
             else:
                 item.setBackground(Qt.white)
@@ -104,8 +104,11 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
             elif curr_heading == "Author":
                 series_args['author'] = self.add_series_table.item(i, 1).text()
             elif curr_heading == "Volumes Owned":
-                series_args['volumes_owned'] = generate_volumes_owned(
-                    self.add_series_table.item(i, 1).text())
+                if self.add_series_table.item(i, 1).text() in ["None", "0", ""]:
+                    series_args['volumes_owned'] = generate_volumes_owned("")
+                else:
+                    series_args['volumes_owned'] = generate_volumes_owned(
+                        self.add_series_table.item(i, 1).text())
             elif curr_heading == "Publisher":
                 series_args['publisher'] = self.add_series_table.item(i, 1).text()
             elif curr_heading == "Completed":
@@ -233,7 +236,10 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
                             self.series.name = new_data
                             
                 elif series_keys[i] == "volumes_owned":
-                    new_data = generate_volumes_owned(new_data)
+                    if new_data in ["None", "0", ""]:
+                        new_data = generate_volumes_owned("")
+                    else:
+                        new_data = generate_volumes_owned(new_data)
                     self.series.volumes_owned = new_data
                     self.series.vol_arr = [int(x) for x in
                                            self.series.volumes_owned.split(',')]
