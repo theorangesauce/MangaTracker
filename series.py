@@ -452,17 +452,18 @@ def init_database(data_mgr, new_db_needed=True):
                 next_series = input_series(data_mgr)
 
 def generate_volumes_owned(vol_list):
-    """
-    generate_volumes_owned(vol_list):
+    """Converts the given volume list into a four-integer string representation.
 
-    Takes a string of numbers in a comma-separated list (ex. "1, 3-5, 7"),
-    stores them bitwise in 32-bit integers, then concatenates bitwise
-    representations of them in a string and returns the result
+    Takes a string of numbers in a comma-separated list (ex. "1, 3-5, 7"), 
+    stores them bitwise in 32-bit integers, then concatenates
+    bitwise representations of them in a string and returns the
+    result. Returns '0,0,0,0' by default if input is invalid or empty.
+
     """
     # Check that input is valid
     pattern = "^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
     if not regexp(pattern, vol_list):
-        print("Invalid input!")
+        print("Using default (empty series)")
         return '0,0,0,0'
     
     volume_limit = Config().volume_limit
