@@ -310,21 +310,25 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.gaps_action = self.filter_button_menu.addAction("Show series with gaps")
         self.completed_action = self.filter_button_menu.addAction("Show completed series")
         self.incomplete_action = self.filter_button_menu.addAction("Show incomplete series")
-
+        self.wishlist_action = self.filter_button_menu.addAction("Show wishlisted series")
+        
         self.filter_button_group.addAction(self.no_filter_action)
         self.filter_button_group.addAction(self.gaps_action)
         self.filter_button_group.addAction(self.completed_action)
         self.filter_button_group.addAction(self.incomplete_action)
-
+        self.filter_button_group.addAction(self.wishlist_action)
+        
         self.no_filter_action.setCheckable(True)
         self.gaps_action.setCheckable(True)
         self.completed_action.setCheckable(True)
         self.incomplete_action.setCheckable(True)
+        self.wishlist_action.setCheckable(True)
 
         self.no_filter_action.toggled.connect(self.get_list_items)
         self.gaps_action.toggled.connect(self.get_list_items)
         self.completed_action.toggled.connect(self.get_list_items)
         self.incomplete_action.toggled.connect(self.get_list_items)
+        self.wishlist_action.toggled.connect(self.get_list_items)
 
         self.filter_button.setMenu(self.filter_button_menu)
         self.filter_button.setPopupMode(self.filter_button.InstantPopup)
@@ -528,15 +532,27 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         this function always returns True.
 
         """
+        if not Config().show_empty_series and not self.wishlist_action.isChecked():
+            if series.volumes_owned == "0,0,0,0":
+                return False
+            
         if self.gaps_action.isChecked():
             binary_str = series.get_volumes_owned_binary()
             if regexp("1*0+1", binary_str):
                 return True
             return False
+        
         elif self.completed_action.isChecked():
             return series.is_completed
+        
         elif self.incomplete_action.isChecked():
             return not series.is_completed
+        
+        elif self.wishlist_action.isChecked():
+            if series.volumes_owned == "0,0,0,0":
+                return True
+            return False
+        
         else:
             return True
             
