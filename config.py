@@ -54,6 +54,9 @@ class Config(Singleton):
         self.compact_list = self.config.getboolean('config',
                                                    'compact_list',
                                                    fallback=False)
+        self.show_empty_series = self.config.getboolean('config',
+                                                        'show_empty_series',
+                                                        fallback=False)
 
     def set_property(self, prop_name, prop_value):
         """
@@ -78,6 +81,11 @@ class Config(Singleton):
                     or isinstance(prop_value, bool)
                ):
                 self.config["config"]["compact_list"] = str(prop_value)
+        elif prop_name == "show_empty_series":
+            if ((isinstance(prop_value, int) and prop_value in [0, 1])
+                    or isinstance(prop_value, bool)
+               ):
+                self.config["config"]["show_empty_series"] = str(prop_value)
         with open(self.filename, 'w') as config_ini:
             self.config.write(config_ini)
 
@@ -106,3 +114,4 @@ class Config(Singleton):
         self.volume_limit = 128
         self.series_per_page = 0
         self.compact_list = False
+        self.show_empty_series = False

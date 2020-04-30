@@ -47,6 +47,8 @@ def print_all_series(data_mgr, order="name"):
         if entry[SI[order.upper()]] == "Unknown":
             unknown_entries.append(entry)
             continue
+        if not config.show_empty_series and entry[SI.VOL_OWNED] == "0,0,0,0":
+            continue
         if (config.series_per_page != 0
                 and count != 0
                 and count % config.series_per_page == 0
@@ -131,6 +133,9 @@ def list_series(data_mgr):
             print("No completed series found.")
             return
 
+        if not config.show_empty_series:
+            [entries.remove(entry) for entry in entries if entry[SI["VOL_OWNED"]] == "0,0,0,0"]
+
         print("Found {0} completed series:".format(len(entries)))
         print_entries_list(entries)
 
@@ -143,6 +148,9 @@ def list_series(data_mgr):
         if not entries:
             print("No incomplete series found.")
             return
+
+        if not config.show_empty_series:
+            [entries.remove(entry) for entry in entries if entry[SI["VOL_OWNED"]] == "0,0,0,0"]
 
         print("Found {0} incomplete series:".format(len(entries)))
         print_entries_list(entries)
@@ -416,7 +424,9 @@ def options_menu(config):
     3. Change number of series displayed per page (default 0)
     4. Select either verbose descriptions or
        1-line descriptions (default verbose)
-    5. Reset all settings to default
+    5. Show empty series in normal lists
+    6. Reset all settings to default
+    7. Clear database
 
     Arguments:
     data_mgr - DatabaseManager object connected to current database
@@ -427,8 +437,9 @@ def options_menu(config):
           "2. Change Volume Limit\n"
           "3. Change Series Displayed Per Page\n"
           "4. Use Compact Descriptions\n"
-          "5. Reset to Default Settings\n"
-          "6. Clear Database")
+          "5. Show Empty Series in Lists\n"
+          "6. Reset to Default Settings\n"
+          "7. Clear Database")
     option = input("Enter a number to modify option: ")
     try:
         option = int(option)
@@ -477,14 +488,22 @@ def options_menu(config):
             else:
                 config.set_property("compact_list", False)
 
-        # 5. Reset to default
+        # 5. Show empty series in normal lists
         elif option == 5:
+            show_empty_series = input("Show series without any volumes in lists? (y/N): ")
+            if show_empty_series in ('y', 'Y'):
+                config.set_property("show_empty_series", True)
+            else:
+                config.set_property("show_empty_series", False)
+
+        # 6. Reset to default
+        elif option == 6:
             default = input("Reset all settings to default? (y/N): ")
             if default in ('y', 'Y'):
                 config.set_default_config("config.ini")
 
-        # 6. Clear database (Does not prompt user for series)
-        elif option == 6:
+        # 7. Clear database (Does not prompt user for series)
+        elif option == 7:
             delete_database = input("Remove Database? "
                                     "(will copy to {0}.bak) y/N: "
                                     .format(config.database_name))
