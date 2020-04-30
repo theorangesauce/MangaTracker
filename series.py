@@ -565,11 +565,11 @@ class EditSeries():
         
         if not name:
             print("Name not changed.")
-            return (1, "No name entered")
+            return (1, "No name entered.")
         elif name.lower() in reserved_words:
             print("'{0}' is a reserved word. Name not changed."
                   .format(name))
-            return (2, "{0} is a reserved word".format(name))
+            return (2, "{0} is a reserved word.".format(name))
         else:
             if data_mgr:
                 cur = data_mgr.query("Select name FROM Series WHERE "
@@ -579,8 +579,8 @@ class EditSeries():
                 row = cur.fetchall()
             if data_mgr and row:
                 print("New name already present in database,"
-                      "not changed")
-                return (3, "Name already present in database")
+                      "not changed.")
+                return (3, "Name already present in database.")
             else:
                 series.name = name
                 print("Name changed to \"{0}\".".format(series.name))
@@ -588,33 +588,33 @@ class EditSeries():
 
     def volumes(self, series, vol_str):
         ### STUB
-        return 1
+        return (1, "Stub")
 
     def author(self, series, author):
         if author:
             series.author = author
-            return (0, "")
-        return (1, "No author name entered")
+            return (0, "Author changed to \"{0}\".".format(series.author))
+        return (1, "No author name entered.")
 
     def publisher(self, series, publisher):
         if publisher:
             series.publisher = publisher
-            return (0, "")
-        return (1, "No publisher name entered")
+            return (0, "Publisher changed to \"{0}\".".format(series.publisher))
+        return (1, "No publisher name entered.")
 
     def alt_names(self, series, alt_names):
         if alt_names:
             series.alt_names = alt_names
-            return (0, "")
-        return (1, "No alternate names entered")
+            return (0, "Alternate name(s) changed to \"{0}\".".format(series.alt_names))
+        return (1, "No alternate names entered.")
 
     def completion(self, series, completion):
         positive_inputs = ["y", "complete", "yes", "1"]
         negative_inputs = ["n", "incomplete", "no", "0"]
         if completion.lower() in positive_inputs:
             series.is_completed = 1
-            return (0, "")
+            return (0, "Series marked as complete.")
         elif completion.lower() in negative_inputs:
             series.is_completed = 0
-            return (0, "")
-        return (1, "Invalid value for completion status")
+            return (0, "Series marked as incomplete.")
+        return (1, "Invalid value for completion status.")
