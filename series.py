@@ -560,7 +560,7 @@ def input_series(data_mgr):
                   author=author, alt_names=alt_names)
 
 class EditSeries():
-    def name(self, series, name):
+    def name(self, series, name, data_mgr=None):
         reserved_words = ["unknown"]
         
         if not name:
@@ -571,19 +571,20 @@ class EditSeries():
                   .format(name))
             return (2, "{0} is a reserved word".format(name))
         else:
-            cur = data_mgr.query("Select name FROM Series WHERE "
-                                 "name = '{0}'"
-                                 .format(name
-                                         .replace("'", "''")))
-            row = cur.fetchall()
-            if row:
+            if data_mgr:
+                cur = data_mgr.query("Select name FROM Series WHERE "
+                                     "name = '{0}'"
+                                     .format(name
+                                             .replace("'", "''")))
+                row = cur.fetchall()
+            if data_mgr and row:
                 print("New name already present in database,"
                       "not changed")
                 return (3, "Name already present in database")
             else:
                 series.name = name
-                print("Name changed to \"{0}\".".format(series_name))
-                return (0, "")
+                print("Name changed to \"{0}\".".format(series.name))
+                return (0, "Name changed to \"{0}\".".format(series.name))
 
     def volumes(self, series, vol_str):
         ### STUB
