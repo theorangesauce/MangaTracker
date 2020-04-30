@@ -120,7 +120,7 @@ def list_series(data_mgr):
     Lists all series from the database which meet user-specified criteria
     """
     selection = input("List [A]ll / by [O]ther Field / [C]omplete / "
-                      "[I]ncomplete / with [G]aps: ")
+                      "[I]ncomplete / with [G]aps / [W]ishlist: ")
     config = Config()
 
     # Completed Series
@@ -163,9 +163,23 @@ def list_series(data_mgr):
     elif selection in ('o', 'O'):
         list_series_by_field(data_mgr)
 
+    # View Wishlist (all empty series)
+    elif selection in ('w', 'W'):
+        cur = data_mgr.query("SELECT rowid, * FROM Series WHERE "
+                             "volumes_owned = '0,0,0,0'")
+        entries = cur.fetchall()
+
+        if not entries:
+            print("No wishlisted series found.")
+            return
+
+        print("Found {0} wishlisted series:".format(len(entries)))
+        print_entries_list(entries)
+        
     # Default (print all)
     else:
         print_all_series(data_mgr)
+
 
 def list_series_by_field(data_mgr):
     """
