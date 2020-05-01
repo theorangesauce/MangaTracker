@@ -8,6 +8,7 @@ Copyright 2020 by Nicholas Bishop
 
 import argparse
 import os
+from sys import exit
 from mangatracker import main
 from mangatracker_gui import gui_main
 
