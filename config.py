@@ -101,7 +101,8 @@ class Config(Singleton):
         default_cfg = {'config': {'database_name' : 'manga.db',
                                   'volume_limit' : 128,
                                   'series_per_page' : 0,
-                                  'compact_list': 0}}
+                                  'compact_list' : 0,
+                                  'show_empty_series': False}}
 
         config.read_dict(default_cfg)
         with open(filename, 'w') as config_ini:
