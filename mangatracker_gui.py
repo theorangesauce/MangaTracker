@@ -652,7 +652,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
 def gui_main():
     """Starts the main window for MangaTracker GUI"""
     config = Config()
-    data_mgr = DatabaseManager(config.database_name, init_database)
+    data_mgr = DatabaseManager(config.database_name, init_database, False)
     app = QApplication(sys.argv)
     main_window = MangaTrackerGUI()
 
