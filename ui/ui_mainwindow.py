@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mangatracker-gui.ui',
-# licensing of 'mangatracker-gui.ui' applies.
+# Form implementation generated from reading ui file 'xml/mangatracker-gui.ui',
+# licensing of 'xml/mangatracker-gui.ui' applies.
 #
-# Created: Fri Feb 28 10:18:28 2020
+# Created: Sat May  2 15:27:13 2020
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -79,7 +79,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
+        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MangaTracker", None, -1))
         self.filter_series.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Filter", None, -1))
         self.filter_button.setText(QtWidgets.QApplication.translate("MainWindow", "...", None, -1))
         self.settings_button.setText(QtWidgets.QApplication.translate("MainWindow", "Settings", None, -1))
