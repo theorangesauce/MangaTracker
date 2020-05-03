@@ -266,6 +266,7 @@ class Series():
         save_series = input("Save changes? (y/N): ")
         if save_series in ('y', 'Y'):
             self.update_database_entry(data_mgr)
+            print("Series updated!")
 
         return False
 
@@ -390,7 +391,7 @@ class Series():
                            self.author.replace("'", "''"),
                            self.alt_names.replace("'", "''"),
                            self.rowid))
-        print("Series updated!")
+
         return
 
     def compact_string(self):
