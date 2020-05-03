@@ -31,7 +31,7 @@ def entry_to_series(entry):
                     publisher=str(entry[SI.PUBLISHER]),      # Publisher
                     author=str(entry[SI.AUTHOR]),            # Author
                     alt_names=str(entry[SI.ALT_NAMES]),      # Alternate Names
-                    rowid=entry[SI.ROWID])                   # Row ID 
+                    rowid=entry[SI.ROWID])                   # Row ID
                                                              # (for updates)
     return series
 
@@ -183,7 +183,7 @@ def list_series(data_mgr):
 
         print("Found {0} wishlisted series:".format(len(entries)))
         print_entries_list(entries)
-        
+
     # Default (print all)
     else:
         print_all_series(data_mgr)

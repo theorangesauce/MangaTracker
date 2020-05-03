@@ -63,7 +63,7 @@ def is_database(filename):
         if con.cursor().execute("pragma schema_version").fetchone()[0] >= 0:
             self.con.close()
             return True
-        
+
         self.con.close()
         return False
 

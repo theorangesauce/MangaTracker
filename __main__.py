@@ -29,7 +29,7 @@ if __name__ == "__main__":
     group.add_argument("-c", "--cli", action="store_true", help="Start CLI")
 
     args = parser.parse_args()
-        
+
     if args.gui:
         start_gui()
     if args.cli:

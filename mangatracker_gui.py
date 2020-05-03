@@ -32,7 +32,7 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
             self.show_empty_series_yes_button.setChecked(True)
         else:
             self.show_empty_series_no_button.setChecked(True)
-        
+
         self.config_save.clicked.connect(self.save_changes)
         self.config_cancel.clicked.connect(self.close)
 
@@ -42,7 +42,7 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
 
         name = self.database_name_text.text()
         self.results_dialog = QMessageBox()
-        
+
         if name == self.config.database_name:
             self.close()
         elif not os.path.exists(name) or is_database(name):
@@ -52,7 +52,7 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
 
             # set up database if table doesn't exist
             DatabaseManager(name, init_database, False)
-            
+
             self.close()
         else:
             self.results_dialog.setText("Database name must match the format *.db and not be a pre-existing file.")
@@ -75,14 +75,14 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
                                  .format(name.replace("'", "''")))
             row = cur.fetchall()
             if row or name in ["", "Unknown"]:
-                item.setBackground(Qt.red)                
+                item.setBackground(Qt.red)
             else:
                 item.setBackground(Qt.white)
-                
+
         elif item.row() == 3: # Volumes Owned
             volumes_owned_raw = item.text()
             pattern = "^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
-            
+
             if not regexp(pattern, volumes_owned_raw) and volumes_owned_raw not in ["None", "0", ""]:
                 item.setBackground(Qt.red)
             else:
@@ -97,7 +97,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
                     return
             except AttributeError:
                 pass
-                
+
             curr_heading = self.add_series_table.item(i, 0).text()
             if curr_heading == "Name":
                 series_args['name'] = self.add_series_table.item(i, 1).text()
@@ -119,7 +119,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
             elif curr_heading == "Completed":
                 status = self.add_series_table.cellWidget(i, 1).currentText()
                 series_args['is_completed'] = 1 if status == "Yes" else 0
-        
+
         new_series = Series(**series_args)
 
         if new_series.add_series_to_database(data_mgr):
@@ -127,7 +127,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
                                  % series_args['name'].replace("'","''"))
             self.added = cur.fetchone()[0]
             self.close()
-        
+
     def table_setup(self):
         """Generates table elements for creation of a new series.
 
@@ -150,13 +150,13 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
         header = self.add_series_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
-        
+
         # Populate table
         for i in range(len(headings)):
             headerItem = QTableWidgetItem(headings[i])
             headerItem.setFlags(headerItem.flags() & ~int(Qt.ItemIsEditable))
             self.add_series_table.setItem(i, 0, headerItem)
-            
+
             if headings[i] == "Completed":
                 dataItem = QComboBox()
                 dataItem.insertItem(0, "No")
@@ -239,7 +239,7 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
                         row = cur.fetchall()
                         if not row:
                             self.series.name = new_data
-                            
+
                 elif series_keys[i] == "volumes_owned":
                     if new_data in ["None", "0", ""]:
                         new_data = generate_volumes_owned("")
@@ -248,10 +248,10 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
                     self.series.volumes_owned = new_data
                     self.series.vol_arr = [int(x) for x in
                                            self.series.volumes_owned.split(',')]
-                    
+
                 elif series_keys[i] == "next_volume":
                     self.series.next_volume = self.series.calculate_next_volume()
-                    
+
                 elif series_keys[i] == "is_completed":
                     if new_data in ["Yes", "yes", "Y", "y", 1]:
                         self.series.is_completed = 1
@@ -265,7 +265,7 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
             self.close()
         elif confirm_dialog == QMessageBox.Discard:
             self.close()
-                
+
     def table_setup(self, series):
         """Generates table elements based on series.
 
@@ -288,13 +288,13 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
         header = self.edit_series_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
-        
+
         # Populate table
-        for i in range(len(headings)):            
+        for i in range(len(headings)):
             headerItem = QTableWidgetItem(headings[i])
             headerItem.setFlags(headerItem.flags() & ~int(Qt.ItemIsEditable))
             self.edit_series_table.setItem(i, 0, headerItem)
-            
+
             if headings[i] == "Completed":
                 dataItem = QComboBox()
                 dataItem.insertItem(0, "No")
@@ -312,7 +312,7 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
 
 
 class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
-    """Main window for the MangaTracker GUI interface. 
+    """Main window for the MangaTracker GUI interface.
 
     Contains a list of all series in the database on the left, and a
     table on the right to show the currently selected series. A user
@@ -336,13 +336,13 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.completed_action = self.filter_button_menu.addAction("Show completed series")
         self.incomplete_action = self.filter_button_menu.addAction("Show incomplete series")
         self.wishlist_action = self.filter_button_menu.addAction("Show wishlisted series")
-        
+
         self.filter_button_group.addAction(self.no_filter_action)
         self.filter_button_group.addAction(self.gaps_action)
         self.filter_button_group.addAction(self.completed_action)
         self.filter_button_group.addAction(self.incomplete_action)
         self.filter_button_group.addAction(self.wishlist_action)
-        
+
         self.no_filter_action.setCheckable(True)
         self.gaps_action.setCheckable(True)
         self.completed_action.setCheckable(True)
@@ -357,7 +357,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
 
         self.filter_button.setMenu(self.filter_button_menu)
         self.filter_button.setPopupMode(self.filter_button.InstantPopup)
-        
+
         self.list_series.currentItemChanged.connect(self.display_series)
         self.filter_series.textChanged.connect(self.filter_series_list)
         self.settings_button.clicked.connect(self.open_config_window)
@@ -430,7 +430,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.config_window.setWindowModality(Qt.ApplicationModal)
         self.config_window.finished.connect(self.get_list_items)
         self.config_window.show()
-                    
+
     def open_add_window(self):
         """Opens window to add a new series
 
@@ -442,7 +442,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.add_window.setWindowModality(Qt.ApplicationModal)
         self.add_window.finished.connect(self.get_list_items)
         self.add_window.show()
-        
+
     def open_edit_window(self):
         """Opens edit window for selected series.
 
@@ -456,7 +456,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.edit_window.setWindowModality(Qt.ApplicationModal)
         self.edit_window.finished.connect(self.display_series)
         self.edit_window.show()
-        
+
     def table_setup(self, series):
         """Generates table elements based on series.
 
@@ -478,14 +478,14 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         header = self.series_info_display.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
-        
+
         # Populate table
         for i in range(len(headings)):
             headerItem = QTableWidgetItem(headings[i])
             dataItem = QTableWidgetItem(str(data[i]))
             self.series_info_display.setItem(i, 0, headerItem)
             self.series_info_display.setItem(i, 1, dataItem)
-            
+
     def display_series(self):
         """Retrieves and displays info for selected series.
 
@@ -503,7 +503,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
                                  % series_rowid)
             series = entry_to_series(cur.fetchone())
-            
+
             if series:
                 self.list_series.currentItem().setText(series.compact_string())
                 self.table_setup(series)
@@ -514,7 +514,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
 
     def filter_series_list(self):
         """Hides list elements whose text does not contain a user-provided string.
-        
+
         When the text in the filter bar above the list is edited, this
         function takes the updated text and compares it to each
         element of the list. If the series string in the list element
@@ -530,7 +530,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             for i in range(self.list_series.count()):
                 self.list_series.item(i).setHidden(False)
             return
-        
+
         matches = self.list_series.findItems(filter_text, Qt.MatchContains)
 
         ### Can't use this because 'if item in matches' throws
@@ -542,8 +542,8 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         #         item.setHidden(False)
         #     else:
         #         item.setHidden(True)
-        
-        # Hide all items, then show items which match filter  
+
+        # Hide all items, then show items which match filter
         for i in range(self.list_series.count()):
             self.list_series.item(i).setHidden(True)
         for i in matches:
@@ -561,24 +561,24 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         if not Config().show_empty_series and not self.wishlist_action.isChecked():
             if series.volumes_owned == "0,0,0,0":
                 return False
-            
+
         if self.gaps_action.isChecked():
             binary_str = series.get_volumes_owned_binary()
             if regexp("1*0+1", binary_str):
                 return True
             return False
-        
+
         elif self.completed_action.isChecked():
             return series.is_completed
-        
+
         elif self.incomplete_action.isChecked():
             return not series.is_completed
-        
+
         elif self.wishlist_action.isChecked():
             if series.volumes_owned == "0,0,0,0":
                 return True
             return False
-        
+
         else:
             return True
 
@@ -628,14 +628,14 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             # Check if any filters are selected.
             if not self.check_filters(series):
                 continue
-            
+
             series_item = QListWidgetItem(series.compact_string())
             series_item.setData(Qt.UserRole, series.rowid)
             self.list_series.addItem(series_item)
             if selected_series and selected_series == series.rowid:
                 self.list_series.setCurrentItem(series_item)
                 selected_series_found = True
-                
+
         for entry in unknown_entries:
             series = entry_to_series(entry)
             series_item = QListWidgetItem(series.compact_string())

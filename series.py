@@ -268,10 +268,10 @@ class Series():
             self.update_database_entry(data_mgr)
 
         return False
-    
+
     def add_volumes(self, volumes_to_add):
         """Standalone function for adding new volumes to a series.
-        
+
         Takes input in the form of a comma-separated list of volumes
         or ranges of volumes, and adds the passed volumes to the
         series entry.
@@ -302,13 +302,13 @@ class Series():
                              volumes_to_remove.split(",")]
         self.vol_arr = [~x & y for x, y in
                         zip(vol_arr_to_remove, self.vol_arr)]
-        
+
         # update related fields
         self.next_volume = self.calculate_next_volume()
         self.volumes_owned_readable = ""
         self.volumes_owned = generate_volumes_owned(
             self.get_volumes_owned())
-    
+
     def edit_volumes(self):
         """
         edit_volumes()
@@ -454,7 +454,7 @@ def init_database(data_mgr, new_db_needed=True):
 def generate_volumes_owned(vol_list):
     """Converts the given volume list into a four-integer string representation.
 
-    Takes a string of numbers in a comma-separated list (ex. "1, 3-5, 7"), 
+    Takes a string of numbers in a comma-separated list (ex. "1, 3-5, 7"),
     stores them bitwise in 32-bit integers, then concatenates
     bitwise representations of them in a string and returns the
     result. Returns '0,0,0,0' by default if input is invalid or empty.
@@ -465,7 +465,7 @@ def generate_volumes_owned(vol_list):
     if not regexp(pattern, vol_list):
         print("Using default (empty series)")
         return '0,0,0,0'
-    
+
     volume_limit = Config().volume_limit
     arr_length = int(math.ceil(volume_limit / 32))
     vol_arr = [0 for x in range(0, arr_length)]
@@ -563,7 +563,7 @@ def input_series(data_mgr):
 class EditSeries():
     def name(self, series, name, data_mgr=None):
         reserved_words = ["unknown"]
-        
+
         if not name:
             print("Name not changed.")
             return (1, "No name entered.")
