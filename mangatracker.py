@@ -8,6 +8,7 @@ Copyright 2019 by Nicholas Bishop
 import os.path
 from databasemanager import DatabaseManager
 from databasemanager import regexp
+from databasemanager import is_database
 from series import Series
 from series import SeriesItems as SI
 from series import input_series
@@ -134,7 +135,9 @@ def list_series(data_mgr):
             return
 
         if not config.show_empty_series:
-            [entries.remove(entry) for entry in entries if entry[SI["VOL_OWNED"]] == "0,0,0,0"]
+            for entry in entries:
+                if entry[SI["VOL_OWNED"]] == "0,0,0,0":
+                    entries.remove(entry)
 
         print("Found {0} completed series:".format(len(entries)))
         print_entries_list(entries)
@@ -150,7 +153,9 @@ def list_series(data_mgr):
             return
 
         if not config.show_empty_series:
-            [entries.remove(entry) for entry in entries if entry[SI["VOL_OWNED"]] == "0,0,0,0"]
+            for entry in entries:
+                if entry[SI["VOL_OWNED"]] == "0,0,0,0":
+                    entries.remove(entry)
 
         print("Found {0} incomplete series:".format(len(entries)))
         print_entries_list(entries)
