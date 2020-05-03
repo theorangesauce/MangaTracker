@@ -21,6 +21,9 @@ def entry_to_series(entry):
     Takes a single row from a database query and converts it
     into a series.
     """
+    if not entry:
+        return None
+    
     series = Series(name=str(entry[SI.NAME]),                # Series Name
                     volumes_owned=str(entry[SI.VOL_OWNED]),  # Volumes Owned
                     is_completed=entry[SI.IS_COMPLETED],     # Is Completed

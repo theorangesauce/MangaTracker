@@ -503,13 +503,14 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
                                  % series_rowid)
             series = entry_to_series(cur.fetchone())
-
-            self.list_series.currentItem().setText(series.compact_string())
-            self.table_setup(series)
-            self.edit_series_button.setEnabled(True)
-            self.remove_series_button.setEnabled(True)
-            self.add_next_volume_button.setEnabled(True)
-            self.mark_as_completed_button.setEnabled(True)
+            
+            if series:
+                self.list_series.currentItem().setText(series.compact_string())
+                self.table_setup(series)
+                self.edit_series_button.setEnabled(True)
+                self.remove_series_button.setEnabled(True)
+                self.add_next_volume_button.setEnabled(True)
+                self.mark_as_completed_button.setEnabled(True)
 
     def filter_series_list(self):
         """Hides list elements whose text does not contain a user-provided string.
