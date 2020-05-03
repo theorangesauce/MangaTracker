@@ -447,7 +447,9 @@ def init_database(data_mgr, new_db_needed=True):
             next_series = input_series(data_mgr)
             while next_series is not None:
                 if next_series.add_series_to_database(data_mgr):
+                    print("----------------------------------------")
                     print(next_series)
+                    print("----------------------------------------")
                 else:
                     print("Failed to add series! (name conflict)")
                 next_series = input_series(data_mgr)
