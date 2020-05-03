@@ -9,6 +9,7 @@ from ui import ui_addseries
 from ui import ui_configdialog
 from databasemanager import DatabaseManager
 from databasemanager import regexp
+from databasemanager import is_database
 from series import Series
 from series import SeriesItems as SI
 from series import init_database
@@ -38,16 +39,20 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
     def save_changes(self):
         show_empty_series = self.show_empty_series_button_group.checkedId()
         self.config.set_property("show_empty_series", show_empty_series)
-        
+
         name = self.database_name_text.text()
         self.results_dialog = QMessageBox()
+        
         if name == self.config.database_name:
             self.close()
-        elif name[-3:] == ".db" and not os.path.exists(name):
+        elif not os.path.exists(name) or is_database(name):
             self.config.set_property("database_name", name)
-            self.results_dialog.setText("Database name has been changed. "
-                                        "Program must be restarted for changes to take effect.")
+            self.results_dialog.setText("Database name has been changed. ")
             self.results_dialog.show()
+
+            # set up database if table doesn't exist
+            DatabaseManager(name, init_database, False)
+            
             self.close()
         else:
             self.results_dialog.setText("Database name must match the format *.db and not be a pre-existing file.")

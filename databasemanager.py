@@ -48,3 +48,24 @@ def regexp(pattern, value):
     """
     reg = re.compile(pattern)
     return reg.search(value) is not None
+
+def is_database(filename):
+    """Verify that file filename is a SQLite database.
+
+    A file is considered a valid database if:
+     - the filename ends in .db, and
+     - executing pragma schema_version returns a value >= 0
+    """
+    if filename[-3:] != ".db":
+        return False
+    try:
+        con = lite.connect(filename)
+        if con.cursor().execute("pragma schema_version").fetchone()[0] >= 0:
+            self.con.close()
+            return True
+        
+        self.con.close()
+        return False
+
+    except lite.DatabaseError:
+        return False
