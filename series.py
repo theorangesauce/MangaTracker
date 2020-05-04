@@ -164,13 +164,13 @@ class Series():
             data_mgr.query("INSERT INTO Series VALUES("
                            "'{0}','{1}',{2},{3},'{4}','{5}','{6}')"
                            .format(
-                               self.name.replace("'", "''"),
+                               self.name.replace("'", "''").strip(),
                                self.volumes_owned,
                                self.is_completed,
                                self.next_volume,
-                               self.publisher.replace("'", "''"),
-                               self.author.replace("'", "''"),
-                               self.alt_names.replace("'", "''")))
+                               self.publisher.replace("'", "''").strip(),
+                               self.author.replace("'", "''").strip(),
+                               self.alt_names.replace("'", "''").strip()))
             return True
 
         return False
@@ -383,13 +383,13 @@ class Series():
                        "publisher = '{4}', "
                        "author = '{5}', "
                        "alt_names = '{6}' WHERE ROWID = {7}".format(
-                           self.name.replace("'", "''"),
+                           self.name.replace("'", "''").strip(),
                            self.volumes_owned,
                            self.is_completed,
                            self.next_volume,
-                           self.publisher.replace("'", "''"),
-                           self.author.replace("'", "''"),
-                           self.alt_names.replace("'", "''"),
+                           self.publisher.replace("'", "''").strip(),
+                           self.author.replace("'", "''").strip(),
+                           self.alt_names.replace("'", "''").strip(),
                            self.rowid))
 
         return
