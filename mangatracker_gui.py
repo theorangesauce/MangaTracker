@@ -328,39 +328,13 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.setupUi(self)
         self.set_styles()
 
-        self.filter_button_menu = QMenu()
-        self.filter_button_group = QActionGroup(self.filter_button_menu)
-
-        self.no_filter_action = self.filter_button_menu.addAction("No filter")
-        self.gaps_action = self.filter_button_menu.addAction("Show series with gaps")
-        self.completed_action = self.filter_button_menu.addAction("Show completed series")
-        self.incomplete_action = self.filter_button_menu.addAction("Show incomplete series")
-        self.wishlist_action = self.filter_button_menu.addAction("Show wishlisted series")
-
-        self.filter_button_group.addAction(self.no_filter_action)
-        self.filter_button_group.addAction(self.gaps_action)
-        self.filter_button_group.addAction(self.completed_action)
-        self.filter_button_group.addAction(self.incomplete_action)
-        self.filter_button_group.addAction(self.wishlist_action)
-
-        self.no_filter_action.setCheckable(True)
-        self.gaps_action.setCheckable(True)
-        self.completed_action.setCheckable(True)
-        self.incomplete_action.setCheckable(True)
-        self.wishlist_action.setCheckable(True)
-
-        self.no_filter_action.toggled.connect(self.get_list_items)
-        self.gaps_action.toggled.connect(self.get_list_items)
-        self.completed_action.toggled.connect(self.get_list_items)
-        self.incomplete_action.toggled.connect(self.get_list_items)
-        self.wishlist_action.toggled.connect(self.get_list_items)
-
-        self.filter_button.setMenu(self.filter_button_menu)
-        self.filter_button.setPopupMode(self.filter_button.InstantPopup)
+        self.create_filter_menu()
 
         self.list_series.currentItemChanged.connect(self.display_series)
         self.filter_series.textChanged.connect(self.filter_series_list)
+
         self.settings_button.clicked.connect(self.open_config_window)
+
         self.edit_series_button.clicked.connect(self.open_edit_window)
         self.add_series_button.clicked.connect(self.open_add_window)
         self.remove_series_button.clicked.connect(self.remove_series)
@@ -375,6 +349,92 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
             "QListWidget::item {padding-top:8px;"
             "padding-bottom:8px; border:1px solid #5DA9F6;}"
             "QListWidget::item:selected{background:#5DA9F6;}")
+
+    def create_filter_menu(self):
+        """Creates and populates the filter button menu.
+
+        The menu contains two subgroups: options for filtering and
+        options for ordering.
+
+        """
+        # Create menus and action groups
+        self.filter_button_menu = QMenu()
+        self.filter_button_group = QActionGroup(self.filter_button_menu)
+        
+        self.sort_button_menu = self.filter_button_menu.addMenu("Sort by...")
+        self.sort_button_group = QActionGroup(self.sort_button_menu)
+        self.filter_button_menu.addSeparator()
+        
+        
+        # Create filter actions
+        self.no_filter_action = self.filter_button_menu.addAction("No filter")
+        self.gaps_action = self.filter_button_menu.addAction("Show series with gaps")
+        self.completed_action = self.filter_button_menu.addAction("Show completed series")
+        self.incomplete_action = self.filter_button_menu.addAction("Show incomplete series")
+        self.wishlist_action = self.filter_button_menu.addAction("Show wishlisted series")
+
+        # Create sort actions
+        self.sort_name_action = self.sort_button_menu.addAction("Name")
+        self.sort_author_action = self.sort_button_menu.addAction("Author")
+        self.sort_publisher_action = self.sort_button_menu.addAction("Publisher")
+        self.sort_alt_names_action = self.sort_button_menu.addAction("Alternate Names")
+
+        # Add actions to action groups
+        self.filter_button_group.addAction(self.no_filter_action)
+        self.filter_button_group.addAction(self.gaps_action)
+        self.filter_button_group.addAction(self.completed_action)
+        self.filter_button_group.addAction(self.incomplete_action)
+        self.filter_button_group.addAction(self.wishlist_action)
+
+        self.sort_button_group.addAction(self.sort_name_action)
+        self.sort_button_group.addAction(self.sort_author_action)
+        self.sort_button_group.addAction(self.sort_publisher_action)
+        self.sort_button_group.addAction(self.sort_alt_names_action)
+
+        # Set actions checkable
+        self.no_filter_action.setCheckable(True)
+        self.gaps_action.setCheckable(True)
+        self.completed_action.setCheckable(True)
+        self.incomplete_action.setCheckable(True)
+        self.wishlist_action.setCheckable(True)
+
+        self.sort_name_action.setCheckable(True)
+        self.sort_author_action.setCheckable(True)
+        self.sort_publisher_action.setCheckable(True)
+        self.sort_alt_names_action.setCheckable(True)
+
+        self.no_filter_action.setChecked(True)
+        self.sort_name_action.setChecked(True)
+
+        # Refresh series list when options changed
+        self.no_filter_action.toggled.connect(self.get_list_items)
+        self.gaps_action.toggled.connect(self.get_list_items)
+        self.completed_action.toggled.connect(self.get_list_items)
+        self.incomplete_action.toggled.connect(self.get_list_items)
+        self.wishlist_action.toggled.connect(self.get_list_items)
+
+        self.sort_name_action.toggled.connect(self.get_list_items)
+        self.sort_author_action.toggled.connect(self.get_list_items)
+        self.sort_publisher_action.toggled.connect(self.get_list_items)
+        self.sort_alt_names_action.toggled.connect(self.get_list_items)
+
+        # Add menu to filter button
+        self.filter_button.setMenu(self.filter_button_menu)
+        self.filter_button.setPopupMode(self.filter_button.InstantPopup)
+
+    def get_list_order(self):
+        """Returns currently selected list order"""
+        if self.sort_name_action.isChecked():
+            return "name"
+        elif self.sort_author_action.isChecked():
+            return "author"
+        elif self.sort_publisher_action.isChecked():
+            return "publisher"
+        elif self.sort_alt_names_action.isChecked():
+            return "alt_names"
+
+        # Fallback
+        return "name"
 
     def toggle_is_completed(self):
         """Toggles completion status of selected series."""
@@ -592,7 +652,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.add_next_volume_button.setEnabled(False)
         self.mark_as_completed_button.setEnabled(False)
 
-    def get_list_items(self, order="name"):
+    def get_list_items(self):
         """Retrieves all series from database and populates list in main window.
 
         Populates the list in the main window with the compact_string()
@@ -601,10 +661,9 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         unknown value for that property at the end of the list
 
         """
-        if order not in ["name", "author", "publisher", "alt_names"]:
-            order = "name"
+        order = self.get_list_order()
         data_mgr = DatabaseManager(Config().database_name, None)
-        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s COLLATE NOCASE ASC" % order)
+        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s COLLATE NOCASE ASC, name ASC;" % order)
         entries = cur.fetchall()
         unknown_entries = []
         count = 0
@@ -620,7 +679,7 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
 
         self.list_series.clear()
         for entry in entries:
-            if entry[SI[order.upper()]] == "Unknown":
+            if entry[SI[order.upper()]] in ["Unknown", ""]:
                 unknown_entries.append(entry)
                 continue
             series = entry_to_series(entry)
