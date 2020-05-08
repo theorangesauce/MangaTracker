@@ -3,6 +3,10 @@ import sys
 import os.path
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
+from PySide2.QtWidgets import QApplication, QMainWindow
+from PySide2.QtWidgets import QButtonGroup, QMenu, QActionGroup
+from PySide2.QtWidgets import QHeaderView, QTableWidgetItem, QListWidgetItem
+from PySide2.QtWidgets import QDialog, QMessageBox, QComboBox
 from ui import ui_mainwindow
 from ui import ui_editseries
 from ui import ui_addseries
