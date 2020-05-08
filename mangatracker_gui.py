@@ -27,6 +27,8 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
         self.setupUi(self)
         self.config = Config()
         self.database_name_text.setText(self.config.database_name)
+
+        # Set up Show Empty Series option
         self.show_empty_series_button_group = QButtonGroup()
         self.show_empty_series_button_group.addButton(self.show_empty_series_yes_button, 1)
         self.show_empty_series_button_group.addButton(self.show_empty_series_no_button, 0)
@@ -36,6 +38,16 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
         else:
             self.show_empty_series_no_button.setChecked(True)
 
+        # Set up Default to GUI option
+        self.default_to_gui_button_group = QButtonGroup()
+        self.default_to_gui_button_group.addButton(self.default_to_gui_yes_button, 1)
+        self.default_to_gui_button_group.addButton(self.default_to_gui_no_button, 0)
+
+        if self.config.default_to_gui:
+            self.default_to_gui_yes_button.setChecked(True)
+        else:
+            self.default_to_gui_no_button.setChecked(True)
+
         self.config_save.clicked.connect(self.save_changes)
         self.config_cancel.clicked.connect(self.close)
 
@@ -43,6 +55,9 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
         show_empty_series = self.show_empty_series_button_group.checkedId()
         self.config.set_property("show_empty_series", show_empty_series)
 
+        default_to_gui = self.default_to_gui_button_group.checkedId()
+        self.config.set_property("default_to_gui", default_to_gui)
+        
         name = self.database_name_text.text()
         self.results_dialog = QMessageBox()
 
@@ -62,6 +77,7 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
             self.results_dialog.show()
 
 class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
+    """Window for adding series to MangaTracker database"""
     def __init__(self, parent=None):
         super(MangaTrackerAddWindow, self).__init__(parent)
         self.setupUi(self)

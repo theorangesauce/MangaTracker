@@ -57,6 +57,9 @@ class Config(Singleton):
         self.show_empty_series = self.config.getboolean('config',
                                                         'show_empty_series',
                                                         fallback=False)
+        self.default_to_gui = self.config.getboolean('config',
+                                                     'default_to_gui',
+                                                     fallback=True)
 
     def set_property(self, prop_name, prop_value):
         """
@@ -86,6 +89,11 @@ class Config(Singleton):
                     or isinstance(prop_value, bool)
                ):
                 self.config["config"]["show_empty_series"] = str(prop_value)
+        elif prop_name == "default_to_gui":
+            if ((isinstance(prop_value, int) and prop_value in [0, 1])
+                    or isinstance(prop_value, bool)
+               ):
+                self.config["config"]["default_to_gui"] = str(prop_value)
         with open(self.filename, 'w') as config_ini:
             self.config.write(config_ini)
 
@@ -102,7 +110,8 @@ class Config(Singleton):
                                   'volume_limit' : 128,
                                   'series_per_page' : 0,
                                   'compact_list' : 0,
-                                  'show_empty_series': False}}
+                                  'show_empty_series' : False,
+                                  'default_to_gui' : True}}
 
         config.read_dict(default_cfg)
         with open(filename, 'w') as config_ini:
@@ -116,3 +125,4 @@ class Config(Singleton):
         self.series_per_page = 0
         self.compact_list = False
         self.show_empty_series = False
+        self.default_to_gui = True

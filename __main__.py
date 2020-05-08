@@ -9,6 +9,7 @@ Copyright 2020 by Nicholas Bishop
 import argparse
 import os
 from sys import exit
+from config import Config
 from mangatracker import main
 from mangatracker_gui import gui_main
 
@@ -32,7 +33,7 @@ if __name__ == "__main__":
 
     if args.gui:
         start_gui()
-    if args.cli:
+    if args.cli or not Config().default_to_gui:
         start_cli()
 
-    start_cli()
+    start_gui()

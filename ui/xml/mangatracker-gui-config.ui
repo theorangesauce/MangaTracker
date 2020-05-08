@@ -7,60 +7,84 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>113</height>
+    <height>119</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Config</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="database_name_label">
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="database_name_label">
+     <property name="text">
+      <string>Database Name</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="database_name_text">
+     <property name="text">
+      <string>manga.db</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="show_empty_series_label">
+     <property name="text">
+      <string>Show Empty Series in Lists</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <layout class="QHBoxLayout" name="show_empty_series_buttons">
+     <item>
+      <widget class="QRadioButton" name="show_empty_series_yes_button">
        <property name="text">
-        <string>Database Name</string>
+        <string>Yes</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="database_name_text">
+     <item>
+      <widget class="QRadioButton" name="show_empty_series_no_button">
        <property name="text">
-        <string>manga.db</string>
+        <string>No</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="show_empty_series_label">
-       <property name="text">
-        <string>Show Empty Series in Lists</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <layout class="QHBoxLayout" name="show_empty_series_buttons">
-       <item>
-        <widget class="QRadioButton" name="show_empty_series_yes_button">
-         <property name="text">
-          <string>Yes</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="show_empty_series_no_button">
-         <property name="text">
-          <string>No</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </item>
     </layout>
    </item>
-   <item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="default_to_gui_label">
+     <property name="text">
+      <string>Open GUI by default?</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <layout class="QHBoxLayout" name="default_to_gui_buttons">
+     <item>
+      <widget class="QRadioButton" name="default_to_gui_yes_button">
+       <property name="text">
+        <string>Yes</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="default_to_gui_no_button">
+       <property name="text">
+        <string>No</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QPushButton" name="config_save">

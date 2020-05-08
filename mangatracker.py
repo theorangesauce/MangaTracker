@@ -446,9 +446,10 @@ def options_menu(config):
     3. Change number of series displayed per page (default 0)
     4. Select either verbose descriptions or
        1-line descriptions (default verbose)
-    5. Show empty series in normal lists
-    6. Reset all settings to default
-    7. Clear database
+    5. Show empty series in normal lists (default False)
+    6. Open GUI or CLI by default (default GUI)
+    7. Reset all settings to default
+    8. Clear database
 
     Arguments:
     data_mgr - DatabaseManager object connected to current database
@@ -460,8 +461,9 @@ def options_menu(config):
           "3. Change Series Displayed Per Page\n"
           "4. Use Compact Descriptions\n"
           "5. Show Empty Series in Lists\n"
-          "6. Reset to Default Settings\n"
-          "7. Clear Database")
+          "6. Choose whether CLI or GUI opens by default\n"
+          "7. Reset to Default Settings\n"
+          "8. Clear Database")
     option = input("Enter a number to modify option: ")
     try:
         option = int(option)
@@ -518,14 +520,22 @@ def options_menu(config):
             else:
                 config.set_property("show_empty_series", False)
 
-        # 6. Reset to default
+        # 6. Choose whether CLI or GUI opens by default
         elif option == 6:
+            default_to_cli = input("Open CLI by default when no command-line options provided? (y/N): ")
+            if default_to_cli in ('y', 'Y'):
+                config.set_property("default_to_gui", False)
+            else:
+                config.set_property("default_to_gui", True)
+
+        # 7. Reset to default
+        elif option == 7:
             default = input("Reset all settings to default? (y/N): ")
             if default in ('y', 'Y'):
                 config.set_default_config("config.ini")
 
-        # 7. Clear database (Does not prompt user for series)
-        elif option == 7:
+        # 8. Clear database (Does not prompt user for series)
+        elif option == 8:
             delete_database = input("Remove Database? "
                                     "(will copy to {0}.bak) y/N: "
                                     .format(config.database_name))
