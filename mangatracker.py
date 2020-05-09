@@ -345,8 +345,9 @@ def main():
         # Options
         if user_input in ('o', 'O'):
             options_menu(config)
+            
             # Reset database connection if name changed or database deleted
-            data_mgr = DatabaseManager(config.database_name, None)
+            data_mgr = DatabaseManager(config.database_name, init_database, False)
 
 
 def edit_series(data_mgr):
