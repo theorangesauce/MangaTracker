@@ -61,10 +61,10 @@ def is_database(filename):
     try:
         con = lite.connect(filename)
         if con.cursor().execute("pragma schema_version").fetchone()[0] >= 0:
-            self.con.close()
+            con.close()
             return True
 
-        self.con.close()
+        con.close()
         return False
 
     except lite.DatabaseError:
