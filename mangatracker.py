@@ -476,6 +476,7 @@ def options_menu(config):
                     and is_database(new_db_name)
                ):
                 config.set_property("database_name", new_db_name)
+                print("Database changed to %s." % new_db_name)
             else:
                 print("Database name not changed.")
 
@@ -486,6 +487,7 @@ def options_menu(config):
             new_vol_limit = int(new_vol_limit)
             if new_vol_limit % 32 == 0 and new_vol_limit >= 32:
                 config.set_property("volume_limit", new_vol_limit)
+                print("Volume limit changed to %d." % new_vol_limit)
             else:
                 print("Invalid volume limit, not changed.")
 
@@ -496,46 +498,58 @@ def options_menu(config):
                                         "or 0 to not use pages: ")
             if new_series_per_page == '0':
                 config.set_property("series_per_page", 0)
+                print("Program will not use pages.")
             else:
                 try:
                     new_series_per_page = int(new_series_per_page)
                     if new_series_per_page < 1:
-                        print("Series per page must be greater than 1")
+                        print("Series displayed per page must be greater than or equal to 1.")
                     else:
                         config.set_property("series_per_page",
                                             new_series_per_page)
+                        print("Series displayed per page set to %d." % new_series_per_page)
                 except (ValueError, TypeError):
-                    print("Invalid value, not changed.")
+                    print("Invalid value, series per page not changed.")
 
         # 4. Use compact descriptions when listing series
         elif option == 4:
             use_compact_list = input("Use compact descriptions? (y/N): ")
             if use_compact_list in ('y', 'Y'):
                 config.set_property("compact_list", True)
+                print("Using compact descriptions.")
             else:
                 config.set_property("compact_list", False)
+                print("Using full descriptions.")
 
         # 5. Show empty series in normal lists
         elif option == 5:
             show_empty_series = input("Show series without any volumes in lists? (y/N): ")
             if show_empty_series in ('y', 'Y'):
                 config.set_property("show_empty_series", True)
+                print("Showing series without any volumes in lists.")
             else:
                 config.set_property("show_empty_series", False)
+                print("Hiding series without any volumes from lists.")
 
         # 6. Choose whether CLI or GUI opens by default
         elif option == 6:
-            default_to_cli = input("Open CLI by default when no command-line options provided? (y/N): ")
+            default_to_cli = input("Open CLI by default when no "
+                                   "command-line options provided? (y/N): ")
             if default_to_cli in ('y', 'Y'):
                 config.set_property("default_to_gui", False)
+                print("Program will default to CLI when no arguments are provided.")
             else:
                 config.set_property("default_to_gui", True)
+                print("Program will default to GUI when no arguments are provided.")
 
         # 7. Reset to default
         elif option == 7:
             default = input("Reset all settings to default? (y/N): ")
             if default in ('y', 'Y'):
                 config.set_default_config("config.ini")
+                print("Settings reset to default.")
+            else:
+                print("Settings not changed.")
 
         # 8. Clear database (Does not prompt user for series)
         elif option == 8:
@@ -545,7 +559,9 @@ def options_menu(config):
             if delete_database in ('y', 'Y'):
                 os.rename(config.database_name,
                           config.database_name+".bak")
+                print("Database deleted; initializing new database...")
                 DatabaseManager(False, init_database)
+            print("Database not changed.")
 
         else:
             print("Invalid option, returning to main screen")
