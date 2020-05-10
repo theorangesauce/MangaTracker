@@ -53,6 +53,7 @@ Temporary Items
 # Python junk
 __pycache__
 venv
+winvenv
 
 # Planning documents
 planning
