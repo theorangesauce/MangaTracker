@@ -63,7 +63,7 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
 
         if name == self.config.database_name:
             self.close()
-        elif not os.path.exists(name) or is_database(name):
+        elif is_database(name):
             self.config.set_property("database_name", name)
             self.results_dialog.setText("Database name has been changed. ")
             self.results_dialog.show()

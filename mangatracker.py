@@ -472,7 +472,9 @@ def options_menu(config):
         if option == 1:
             new_db_name = input("Enter new database name, or leave "
                                 "blank to leave unchanged: ")
-            if new_db_name != "" and (not os.path.exists(new_db_name) or is_database(new_db_name)):
+            if (new_db_name != "" and new_db_name != config.database_name
+                    and is_database(new_db_name)
+               ):
                 config.set_property("database_name", new_db_name)
             else:
                 print("Database name not changed.")
