@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import sys
-import os.path
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication, QMainWindow
 from PySide2.QtWidgets import QButtonGroup, QMenu, QActionGroup
@@ -21,6 +20,7 @@ from config import Config
 from mangatracker import entry_to_series
 from mangatracker import remove_series_from_database
 
+
 class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
     def __init__(self, parent=None):
         super(MangaTrackerConfigWindow, self).__init__(parent)
@@ -30,8 +30,10 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
 
         # Set up Show Empty Series option
         self.show_empty_series_button_group = QButtonGroup()
-        self.show_empty_series_button_group.addButton(self.show_empty_series_yes_button, 1)
-        self.show_empty_series_button_group.addButton(self.show_empty_series_no_button, 0)
+        self.show_empty_series_button_group.addButton(
+            self.show_empty_series_yes_button, 1)
+        self.show_empty_series_button_group.addButton(
+            self.show_empty_series_no_button, 0)
 
         if self.config.show_empty_series:
             self.show_empty_series_yes_button.setChecked(True)
@@ -40,8 +42,10 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
 
         # Set up Default to GUI option
         self.default_to_gui_button_group = QButtonGroup()
-        self.default_to_gui_button_group.addButton(self.default_to_gui_yes_button, 1)
-        self.default_to_gui_button_group.addButton(self.default_to_gui_no_button, 0)
+        self.default_to_gui_button_group.addButton(
+            self.default_to_gui_yes_button, 1)
+        self.default_to_gui_button_group.addButton(
+            self.default_to_gui_no_button, 0)
 
         if self.config.default_to_gui:
             self.default_to_gui_yes_button.setChecked(True)
@@ -57,7 +61,7 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
 
         default_to_gui = self.default_to_gui_button_group.checkedId()
         self.config.set_property("default_to_gui", default_to_gui)
-        
+
         name = self.database_name_text.text()
         self.results_dialog = QMessageBox()
 
@@ -73,8 +77,11 @@ class MangaTrackerConfigWindow(QDialog, ui_configdialog.Ui_ConfigDialog):
 
             self.close()
         else:
-            self.results_dialog.setText("Database name must match the format *.db and not be a pre-existing file.")
+            self.results_dialog.setText("Database name must match "
+                                        "the format *.db and not be "
+                                        "a pre-existing file.")
             self.results_dialog.show()
+
 
 class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
     """Window for adding series to MangaTracker database"""
@@ -87,7 +94,7 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
         self.add_series_cancel_button.clicked.connect(self.close)
 
     def validate_cells(self, item):
-        if item.row() == 0: # Name
+        if item.row() == 0:  # Name
             name = item.text()
             data_mgr = DatabaseManager(Config().database_name, None)
             cur = data_mgr.query("SELECT name FROM Series WHERE name = '{0}'"
@@ -98,11 +105,12 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
             else:
                 item.setBackground(Qt.white)
 
-        elif item.row() == 3: # Volumes Owned
+        elif item.row() == 3:  # Volumes Owned
             volumes_owned_raw = item.text()
-            pattern = "^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
+            pattern = r"^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
 
-            if not regexp(pattern, volumes_owned_raw) and volumes_owned_raw not in ["None", "0", ""]:
+            if (not regexp(pattern, volumes_owned_raw)
+                    and volumes_owned_raw not in ["None", "0", ""]):
                 item.setBackground(Qt.red)
             else:
                 item.setBackground(Qt.white)
@@ -118,32 +126,38 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
                 pass
 
             curr_heading = self.add_series_table.item(i, 0).text()
+            try:
+                curr_text = self.add_series_table.item(i, 1).text()
+            except AttributeError:  # is_completed
+                curr_text = (self.add_series_table.cellWidget(i, 1)
+                             .currentText())
+
             if curr_heading == "Name":
-                series_args['name'] = self.add_series_table.item(i, 1).text()
+                series_args['name'] = curr_text
                 if series_args['name'] in ["", "Unknown"]:
                     self.add_series_table.item(i, 1).setBackground(Qt.red)
                     return
             elif curr_heading == "Alt. Names":
-                series_args['alt_names'] = self.add_series_table.item(i, 1).text()
+                series_args['alt_names'] = curr_text
             elif curr_heading == "Author":
-                series_args['author'] = self.add_series_table.item(i, 1).text()
+                series_args['author'] = curr_text
             elif curr_heading == "Volumes Owned":
-                if self.add_series_table.item(i, 1).text() in ["None", "0", ""]:
+                if curr_text in ["None", "0", ""]:
                     series_args['volumes_owned'] = generate_volumes_owned("")
                 else:
                     series_args['volumes_owned'] = generate_volumes_owned(
-                        self.add_series_table.item(i, 1).text())
+                        curr_text)
             elif curr_heading == "Publisher":
-                series_args['publisher'] = self.add_series_table.item(i, 1).text()
+                series_args['publisher'] = curr_text
             elif curr_heading == "Completed":
-                status = self.add_series_table.cellWidget(i, 1).currentText()
+                status = curr_text
                 series_args['is_completed'] = 1 if status == "Yes" else 0
 
         new_series = Series(**series_args)
 
         if new_series.add_series_to_database(data_mgr):
             cur = data_mgr.query("SELECT rowid FROM series WHERE name='%s'"
-                                 % series_args['name'].replace("'","''"))
+                                 % series_args['name'].replace("'", "''"))
             self.added = cur.fetchone()[0]
             self.close()
 
@@ -188,7 +202,6 @@ class MangaTrackerAddWindow(QDialog, ui_addseries.Ui_AddSeries):
             else:
                 dataItem = QTableWidgetItem(str(data[i]))
                 self.add_series_table.setItem(i, 1, dataItem)
-
 
         self.add_series_table.itemChanged.connect(self.validate_cells)
 
@@ -247,10 +260,13 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
                 try:
                     new_data = self.edit_series_table.item(i, 1).text()
                 except AttributeError:
-                    new_data = self.edit_series_table.cellWidget(i, 1).currentText()
+                    new_data = (self.edit_series_table.cellWidget(i, 1)
+                                .currentText())
 
                 if series_keys[i] == "name":
-                    if new_data and self.series.name != new_data:
+                    if (new_data
+                            and self.series.name != new_data
+                            and new_data not in reserved_words):
                         cur = data_mgr.query("SELECT name FROM Series WHERE "
                                              "name = '{0}'"
                                              .format(new_data
@@ -266,10 +282,12 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
                         new_data = generate_volumes_owned(new_data)
                     self.series.volumes_owned = new_data
                     self.series.vol_arr = [int(x) for x in
-                                           self.series.volumes_owned.split(',')]
+                                           self.series.volumes_owned
+                                           .split(',')]
 
                 elif series_keys[i] == "next_volume":
-                    self.series.next_volume = self.series.calculate_next_volume()
+                    self.series.next_volume = (self.series
+                                               .calculate_next_volume())
 
                 elif series_keys[i] == "is_completed":
                     if new_data in ["Yes", "yes", "Y", "y", 1]:
@@ -326,7 +344,8 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
             else:
                 dataItem = QTableWidgetItem(str(data[i]))
                 if headings[i] == "Next Volume":
-                    dataItem.setFlags(dataItem.flags() & ~int(Qt.ItemIsEditable))
+                    dataItem.setFlags(dataItem.flags()
+                                      & ~int(Qt.ItemIsEditable))
                 self.edit_series_table.setItem(i, 1, dataItem)
 
 
@@ -379,24 +398,31 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         # Create menus and action groups
         self.filter_button_menu = QMenu()
         self.filter_button_group = QActionGroup(self.filter_button_menu)
-        
+
         self.sort_button_menu = self.filter_button_menu.addMenu("Sort by...")
         self.sort_button_group = QActionGroup(self.sort_button_menu)
         self.filter_button_menu.addSeparator()
-        
-        
+
         # Create filter actions
         self.no_filter_action = self.filter_button_menu.addAction("No filter")
-        self.gaps_action = self.filter_button_menu.addAction("Show series with gaps")
-        self.completed_action = self.filter_button_menu.addAction("Show completed series")
-        self.incomplete_action = self.filter_button_menu.addAction("Show incomplete series")
-        self.wishlist_action = self.filter_button_menu.addAction("Show wishlisted series")
+        self.gaps_action = self.filter_button_menu.addAction(
+            "Show series with gaps")
+        self.completed_action = self.filter_button_menu.addAction(
+            "Show completed series")
+        self.incomplete_action = self.filter_button_menu.addAction(
+            "Show incomplete series")
+        self.wishlist_action = self.filter_button_menu.addAction(
+            "Show wishlisted series")
 
         # Create sort actions
-        self.sort_name_action = self.sort_button_menu.addAction("Name")
-        self.sort_author_action = self.sort_button_menu.addAction("Author")
-        self.sort_publisher_action = self.sort_button_menu.addAction("Publisher")
-        self.sort_alt_names_action = self.sort_button_menu.addAction("Alternate Names")
+        self.sort_name_action = self.sort_button_menu.addAction(
+            "Name")
+        self.sort_author_action = self.sort_button_menu.addAction(
+            "Author")
+        self.sort_publisher_action = self.sort_button_menu.addAction(
+            "Publisher")
+        self.sort_alt_names_action = self.sort_button_menu.addAction(
+            "Alternate Names")
 
         # Add actions to action groups
         self.filter_button_group.addAction(self.no_filter_action)
@@ -612,8 +638,8 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
 
         matches = self.list_series.findItems(filter_text, Qt.MatchContains)
 
-        ### Can't use this because 'if item in matches' throws
-        ### 'Operator not implemented' error
+        # # Can't use this because 'if item in matches' throws
+        # # 'Operator not implemented' error
         # for i in range(self.list_series.count()):
         #     item = self.list_series.item(i)
         #     print(item)
@@ -637,7 +663,8 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         this function always returns True.
 
         """
-        if not Config().show_empty_series and not self.wishlist_action.isChecked():
+        if (not Config().show_empty_series
+                and not self.wishlist_action.isChecked()):
             if series.volumes_owned == "0,0,0,0":
                 return False
 
@@ -682,11 +709,10 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         """
         order = self.get_list_order()
         data_mgr = DatabaseManager(Config().database_name, None)
-        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s COLLATE NOCASE ASC, name ASC;" % order)
+        cur = data_mgr.query("SELECT rowid, * FROM Series ORDER BY %s "
+                             "COLLATE NOCASE ASC, name ASC;" % order)
         entries = cur.fetchall()
         unknown_entries = []
-        count = 0
-        config = Config()
         selected_series = None
         selected_series_found = False
 
@@ -735,13 +761,16 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
 
 def gui_main():
     """Starts the main window for MangaTracker GUI"""
+    # initialize config file and database file if needed
     config = Config()
-    data_mgr = DatabaseManager(config.database_name, init_database, False)
+    DatabaseManager(config.database_name, init_database, False)
+
     app = QApplication(sys.argv)
     main_window = MangaTrackerGUI()
 
     main_window.show()
     app.exec_()
+
 
 if __name__ == "__main__":
     gui_main()

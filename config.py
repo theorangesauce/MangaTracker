@@ -6,6 +6,7 @@ Copyright 2019 by Nicholas Bishop
 import os
 import configparser
 
+
 class Singleton():
     """
     Singleton(object)
@@ -18,6 +19,7 @@ class Singleton():
             orig = super(Singleton, cls)
             cls._instance = orig.__new__(cls, *args, **kw)
         return cls._instance
+
 
 class Config(Singleton):
     """
@@ -70,8 +72,7 @@ class Config(Singleton):
         """
         if prop_name == "database_name":
             if (prop_value and isinstance(prop_value, str)
-                    and prop_value[-3:] == ".db"
-               ):
+                    and prop_value[-3:] == ".db"):
                 self.config["config"]["database_name"] = prop_value
                 self.database_name = prop_value
         elif prop_name == "volume_limit":
@@ -84,20 +85,17 @@ class Config(Singleton):
                 self.series_per_page = prop_value
         elif prop_name == "compact_list":
             if ((isinstance(prop_value, int) and prop_value in [0, 1])
-                    or isinstance(prop_value, bool)
-               ):
+                    or isinstance(prop_value, bool)):
                 self.config["config"]["compact_list"] = str(prop_value)
                 self.compact_list = prop_value
         elif prop_name == "show_empty_series":
             if ((isinstance(prop_value, int) and prop_value in [0, 1])
-                    or isinstance(prop_value, bool)
-               ):
+                    or isinstance(prop_value, bool)):
                 self.config["config"]["show_empty_series"] = str(prop_value)
                 self.show_empty_series = prop_value
         elif prop_name == "default_to_gui":
             if ((isinstance(prop_value, int) and prop_value in [0, 1])
-                    or isinstance(prop_value, bool)
-               ):
+                    or isinstance(prop_value, bool)):
                 self.config["config"]["default_to_gui"] = str(prop_value)
                 self.default_to_gui = prop_value
         with open(self.filename, 'w') as config_ini:
@@ -112,12 +110,12 @@ class Config(Singleton):
             os.remove(filename)
 
         config = configparser.ConfigParser()
-        default_cfg = {'config': {'database_name' : 'manga.db',
-                                  'volume_limit' : 128,
-                                  'series_per_page' : 0,
-                                  'compact_list' : 0,
-                                  'show_empty_series' : False,
-                                  'default_to_gui' : True}}
+        default_cfg = {'config': {'database_name': 'manga.db',
+                                  'volume_limit': 128,
+                                  'series_per_page': 0,
+                                  'compact_list': 0,
+                                  'show_empty_series': False,
+                                  'default_to_gui': True}}
 
         config.read_dict(default_cfg)
         with open(filename, 'w') as config_ini:

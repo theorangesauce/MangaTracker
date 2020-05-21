@@ -6,6 +6,7 @@ Copyright 2019 by Nicholas Bishop
 import sqlite3 as lite
 import re
 
+
 # TODO: Create an author table and a publisher table
 class DatabaseManager():
     """
@@ -37,6 +38,7 @@ class DatabaseManager():
         """Close connection to database when object goes out of scope"""
         self.con.close()
 
+
 def regexp(pattern, value):
     """
     regexp()
@@ -48,6 +50,7 @@ def regexp(pattern, value):
     """
     reg = re.compile(pattern)
     return reg.search(value) is not None
+
 
 def is_database(filename):
     """Verify that file filename is a SQLite database.

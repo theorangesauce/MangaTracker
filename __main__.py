@@ -13,18 +13,22 @@ from config import Config
 from mangatracker import main
 from mangatracker_gui import gui_main
 
+
 def start_cli():
     main()
     exit()
+
 
 def start_gui():
     gui_main()
     exit()
 
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-    parser = argparse.ArgumentParser(prog="MangaTracker", description="Track a manga collection.")
+    parser = argparse.ArgumentParser(prog="MangaTracker",
+                                     description="Track a manga collection.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-g", "--gui", action="store_true", help="Start GUI")
     group.add_argument("-c", "--cli", action="store_true", help="Start CLI")

@@ -9,6 +9,7 @@ from enum import IntEnum
 from config import Config
 from databasemanager import regexp
 
+
 class SeriesItems(IntEnum):
     """
     SeriesItems(IntEnum)
@@ -25,6 +26,7 @@ class SeriesItems(IntEnum):
     PUBLISHER = 5
     AUTHOR = 6
     ALT_NAMES = 7
+
 
 class Series():
     """
@@ -90,7 +92,7 @@ class Series():
             none_owned = 1
 
             for num in self.vol_arr:
-                if num == 0: # no volumes in set of 32, no need to check bits
+                if num == 0:  # no volumes in set of 32, no need to check bits
                     if first != -1:
                         last = index * 32
                         self.volumes_owned_readable += (
@@ -114,7 +116,7 @@ class Series():
                         first = -1
                 index += 1
 
-            if first != -1: # last set of volumes reaches volume limit
+            if first != -1:  # last set of volumes reaches volume limit
                 last = Config().volume_limit
                 self.volumes_owned_readable += (
                     "{0}, ".format(first) if first == last
@@ -244,7 +246,8 @@ class Series():
             # Change Alternate Names
             elif selection.lower() == "alt":
                 print("Current Alt. Names: {0}".format(self.alt_names))
-                alt_names = input("Enter any alternate names for this series: ")
+                alt_names = input("Enter any alternate names "
+                                  "for this series: ")
                 if alt_names != "":
                     self.alt_names = alt_names
 
@@ -356,7 +359,6 @@ class Series():
                 if user_input in ('y', 'Y'):
                     return True
 
-
             # update related fields
             self.next_volume = self.calculate_next_volume()
             self.volumes_owned_readable = ""
@@ -428,6 +430,7 @@ class Series():
             return self.compact_string()
         return self.full_string()
 
+
 def init_database(data_mgr, new_db_needed=True):
     """
     init_database()
@@ -436,7 +439,7 @@ def init_database(data_mgr, new_db_needed=True):
 
     Passed as argument to DatabaseManager() constructor
     """
-    data_mgr.query("SELECT name FROM sqlite_master "\
+    data_mgr.query("SELECT name FROM sqlite_master "
                    "WHERE type='table' AND name='Series'")
 
     if data_mgr.cur.fetchone() is None:
@@ -454,6 +457,7 @@ def init_database(data_mgr, new_db_needed=True):
                     print("Failed to add series! (name conflict)")
                 next_series = input_series(data_mgr)
 
+
 def generate_volumes_owned(vol_list):
     """Converts the given volume list into a four-integer string representation.
 
@@ -464,7 +468,7 @@ def generate_volumes_owned(vol_list):
 
     """
     # Check that input is valid
-    pattern = "^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
+    pattern = r"^\d+(-\d+)?(,\s*\d+(-\d+)?)*\s*$"
     if not regexp(pattern, vol_list):
         print("Using default (empty series)")
         return '0,0,0,0'
@@ -475,33 +479,33 @@ def generate_volumes_owned(vol_list):
     entered_values = [x.strip() for x in vol_list.split(',')]
 
     for num in entered_values:
-        if num in ('', 'None'): # empty string, no volumes
+        if num in ('', 'None'):  # empty string, no volumes
             continue
-        if '-' in num: # two integers separated by dash
+        if '-' in num:  # two integers separated by dash
             # should always have 2 integers
             nums = [int(k) for k in num.split('-')]
             if nums[0] < 1:
-                print("Start volume must be greater than zero; "\
+                print("Start volume must be greater than zero; "
                       "token %s ignored" % num)
                 continue
             if nums[1] > volume_limit:
-                print("End volume too high; consider raising volume limit "\
+                print("End volume too high; consider raising volume limit "
                       "(currently {0})".format(volume_limit))
                 nums[1] = 128
             for i in range(nums[0]-1, nums[1]):
                 vol_arr[i // 32] |= 1 << (i % 32)
-        else: # single integer
+        else:  # single integer
             try:
                 num = int(num) - 1
             except ValueError:
                 print("Invalid token: {0}".format(num))
                 continue
             if num < 0:
-                print("Token {0} ignored; volume number must be "\
+                print("Token {0} ignored; volume number must be "
                       "greater than zero".format(num))
                 continue
             if num >= volume_limit:
-                print("Token {0} ignored; volume number must be lower "\
+                print("Token {0} ignored; volume number must be lower "
                       "than volume limit (currently {1})"
                       .format(num, volume_limit))
                 continue
@@ -510,6 +514,7 @@ def generate_volumes_owned(vol_list):
     for num in vol_arr:
         result += format(num) + ','
     return result[:-1]
+
 
 def input_series(data_mgr):
     """
@@ -563,6 +568,7 @@ def input_series(data_mgr):
                   publisher=publisher,
                   author=author, alt_names=alt_names)
 
+
 class EditSeries():
     def name(self, series, name, data_mgr=None):
         reserved_words = ["unknown"]
@@ -591,7 +597,7 @@ class EditSeries():
                 return (0, "Name changed to \"{0}\".".format(series.name))
 
     def volumes(self, series, vol_str):
-        ### STUB
+        # STUB
         return (1, "Stub")
 
     def author(self, series, author):
@@ -603,13 +609,15 @@ class EditSeries():
     def publisher(self, series, publisher):
         if publisher:
             series.publisher = publisher
-            return (0, "Publisher changed to \"{0}\".".format(series.publisher))
+            return (0, "Publisher changed to \"{0}\"."
+                    .format(series.publisher))
         return (1, "No publisher name entered.")
 
     def alt_names(self, series, alt_names):
         if alt_names:
             series.alt_names = alt_names
-            return (0, "Alternate name(s) changed to \"{0}\".".format(series.alt_names))
+            return (0, "Alternate name(s) changed to \"{0}\"."
+                    .format(series.alt_names))
         return (1, "No alternate names entered.")
 
     def completion(self, series, completion):

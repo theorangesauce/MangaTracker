@@ -15,6 +15,7 @@ from series import input_series
 from series import init_database
 from config import Config
 
+
 def entry_to_series(entry):
     """
     entry_to_series()
@@ -23,7 +24,7 @@ def entry_to_series(entry):
     """
     if not entry:
         return None
-    
+
     series = Series(name=str(entry[SI.NAME]),                # Series Name
                     volumes_owned=str(entry[SI.VOL_OWNED]),  # Volumes Owned
                     is_completed=entry[SI.IS_COMPLETED],     # Is Completed
@@ -31,8 +32,7 @@ def entry_to_series(entry):
                     publisher=str(entry[SI.PUBLISHER]),      # Publisher
                     author=str(entry[SI.AUTHOR]),            # Author
                     alt_names=str(entry[SI.ALT_NAMES]),      # Alternate Names
-                    rowid=entry[SI.ROWID])                   # Row ID
-                                                             # (for updates)
+                    rowid=entry[SI.ROWID])                   # Row ID in db
     return series
 
 
@@ -55,8 +55,7 @@ def print_all_series(data_mgr, order="name"):
             continue
         if (config.series_per_page != 0
                 and count != 0
-                and count % config.series_per_page == 0
-           ):
+                and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -72,8 +71,7 @@ def print_all_series(data_mgr, order="name"):
         for entry in unknown_entries:
             if (config.series_per_page != 0
                     and count != 0
-                    and count % config.series_per_page == 0
-               ):
+                    and count % config.series_per_page == 0):
                 print("----------------------------------------")
                 continue_print = input("Press Enter to continue "
                                        "or type 'q' to stop: ")
@@ -100,8 +98,7 @@ def print_entries_list(entries):
     for entry in entries:
         if (config.series_per_page != 0
                 and count != 0
-                and count % config.series_per_page == 0
-           ):
+                and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -206,6 +203,7 @@ def list_series_by_field(data_mgr):
     else:
         print_all_series(data_mgr, "name")
 
+
 def list_series_with_gaps(data_mgr, config):
     """
     list_series_with_gaps()
@@ -237,8 +235,7 @@ def list_series_with_gaps(data_mgr, config):
     for series in series_with_gaps:
         if (config.series_per_page != 0
                 and count != 0
-                and count % config.series_per_page == 0
-           ):
+                and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
                                    "or type 'q' to stop: ")
@@ -345,9 +342,11 @@ def main():
         # Options
         if user_input in ('o', 'O'):
             options_menu(config)
-            
+
             # Reset database connection if name changed or database deleted
-            data_mgr = DatabaseManager(config.database_name, init_database, False)
+            data_mgr = DatabaseManager(config.database_name,
+                                       init_database,
+                                       False)
 
 
 def edit_series(data_mgr):
@@ -472,9 +471,9 @@ def options_menu(config):
         if option == 1:
             new_db_name = input("Enter new database name, or leave "
                                 "blank to leave unchanged: ")
-            if (new_db_name != "" and new_db_name != config.database_name
-                    and is_database(new_db_name)
-               ):
+            if (new_db_name != ""
+                    and new_db_name != config.database_name
+                    and is_database(new_db_name)):
                 config.set_property("database_name", new_db_name)
                 print("Database changed to %s." % new_db_name)
             else:
@@ -503,11 +502,13 @@ def options_menu(config):
                 try:
                     new_series_per_page = int(new_series_per_page)
                     if new_series_per_page < 1:
-                        print("Series displayed per page must be greater than or equal to 1.")
+                        print("Series displayed per page must be "
+                              "greater than or equal to 1.")
                     else:
                         config.set_property("series_per_page",
                                             new_series_per_page)
-                        print("Series displayed per page set to %d." % new_series_per_page)
+                        print("Series displayed per page "
+                              "set to %d." % new_series_per_page)
                 except (ValueError, TypeError):
                     print("Invalid value, series per page not changed.")
 
@@ -523,7 +524,8 @@ def options_menu(config):
 
         # 5. Show empty series in normal lists
         elif option == 5:
-            show_empty_series = input("Show series without any volumes in lists? (y/N): ")
+            show_empty_series = input("Show series without any "
+                                      "volumes in lists? (y/N): ")
             if show_empty_series in ('y', 'Y'):
                 config.set_property("show_empty_series", True)
                 print("Showing series without any volumes in lists.")
@@ -537,10 +539,12 @@ def options_menu(config):
                                    "command-line options provided? (y/N): ")
             if default_to_cli in ('y', 'Y'):
                 config.set_property("default_to_gui", False)
-                print("Program will default to CLI when no arguments are provided.")
+                print("Program will default to CLI "
+                      "when no arguments are provided.")
             else:
                 config.set_property("default_to_gui", True)
-                print("Program will default to GUI when no arguments are provided.")
+                print("Program will default to GUI "
+                      "when no arguments are provided.")
 
         # 7. Reset to default
         elif option == 7:
