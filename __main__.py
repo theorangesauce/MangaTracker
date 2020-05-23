@@ -35,6 +35,7 @@ def start_gui():
 
 
 def start_default():
+    """Starts default user interface as defined in config.ini"""
     if Config().default_to_gui and pyside2_installed:
         start_gui()
     else:
