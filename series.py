@@ -597,8 +597,16 @@ class EditSeries():
                 return (0, "Name changed to \"{0}\".".format(series.name))
 
     def volumes(self, series, vol_str):
-        # STUB
-        return (1, "Stub")
+        volumes_to_add = generate_volumes_owned(vol_str)
+        series.vol_arr = [int(x) for x in
+                          volumes_to_add.split(",")]
+
+        # update related fields
+        series.next_volume = series.calculate_next_volume()
+        series.volumes_owned_readable = ""
+        series.get_volumes_owned()
+        series.volumes_owned = generate_volumes_owned(self.get_volumes_owned())
+        return (0, "Volumes owned set to %s." % vol_str)
 
     def author(self, series, author):
         if author:
