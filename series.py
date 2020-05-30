@@ -253,7 +253,7 @@ class Series():
 
             # Change Completion Status
             elif selection in ('c', 'C'):
-                is_completed = input("Have you completed this series? (y/n)"
+                is_completed = input("Have you completed this series? (y/n) "
                                      "(Leave blank if unchanged): ")
                 if is_completed not in ('y', 'Y', 'n', 'N'):
                     pass
