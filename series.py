@@ -258,9 +258,9 @@ class Series():
                 if is_completed not in ('y', 'Y', 'n', 'N'):
                     pass
                 elif is_completed in ('y', 'Y'):
-                    is_completed = 1
+                    self.is_completed = 1
                 else:
-                    is_completed = 0
+                    self.is_completed = 0
 
             print("----------------------------------------")
             print(self.full_string())
