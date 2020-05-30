@@ -168,6 +168,19 @@ def list_series(data_mgr):
     elif selection in ('o', 'O'):
         list_series_by_field(data_mgr)
 
+    # - Shortcuts for alternate orderings
+    elif selection in ('a', 'A'):
+        print("Listing series by author.")
+        print_all_series(data_mgr, "author")
+
+    elif selection in ('p', 'P'):
+        print("Listing series by author.")
+        print_all_series(data_mgr, "publisher")
+
+    elif selection in ('n', 'N'):
+        print("Listing series by name")
+        print_all_series(data_mgr, "name")
+
     # View Wishlist (all empty series)
     elif selection in ('w', 'W'):
         cur = data_mgr.query("SELECT rowid, * FROM Series WHERE "
