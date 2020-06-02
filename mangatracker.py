@@ -304,8 +304,12 @@ def main():
     print_all_series(data_mgr)
 
     while True:
-        user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, "
-                           "[R]emove, [O]ptions, E[x]it: ")
+        try:
+            user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, "
+                               "[R]emove, [O]ptions, E[x]it: ")
+        except EOFError:
+            # No more input, exit program
+            user_input = 'x'
 
         if user_input in ('x', 'X'):
             break

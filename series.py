@@ -523,43 +523,48 @@ def input_series(data_mgr):
     Gets values for the name of a manga series, volumes currently owned,
     and whether the series is completed, and returns a Series() object
     """
-    reserved_words = ["unknown"]
+    try:
+        reserved_words = ["unknown"]
 
-    series_name = input("Enter manga name or leave blank to cancel: ")
-    if series_name == "":
+        series_name = input("Enter manga name or leave blank to cancel: ")
+        if series_name == "":
+            return None
+
+        if series_name.lower() in reserved_words:
+            print("'{0}' is a reserved word and cannot be used."
+                  .format(series_name))
+            return None
+        # try:
+        cur = data_mgr.query("Select name FROM Series WHERE name = '{0}'"
+                             .format(series_name.replace("'", "''")))
+        row = cur.fetchall()
+        if row:
+            print("Name already in database!")
+            return None
+        # except:
+        #     print("Database query failed, continuing...")
+        volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
+        volumes_owned = generate_volumes_owned(volumes_raw)
+
+        author = input("Enter author or leave blank if unknown: ")
+        if author == "":
+            author = "Unknown"
+
+        publisher = input("Enter publisher (leave blank if unknown): ")
+        if publisher == "":
+            publisher = "Unknown"
+
+        alt_names = input("Enter any alternate names for this series, if any: ")
+
+        is_completed = input("Have you completed this series? (y/N): ")
+        if is_completed not in ('y', 'Y'):
+            is_completed = 0
+        else:
+            is_completed = 1
+
+    except EOFError:
+        # Failed to receive user input
         return None
-
-    if series_name.lower() in reserved_words:
-        print("'{0}' is a reserved word and cannot be used."
-              .format(series_name))
-        return None
-    # try:
-    cur = data_mgr.query("Select name FROM Series WHERE name = '{0}'"
-                         .format(series_name.replace("'", "''")))
-    row = cur.fetchall()
-    if row:
-        print("Name already in database!")
-        return None
-    # except:
-    #     print("Database query failed, continuing...")
-    volumes_raw = input("Enter volumes owned (if any) (ex. 1, 3-5): ")
-    volumes_owned = generate_volumes_owned(volumes_raw)
-
-    author = input("Enter author or leave blank if unknown: ")
-    if author == "":
-        author = "Unknown"
-
-    publisher = input("Enter publisher (leave blank if unknown): ")
-    if publisher == "":
-        publisher = "Unknown"
-
-    alt_names = input("Enter any alternate names for this series, if any: ")
-
-    is_completed = input("Have you completed this series? (y/N): ")
-    if is_completed not in ('y', 'Y'):
-        is_completed = 0
-    else:
-        is_completed = 1
 
     return Series(name=series_name,
                   volumes_owned=volumes_owned,
