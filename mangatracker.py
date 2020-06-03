@@ -120,7 +120,7 @@ def list_series(data_mgr):
 
     Lists all series from the database which meet user-specified criteria
     """
-    selection = input("List [A]ll / by [O]ther Field / [C]omplete / "
+    selection = input("[L]ist All / by [O]ther Field / [C]omplete / "
                       "[I]ncomplete / with [G]aps / [W]ishlist: ")
     config = Config()
 
