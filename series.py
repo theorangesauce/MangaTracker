@@ -192,7 +192,7 @@ class Series():
         while selection not in ('e', 'E'):
             selection = input("Edit: \n[N]ame / [V]olumes / [A]uthor / "
                               "[P]ublisher \n[Alt]ernate Names /"
-                              "[C]ompletion Status / [E]nd: ")
+                              "[C]ompletion Status / [E]nd: ").strip()
             # Change Name
             if selection in ('n', 'N'):
                 print("Current Name: {0}".format(self.name))
@@ -254,7 +254,7 @@ class Series():
             # Change Completion Status
             elif selection in ('c', 'C'):
                 is_completed = input("Have you completed this series? (y/n) "
-                                     "(Leave blank if unchanged): ")
+                                     "(Leave blank if unchanged): ").strip()
                 if is_completed not in ('y', 'Y', 'n', 'N'):
                     pass
                 elif is_completed in ('y', 'Y'):
@@ -266,7 +266,7 @@ class Series():
             print(self.full_string())
             print("----------------------------------------")
 
-        save_series = input("Save changes? (y/N): ")
+        save_series = input("Save changes? (y/N): ").strip()
         if save_series in ('y', 'Y'):
             self.update_database_entry(data_mgr)
             print("Series updated!")
@@ -322,7 +322,7 @@ class Series():
         chooses to delete it, False otherwise.
         """
         change_volumes = input("[A]dd or [R]emove volumes, or leave "
-                               "blank if unchanged: ")
+                               "blank if unchanged: ").strip()
 
         # Add Volumes
         if change_volumes in ('a', 'A'):
@@ -355,7 +355,7 @@ class Series():
             print(self.vol_arr)
             if all(not x for x in self.vol_arr):
                 user_input = input("No volumes owned for series. "
-                                   "Remove from database? (y/N): ")
+                                   "Remove from database? (y/N): ").strip()
                 if user_input in ('y', 'Y'):
                     return True
 

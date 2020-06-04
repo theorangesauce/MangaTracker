@@ -58,7 +58,7 @@ def print_all_series(data_mgr, order="name"):
                 and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
-                                   "or type 'q' to stop: ")
+                                   "or type 'q' to stop: ").strip()
             if continue_print in ('q', 'Q'):
                 return
 
@@ -74,7 +74,7 @@ def print_all_series(data_mgr, order="name"):
                     and count % config.series_per_page == 0):
                 print("----------------------------------------")
                 continue_print = input("Press Enter to continue "
-                                       "or type 'q' to stop: ")
+                                       "or type 'q' to stop: ").strip()
                 if continue_print in ('q', 'Q'):
                     return
 
@@ -101,7 +101,7 @@ def print_entries_list(entries):
                 and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
-                                   "or type 'q' to stop: ")
+                                   "or type 'q' to stop: ").strip()
             if continue_print in ('q', 'Q'):
                 return
 
@@ -121,7 +121,7 @@ def list_series(data_mgr):
     Lists all series from the database which meet user-specified criteria
     """
     selection = input("[L]ist All / by [O]ther Field / [C]omplete / "
-                      "[I]ncomplete / with [G]aps / [W]ishlist: ")
+                      "[I]ncomplete / with [G]aps / [W]ishlist: ").strip()
     config = Config()
 
     # Completed Series
@@ -208,7 +208,7 @@ def list_series_by_field(data_mgr):
     Arguments:
     data_mgr - DatabaseManager object used for interfacing with database
     """
-    selection = input("Sort by [N]ame / [A]uthor / [P]ublisher: ")
+    selection = input("Sort by [N]ame / [A]uthor / [P]ublisher: ").strip()
     if selection in ('a', 'A'):
         print_all_series(data_mgr, "author")
     elif selection in ('p', 'P'):
@@ -251,7 +251,7 @@ def list_series_with_gaps(data_mgr, config):
                 and count % config.series_per_page == 0):
             print("----------------------------------------")
             continue_print = input("Press Enter to continue "
-                                   "or type 'q' to stop: ")
+                                   "or type 'q' to stop: ").strip()
             if continue_print in ('q', 'Q'):
                 return
 
@@ -306,7 +306,8 @@ def main():
     while True:
         try:
             user_input = input("[S]earch, [L]ist, [A]dd, [E]dit, "
-                               "[R]emove, [O]ptions, E[x]it: ")
+                               "[R]emove, [O]ptions, E[x]it: ").strip()
+
         except EOFError:
             # No more input, exit program
             user_input = 'x'
@@ -394,14 +395,14 @@ def edit_series(data_mgr):
         print(series)
         print("----------------------------------------")
 
-        found_series = input("Edit this series? (y/N/q): ")
+        found_series = input("Edit this series? (y/N/q): ").strip()
         if found_series in ('q', 'Q'):
             break
         if found_series in ('y', 'Y'):
             if series.edit(data_mgr):
                 delete_confirm = input("Are you sure you want to remove %s? "
                                        "This cannot be undone. (y/N): "
-                                       % (series.name))
+                                       % (series.name)).strip()
                 if delete_confirm in ('y', 'Y'):
                     remove_series_from_database(data_mgr, series)
             break
@@ -437,12 +438,12 @@ def remove_series(data_mgr):
         print(series)
         print("----------------------------------------")
 
-        remove = input("Remove series from database? (y/N/q): ")
+        remove = input("Remove series from database? (y/N/q): ").strip()
         if remove in ('q', 'Q'):
             break
         if remove in ('y', 'Y'):
             remove = input("Are you sure? "
-                           "This cannot be undone. (y/N): ")
+                           "This cannot be undone. (y/N): ").strip()
             if remove in ('y', 'Y'):
                 remove_series_from_database(data_mgr, series)
             break
@@ -481,7 +482,7 @@ def options_menu(config):
           "6. Choose whether CLI or GUI opens by default\n"
           "7. Reset to Default Settings\n"
           "8. Clear Database")
-    option = input("Enter a number to modify option: ")
+    option = input("Enter a number to modify option: ").strip()
     try:
         option = int(option)
         # 1. Change database name
@@ -511,7 +512,7 @@ def options_menu(config):
         elif option == 3:
             new_series_per_page = input("Enter maximum number of "
                                         "series to display per page, "
-                                        "or 0 to not use pages: ")
+                                        "or 0 to not use pages: ").strip()
             if new_series_per_page == '0':
                 config.set_property("series_per_page", 0)
                 print("Program will not use pages.")
@@ -531,7 +532,7 @@ def options_menu(config):
 
         # 4. Use compact descriptions when listing series
         elif option == 4:
-            use_compact_list = input("Use compact descriptions? (y/N): ")
+            use_compact_list = input("Use compact descriptions? (y/N): ").strip()
             if use_compact_list in ('y', 'Y'):
                 config.set_property("compact_list", True)
                 print("Using compact descriptions.")
@@ -542,7 +543,7 @@ def options_menu(config):
         # 5. Show empty series in normal lists
         elif option == 5:
             show_empty_series = input("Show series without any "
-                                      "volumes in lists? (y/N): ")
+                                      "volumes in lists? (y/N): ").strip()
             if show_empty_series in ('y', 'Y'):
                 config.set_property("show_empty_series", True)
                 print("Showing series without any volumes in lists.")
@@ -553,7 +554,7 @@ def options_menu(config):
         # 6. Choose whether CLI or GUI opens by default
         elif option == 6:
             default_to_cli = input("Open CLI by default when no "
-                                   "command-line options provided? (y/N): ")
+                                   "command-line options provided? (y/N): ").strip()
             if default_to_cli in ('y', 'Y'):
                 config.set_property("default_to_gui", False)
                 print("Program will default to CLI "
@@ -565,7 +566,7 @@ def options_menu(config):
 
         # 7. Reset to default
         elif option == 7:
-            default = input("Reset all settings to default? (y/N): ")
+            default = input("Reset all settings to default? (y/N): ").strip()
             if default in ('y', 'Y'):
                 config.set_default_config("config.ini")
                 print("Settings reset to default.")
@@ -575,8 +576,8 @@ def options_menu(config):
         # 8. Clear database (Does not prompt user for series)
         elif option == 8:
             delete_database = input("Remove Database? "
-                                    "(will copy to {0}.bak) y/N: "
-                                    .format(config.database_name))
+                                    "(will copy to {0}.bak) (y/N): "
+                                    .format(config.database_name)).strip()
             if delete_database in ('y', 'Y'):
                 os.rename(config.database_name,
                           config.database_name+".bak")
