@@ -1,2 +1,4 @@
+altgraph==0.17
+PyInstaller==3.6
 PySide2==5.14.0
 shiboken2==5.14.0

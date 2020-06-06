@@ -63,3 +63,10 @@ planning
 
 # Backups (most likely irrelevant)
 *.bak
+
+# PyInstaller build files
+*.spec
+/build/Windows/build
+/build/Windows/dist
+/build/Linux/build
+/build/Linux/dist
