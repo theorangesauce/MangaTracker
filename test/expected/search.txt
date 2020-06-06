@@ -1,0 +1,31 @@
+Author 1
+  Series 1
+  Series 2
+
+Author 2
+  Series 3
+  Series 5
+
+Author 3
+  Last Series
+  Series 4
+
+Publisher 1
+  Series 1
+  Series 4
+  Series 5
+
+Publisher 2
+  Last Series
+  Series 2
+  Series 3
+
+Alternate Name
+  Last Series
+  Series 1
+
+Alternate Title
+  Series 2
+  Series 3
+  Series 4
+  Series 5

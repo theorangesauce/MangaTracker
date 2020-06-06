@@ -1,0 +1,97 @@
+Show Empty Series in Lists disabled:
+
+  List All:
+    Last Series
+    Series 1
+    Series 2
+    Series 3
+    Series 4
+
+  List by Name:
+    Last Series
+    Series 1
+    Series 2
+    Series 3
+    Series 4
+
+  List by Author:
+    Series 1
+    Series 2
+    Series 3
+    Series 4
+    Last Series
+
+  List by Publisher:
+    Series 1
+    Series 4
+    Series 2
+    Series 3
+    Last Series
+
+  List Completed:
+    Last Series
+    Series 2
+
+  List Incomplete:
+    Series 1
+    Series 3
+    Series 4
+
+  List Gaps:
+    Series 3
+    Series 4
+
+  List Wishlist:
+    Series 5
+
+
+Show Empty Series in Lists enabled:
+
+  List All:
+    Last Series
+    Series 1
+    Series 2
+    Series 3
+    Series 4
+    Series 5
+
+  List by Name:
+    Last Series
+    Series 1
+    Series 2
+    Series 3
+    Series 4
+    Series 5
+
+  List by Author:
+    Series 1
+    Series 2
+    Series 3
+    Series 5
+    Series 4
+    Last Series
+
+  List by Publisher:
+    Series 1
+    Series 4
+    Series 5
+    Series 2
+    Series 3
+    Last Series
+
+  List Completed:
+    Last Series
+    Series 2
+
+  List Incomplete:
+    Series 1
+    Series 3
+    Series 4
+    Series 5
+
+  List Gaps:
+    Series 3
+    Series 4
+
+  List Wishlist:
+    Series 5

@@ -1,0 +1,17 @@
+--SEARCH TEST----
+S
+Author 1
+S
+Author 2
+S
+Author 3
+S
+Publisher 1
+S
+Publisher 2
+S
+Alternate Name
+S
+Alternate Title
+X
+--END SEARCH-----

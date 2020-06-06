@@ -1,0 +1,21 @@
+--ADD/REMOVE TEST----
+--ADD TEST-----------
+A
+New Series
+1-5, 7
+Author 3
+New Publisher
+Series the New
+N
+--LIST---------------
+L
+L
+--REMOVE TEST--------
+R
+new series
+Y
+Y
+L
+L
+X
+--END ADD/REMOVE-----

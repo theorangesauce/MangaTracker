@@ -64,9 +64,12 @@ planning
 # Backups (most likely irrelevant)
 *.bak
 
-# PyInstaller build files
+# PyInstaller build files (system specific)
 *.spec
 /build/Windows/build
 /build/Windows/dist
 /build/Linux/build
 /build/Linux/dist
+
+# Testing output (build-specific)
+/test/out

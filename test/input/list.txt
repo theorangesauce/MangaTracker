@@ -1,0 +1,47 @@
+--List Test------
+L
+L
+L
+O
+N
+L
+O
+A
+L
+O
+P
+L
+C
+L
+I
+L
+G
+L
+W
+--Show empty series--
+O
+5
+Y
+--List (2)-----------
+L
+L
+L
+N
+L
+A
+L
+P
+L
+C
+L
+I
+L
+G
+L
+W
+--Hide empty series--
+O
+5
+N
+X
+--END LIST TEST------
