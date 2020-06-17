@@ -215,7 +215,7 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
     window.
 
     """
-    def __init__(self, rowid, parent=None):
+    def __init__(self, rowid, item=None, parent=None):
         """Initializes edit window
 
         Retrieves series information from database and populates the
@@ -231,7 +231,7 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
         cur = data_mgr.query("SELECT rowid, * FROM Series WHERE rowid = %d"
                              % rowid)
         self.series = entry_to_series(cur.fetchone())
-        self.table_setup(self.series)
+        self.table_setup(self.series, item)
 
     def save_edit(self):
         """Saves changes to series object or discards them depending on user choice.
@@ -304,7 +304,7 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
         elif confirm_dialog == QMessageBox.Discard:
             self.close()
 
-    def table_setup(self, series):
+    def table_setup(self, series, item):
         """Generates table elements based on series.
 
         Clears any existing elements in the table, then uses series to
@@ -333,6 +333,7 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
         for i in range(len(headings)):
             headerItem = QTableWidgetItem(headings[i])
             headerItem.setFlags(headerItem.flags() & ~int(Qt.ItemIsEditable))
+            dataItem = None
             self.edit_series_table.setItem(i, 0, headerItem)
 
             if headings[i] == "Completed":
@@ -350,6 +351,11 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
                     dataItem.setFlags(dataItem.flags()
                                       & ~int(Qt.ItemIsEditable))
                 self.edit_series_table.setItem(i, 1, dataItem)
+
+            # set property editable if series_info_display double-clicked
+            if headings[i] == item and item not in ["Next Volume",
+                                                    "Completed"]:
+                self.edit_series_table.editItem(dataItem)
 
 
 class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
@@ -470,6 +476,10 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.filter_button.setMenu(self.filter_button_menu)
         self.filter_button.setPopupMode(self.filter_button.InstantPopup)
 
+        # Open edit window when a series property is double-clicked
+        self.series_info_display.cellDoubleClicked.connect(
+            self.open_edit_window_from_table)
+
     def get_list_order(self):
         """Returns currently selected list order"""
         if self.sort_name_action.isChecked():
@@ -561,6 +571,15 @@ class MangaTrackerGUI(QMainWindow, ui_mainwindow.Ui_MainWindow):
         """
         series_rowid = self.list_series.currentItem().data(Qt.UserRole)
         self.edit_window = MangaTrackerEditWindow(series_rowid)
+        self.edit_window.setWindowModality(Qt.ApplicationModal)
+        self.edit_window.finished.connect(self.display_series)
+        self.edit_window.show()
+
+    def open_edit_window_from_table(self, row, column):
+        """Opens edit window with selected property in edit mode."""
+        series_rowid = self.list_series.currentItem().data(Qt.UserRole)
+        self.edit_window = MangaTrackerEditWindow(
+            series_rowid, item=self.series_info_display.item(row, 0).text())
         self.edit_window.setWindowModality(Qt.ApplicationModal)
         self.edit_window.finished.connect(self.display_series)
         self.edit_window.show()
