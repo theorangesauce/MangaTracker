@@ -3,7 +3,8 @@ import sys
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication, QMainWindow
 from PySide2.QtWidgets import QButtonGroup, QMenu, QActionGroup
-from PySide2.QtWidgets import QHeaderView, QTableWidgetItem, QListWidgetItem
+from PySide2.QtWidgets import QAbstractItemView, QHeaderView
+from PySide2.QtWidgets import QTableWidgetItem, QListWidgetItem
 from PySide2.QtWidgets import QDialog, QMessageBox, QComboBox
 from ui import ui_mainwindow
 from ui import ui_editseries
@@ -322,6 +323,8 @@ class MangaTrackerEditWindow(QDialog, ui_editseries.Ui_EditSeries):
         self.edit_series_table.clear()
         self.edit_series_table.setRowCount(len(headings))
         self.edit_series_table.setColumnCount(2)
+        self.edit_series_table.setEditTriggers(
+            QAbstractItemView.AllEditTriggers)
         header = self.edit_series_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
